@@ -1302,11 +1302,13 @@ async function loadFactTeaser() {
     const el = document.getElementById('factTeaser');
     if (!el) return;
     el.style.display = 'block';
+    el.style.cursor = 'pointer';
+    el.onclick = function() { window.location = '/facts/' + fact.id; };
     el.innerHTML = `
       <div class="fact-teaser__label">Интересный факт</div>
       <div class="fact-teaser__title">${escHtml(fact.title)}</div>
       <div class="fact-teaser__body">${escHtml(fact.fact_body).substring(0, 180)}...</div>
-      <a href="/facts/${fact.id}" class="fact-teaser__link">Читать дальше →</a>`;
+      <span class="fact-teaser__link">Читать дальше →</span>`;
   } catch (e) {
     // Silently fail — fact teaser is optional
   }
