@@ -318,6 +318,28 @@
   padding: var(--space-lg);
   text-align: center;
 }
+.quiz__hearts {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: var(--space-sm);
+}
+.quiz__heart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.quiz__heart img {
+  width: 22px;
+  height: 22px;
+  color: #ef4444;
+  fill: #ef4444;
+}
+.quiz__heart--lost img {
+  color: var(--color-muted);
+  fill: none;
+}
+
 .quiz__question {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -1564,12 +1586,94 @@ async function openWotd() {
 // ═══════════════════════════════════════════
 let quizScore = 0;
 let quizTotal = 0;
+let quizLives = 3;
+const QUIZ_MAX_LIVES = 3;
+
+function quizStorageKey() {
+  return 'daber_quiz_' + new Date().toISOString().slice(0, 10);
+}
+
+function loadQuizState() {
+  try {
+    const raw = localStorage.getItem(quizStorageKey());
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (s.date !== new Date().toISOString().slice(0, 10)) return null;
+    return s;
+  } catch (e) { return null; }
+}
+
+function saveQuizState() {
+  const state = {
+    date: new Date().toISOString().slice(0, 10),
+    score: quizScore,
+    total: quizTotal,
+    lives: quizLives,
+    bestScore: Math.max(quizScore, (loadQuizState() || {}).bestScore || 0)
+  };
+  try { localStorage.setItem(quizStorageKey(), JSON.stringify(state)); } catch(e) {}
+}
+
+function renderHearts(lives) {
+  let html = '';
+  for (let i = 0; i < QUIZ_MAX_LIVES; i++) {
+    const alive = i < lives;
+    html += `<span class="quiz__heart ${alive ? '' : 'quiz__heart--lost'}">
+      <img src="/static/icons/heart.svg" class="icon icon--sm" alt="" style="filter: ${alive ? 'none' : 'grayscale(1) opacity(0.35)'};">
+    </span>`;
+  }
+  return html;
+}
 
 async function openQuiz() {
-  quizScore = 0;
-  quizTotal = 0;
-  await loadQuizModal();
+  const state = loadQuizState();
+
+  // New day — fresh start
+  if (!state || state.lives === undefined) {
+    quizScore = 0;
+    quizTotal = 0;
+    quizLives = QUIZ_MAX_LIVES;
+    saveQuizState();
+    await loadQuizModal();
+    document.getElementById('modal').classList.add('modal-overlay--open');
+    return;
+  }
+
+  // Continue existing session
+  quizScore = state.score || 0;
+  quizTotal = state.total || 0;
+  quizLives = state.lives;
+
+  if (quizLives <= 0) {
+    showQuizGameOver();
+  } else {
+    await loadQuizModal();
+  }
   document.getElementById('modal').classList.add('modal-overlay--open');
+}
+
+function showQuizGameOver() {
+  const best = (loadQuizState() || {}).bestScore || quizScore;
+  document.getElementById('modalContent').innerHTML = `
+    <div class="quiz">
+      <div class="quiz__header">
+        <img src="/static/icons/bulb.svg" class="icon icon--sm t-icon" alt="">
+        ВИКТОРИНА
+      </div>
+      <div class="quiz__card" style="padding:var(--space-2xl)">
+        <div class="quiz__hearts">${renderHearts(0)}</div>
+        <div style="font-size:1.5rem;font-weight:700;margin:var(--space-md) 0">
+          На сегодня хватит!
+        </div>
+        <p style="color:var(--color-muted);margin-bottom:var(--space-lg)">
+          Сегодня: ${quizScore} из ${quizTotal}<br>
+          Лучший результат: ${best}
+        </p>
+        <p style="font-size:0.8rem;color:var(--color-muted)">
+          Возвращайся завтра за новой порцией слов
+        </p>
+      </div>
+    </div>`;
 }
 
 async function loadQuizModal() {
@@ -1585,6 +1689,7 @@ async function loadQuizModal() {
           ВИКТОРИНА
         </div>
         <div class="quiz__card">
+          <div class="quiz__hearts">${renderHearts(quizLives)}</div>
           <div class="quiz__question">Что означает это слово?</div>
           <div class="quiz__word">${escHtml(q.headword)} ${q.headword_nikud ? `<span style="font-size:0.7em;color:var(--color-muted)">${escHtml(q.headword_nikud)}</span>` : ''}</div>
           <div class="quiz__hint">${q.translit ? `[${q.translit}]` : ''}</div>
@@ -1593,7 +1698,7 @@ async function loadQuizModal() {
           </div>
           <div class="quiz__feedback" id="quizFeedback"></div>
           <div class="quiz__score" id="quizScore">${quizTotal > 0 ? `Счёт: ${quizScore} / ${quizTotal}` : ''}</div>
-          <button class="quiz__next" id="quizNext" onclick="loadQuizModal()">Следующий вопрос →</button>
+          <button class="quiz__next" id="quizNext" onclick="loadQuizModal()">Следующий вопрос</button>
         </div>
       </div>`;
 
@@ -1619,18 +1724,53 @@ function checkAnswer(chosenIdx) {
     feedback.textContent = 'Правильно!';
     feedback.style.color = '#22c55e';
   } else {
+    quizLives--;
     feedback.textContent = 'Неправильно';
     feedback.style.color = '#ef4444';
     options[chosenIdx].classList.add('quiz__option--wrong');
+    // Update hearts
+    const heartsEl = document.querySelector('#modalContent .quiz__hearts');
+    if (heartsEl) heartsEl.innerHTML = renderHearts(quizLives);
   }
   feedback.classList.add('quiz__feedback--show');
   scoreEl.textContent = `Счёт: ${quizScore} / ${quizTotal}`;
-  nextBtn.classList.add('quiz__next--show');
+
+  saveQuizState();
+
+  if (quizLives <= 0) {
+    // Game over — show after short delay, replace content
+    setTimeout(() => {
+      const best = Math.max(quizScore, (loadQuizState() || {}).bestScore || 0);
+      document.getElementById('modalContent').innerHTML = `
+        <div class="quiz">
+          <div class="quiz__header">
+            <img src="/static/icons/bulb.svg" class="icon icon--sm t-icon" alt="">
+            ВИКТОРИНА
+          </div>
+          <div class="quiz__card" style="padding:var(--space-2xl)">
+            <div class="quiz__hearts">${renderHearts(0)}</div>
+            <div style="font-size:1.5rem;font-weight:700;margin:var(--space-md) 0">
+              На сегодня хватит!
+            </div>
+            <p style="color:var(--color-muted);margin-bottom:var(--space-lg)">
+              Сегодня: ${quizScore} из ${quizTotal}<br>
+              Лучший результат: ${best}
+            </p>
+            <p style="font-size:0.8rem;color:var(--color-muted)">
+              Возвращайся завтра за новой порцией слов
+            </p>
+          </div>
+        </div>`;
+    }, 1200);
+  } else {
+    nextBtn.classList.add('quiz__next--show');
+  }
 
   gtag('event', 'quiz_answer', {
     correct: chosenIdx === correctIdx,
     score: quizScore,
-    total: quizTotal
+    total: quizTotal,
+    lives: quizLives
   });
 }
 
