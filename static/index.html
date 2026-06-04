@@ -472,9 +472,6 @@
   <div class="results" id="resultsArea" style="display:none">
     <div class="results__header">
       <span class="results__count" id="resultsCount"></span>
-      <div class="results__actions">
-        <button class="btn" id="randomBtn"><img src="/static/icons/dice-6.svg" class="icon icon--sm t-icon" alt=""> Слово дня</button>
-      </div>
     </div>
     <div id="resultsList"></div>
   </div>
@@ -767,6 +764,7 @@ async function performSearch() {
   } else {
     document.getElementById('resultsArea').style.display = 'none';
     document.getElementById('randomSection').style.display = '';
+    document.getElementById('factTeaser').style.display = '';
     return;
   }
   
@@ -799,6 +797,7 @@ function renderResults(data) {
 
   area.style.display = '';
   document.getElementById('randomSection').style.display = 'none';
+  document.getElementById('factTeaser').style.display = 'none';
 
   count.textContent = `Найдено: ${data.total.toLocaleString('ru')}`;
   list.innerHTML = '';
@@ -1324,6 +1323,7 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
     } else {
       document.getElementById('resultsArea').style.display = 'none';
       document.getElementById('randomSection').style.display = '';
+      document.getElementById('factTeaser').style.display = '';
     }
   }, 250);
 });
@@ -1338,8 +1338,6 @@ document.getElementById('searchInput').addEventListener('keydown', (e) => {
     }
   }
 });
-
-document.getElementById('randomBtn').addEventListener('click', showRandom);
 
 document.getElementById('modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) {
