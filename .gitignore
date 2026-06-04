@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+backups/
+.last_feedback_check
+LAST_FEEDBACK_CHECK
+last_feedback_check

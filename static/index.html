@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>ивритский · словарь</title>
+<meta property="og:title" content="דַבֵּר — иврит-русский словарь">
+<meta property="og:description" content="7 843 слова и 4 607 глаголов с переводами, транскрипцией и примерами">
+<meta property="og:image" content="https://slovar.daber.me/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GW34SVV5T5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GW34SVV5T5', { send_page_view: false });
+</script>
+<link rel="stylesheet" href="/static/fonts.css?v=1">
+<link rel="stylesheet" href="/static/design-system.css?v=2">
+<link rel="stylesheet" href="/static/components.css?v=1">
+<style>
+/* ════════════════════════════════
+   DABER Dictionary — Page-specific Styles
+   (orbs, hero, stats, cookie, reveal)
+   Shared components → components.css
+   ════════════════════════════════ */
+
+/* ── ORBS ── */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+.orb--1 {
+  width: 600px; height: 600px;
+  background: oklch(58% 0.22 285 / 0.06);
+  top: -10%; right: -10%;
+}
+.orb--2 {
+  width: 400px; height: 400px;
+  background: oklch(50% 0.20 200 / 0.05);
+  bottom: 10%; left: -5%;
+}
+
+/* ── Particles Canvas ── */
+#particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Hero ── */
+.hero {
+  padding: 6rem 0 var(--space-2xl);
+  text-align: center;
+}
+.hero__tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  background: var(--color-accent-dim);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-pill);
+  margin-bottom: var(--space-lg);
+}
+.hero__title {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: var(--space-md);
+}
+.hero__title span {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero__sub {
+  font-size: 1.125rem;
+  color: var(--color-muted);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* ── Stats Bar ── */
+.stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  justify-content: center;
+  margin-bottom: var(--space-xl);
+}
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  font-weight: 500;
+}
+.stat-pill__value {
+  color: var(--color-accent);
+  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+
+/* ── Cookie Banner ── */
+.cookie-banner {
+  position: fixed;
+  bottom: var(--space-md);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  max-width: 500px;
+  width: calc(100% - var(--space-xl));
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: 0.85rem;
+  color: var(--color-ink);
+  line-height: 1.5;
+}
+.cookie-banner--hidden {
+  display: none;
+}
+.cookie-banner__btn {
+  flex-shrink: 0;
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── Scroll Reveal ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+}
+.reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Fact Teaser (main page) ── */
+.fact-teaser {
+  max-width: 640px;
+  margin: 0 auto var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: border-color 0.2s;
+}
+.fact-teaser:hover { border-color: var(--color-accent); }
+.fact-teaser__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  margin-bottom: var(--space-xs);
+}
+.fact-teaser__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+  line-height: 1.3;
+}
+.fact-teaser__body {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+.fact-teaser__link {
+  display: inline-block;
+  margin-top: var(--space-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+.fact-teaser__link:hover { text-decoration: underline; }
+@media (max-width: 768px) {
+  .fact-teaser { padding: var(--space-md); margin: 0 auto var(--space-md); }
+  .fact-teaser__title { font-size: 0.95rem; }
+}
+
+/* ── Responsive (page-specific overrides only) ── */
+@media (max-width: 768px) {
+  .hero { padding: 3.5rem 0 var(--space-xl); }
+  .hero__title { font-size: 1.5rem; }
+  .hero__sub { font-size: 0.9rem; }
+  .cookie-banner {
+    bottom: var(--space-xs);
+    width: calc(100% - var(--space-md));
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.8rem;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<!-- Orbs -->
+<div class="orb orb--1"></div>
+<div class="orb orb--2"></div>
+
+<!-- Particles -->
+<canvas id="particles"></canvas>
+
+<!-- Nav -->
+<nav class="nav" id="nav">
+  <div class="nav__inner">
+    <a href="/" class="nav__logo" aria-label="דבר словарь"></a>
+  </div>
+</nav>
+
+<main class="page-main">
+
+<!-- Hero -->
+<section class="hero" id="stats">
+  <div class="container">
+    <div class="hero__tag">иврит-русский словарь</div>
+    <h1 class="hero__title"><span id="heroCount">—</span> слов иврита</h1>
+    <p class="hero__sub">Поиск, транскрипция, синонимы и примеры</p>
+  </div>
+</section>
+
+<!-- Search -->
+<section class="container reveal" id="search">
+  <div class="search-section">
+    <div class="search-bar">
+      <span class="search-bar__icon"><img src="/static/icons/search.svg" class="icon t-icon" alt=""></span>
+      <input type="text" class="search-bar__input" id="searchInput" placeholder="Поиск по ивриту, русскому, транскрипции…" autocomplete="off">
+    </div>
+    <div class="filters" id="posFilters"></div>
+  </div>
+</section>
+
+<!-- Results -->
+<section class="container">
+  <div class="results" id="resultsArea" style="display:none">
+    <div class="results__header">
+      <span class="results__count" id="resultsCount"></span>
+      <div class="results__actions">
+        <button class="btn" id="randomBtn"><img src="/static/icons/dice-6.svg" class="icon icon--sm t-icon" alt=""> Слово дня</button>
+      </div>
+    </div>
+    <div id="resultsList"></div>
+  </div>
+  <div class="random-section" id="randomSection">
+    <button class="btn btn--accent" id="randomBtnBig"><img src="/static/icons/dice-6.svg" class="icon icon--sm t-icon" alt=""> Слово дня</button>
+  </div>
+  <div class="fact-teaser" id="factTeaser" style="display:none"></div>
+</section>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal__close" id="modalClose"><img src="/static/icons/x.svg" class="icon icon--lg t-icon" alt=""></button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__links">
+      <a href="/terms.html">условия использования</a>
+      <a href="/privacy.html">конфиденциальность</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Cookie Banner -->
+<div class="cookie-banner" id="cookieBanner">
+  <span>Мы используем куки для аналитики посещений. Продолжая, вы соглашаетесь с <a href="/privacy.html">политикой конфиденциальности</a>.</span>
+  <button class="cookie-banner__btn" onclick="acceptCookies()">Ок</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  COOKIE CONSENT
+// ═══════════════════════════════════════════
+function acceptCookies() {
+  localStorage.setItem('daber-cookies', 'accepted');
+  document.getElementById('cookieBanner').classList.add('cookie-banner--hidden');
+}
+if (localStorage.getItem('daber-cookies') === 'accepted') {
+  document.getElementById('cookieBanner').classList.add('cookie-banner--hidden');
+}
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+function pluralRu(n, one, few, many) {
+  const m = n % 10, h = n % 100;
+  if (m === 1 && h !== 11) return `${n} ${one}`;
+  if (m >= 2 && m <= 4 && !(h >= 12 && h <= 14)) return `${n} ${few}`;
+  return `${n} ${many}`;
+}
+
+const state = {
+  stats: null,
+  currentQuery: '',
+  currentLetter: '',
+  currentPos: '',
+  wordSource: '',
+  debounceTimer: null
+};
+
+let isAdmin = false;
+
+// ═══════════════════════════════════════════
+//  ANALYTICS HELPERS
+// ═══════════════════════════════════════════
+function detectScript(text) {
+  let he = 0, cy = 0;
+  for (const c of text) {
+    const code = c.codePointAt(0);
+    if (code >= 0x0590 && code <= 0x05FF) he++;
+    else if (code >= 0x0400 && code <= 0x04FF) cy++;
+  }
+  const total = he + cy || 1;
+  if (he / total > 0.5) return 'hebrew';
+  if (cy / total > 0.5) return 'cyrillic';
+  return 'mixed';
+}
+
+function trackPageView(title, path) {
+  gtag('event', 'page_view', {
+    page_title: title,
+    page_location: window.location.origin + path
+  });
+}
+
+// ═══════════════════════════════════════════
+//  PARTICLES
+// ═══════════════════════════════════════════
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let mouse = { x: -1000, y: -1000 };
+let particleColor = 'oklch(93% 0.005 270';  // dark theme default
+
+function updateParticleColor() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  particleColor = isLight ? 'oklch(30% 0.005 270' : 'oklch(93% 0.005 270';
+}
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.radius = Math.random() * 2 + 1;
+    this.opacity = Math.random() * 0.3 + 0.1;
+  }
+  update() {
+    const dx = mouse.x - this.x;
+    const dy = mouse.y - this.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 200) {
+      const force = (200 - dist) / 200 * 0.02;
+      this.vx += dx * force;
+      this.vy += dy * force;
+    }
+    this.vx *= 0.98;
+    this.vy *= 0.98;
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+      this.reset();
+    }
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = `${particleColor} / ${this.opacity})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  // Draw connections
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 100) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `${particleColor} / ${(1 - dist / 100) * 0.08})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+document.addEventListener('mousemove', e => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
+
+// ═══════════════════════════════════════════
+//  NAV SCROLL-AWARE
+// ═══════════════════════════════════════════
+let lastScrollY = 0;
+const nav = document.getElementById('nav');
+
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  if (y > 200 && y > lastScrollY) {
+    nav.classList.add('nav--hidden');
+  } else {
+    nav.classList.remove('nav--hidden');
+  }
+  lastScrollY = y;
+});
+
+// ═══════════════════════════════════════════
+//  SCROLL REVEAL
+// ═══════════════════════════════════════════
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('reveal--visible');
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ═══════════════════════════════════════════
+//  API HELPERS
+// ═══════════════════════════════════════════
+async function api(path) {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+// ═══════════════════════════════════════════
+//  LOAD STATS
+// ═══════════════════════════════════════════
+async function loadStats() {
+  try {
+    state.stats = await api('/api/stats');
+    const totalAll = (state.stats.total_words || 0) + (state.stats.total_verbs || 0);
+    document.getElementById('heroCount').textContent = totalAll.toLocaleString('ru');
+    
+    // Build POS filters
+    const posNames = {
+      'noun': 'существительное', 'verb': 'глагол', 'adj': 'прилагательное', 'prep': 'предлог',
+      'adv': 'наречие', 'pron': 'местоимение', 'conj': 'союз', 'num': 'числительное',
+      'intj': 'междометие', 'particle': 'частица', 'pref': 'приставка'
+    };
+    const posFilters = document.getElementById('posFilters');
+    // All button
+    const allBtn = document.createElement('button');
+    allBtn.className = 'filter-chip filter-chip--active';
+    allBtn.textContent = 'Все';
+    allBtn.dataset.pos = '';
+    allBtn.addEventListener('click', () => setPosFilter(''));
+    posFilters.appendChild(allBtn);
+    
+    Object.entries(state.stats.pos_distribution).slice(0, 8).forEach(([slug, count]) => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-chip';
+      btn.textContent = `${posNames[slug] || slug} (${count.toLocaleString('ru')})`;
+      btn.dataset.pos = slug;
+      btn.addEventListener('click', () => setPosFilter(slug));
+      posFilters.appendChild(btn);
+    });
+    // Verb button (separate table)
+    if (state.stats.total_verbs) {
+      const verbBtn = document.createElement('button');
+      verbBtn.className = 'filter-chip';
+      verbBtn.textContent = `глагол (${state.stats.total_verbs.toLocaleString('ru')})`;
+      verbBtn.dataset.pos = 'verb';
+      verbBtn.addEventListener('click', () => setPosFilter('verb'));
+      posFilters.appendChild(verbBtn);
+    }
+  } catch (e) {
+    console.error('Failed to load stats:', e);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  LETTER GRID
+// ═══════════════════════════════════════════
+//  SET FILTERS
+// ═══════════════════════════════════════════
+function setPosFilter(pos) {
+  state.currentPos = pos;
+  state.wordSource = pos ? 'filter' : '';
+  document.querySelectorAll('.filter-chip').forEach(el => {
+    el.classList.toggle('filter-chip--active', el.dataset.pos === pos);
+  });
+  document.getElementById('searchInput').focus();
+}
+
+async function performSearch() {
+  const q = state.currentQuery.trim();
+  const letter = state.currentLetter;
+  const pos = state.currentPos;
+  
+  let url;
+  if (letter) {
+    url = `/api/letter/${encodeURIComponent(letter)}?limit=100`;
+  } else if (pos) {
+    url = `/api/pos/${encodeURIComponent(pos)}?limit=100`;
+  } else if (q) {
+    url = `/api/search?q=${encodeURIComponent(q)}&limit=50`;
+  } else {
+    document.getElementById('resultsArea').style.display = 'none';
+    document.getElementById('randomSection').style.display = '';
+    return;
+  }
+  
+  try {
+    const data = await api(url);
+    renderResults(data);
+
+    // Analytics: search event + virtual pageview
+    const searchTerm = q || letter || pos;
+    const searchType = letter ? 'letter' : pos ? 'filter' : 'search';
+    state.wordSource = searchType;
+    if (q) {
+      gtag('event', 'search', {
+        search_length: q.length,
+        has_results: data.total > 0,
+        result_count: data.total,
+        script: detectScript(q)
+      });
+    }
+    trackPageView(searchTerm ? ('Поиск: ' + searchTerm) : 'Главная', searchType === 'search' ? '/search' : '/' + searchType + '/' + encodeURIComponent(searchTerm));
+  } catch (e) {
+    console.error('Search failed:', e);
+  }
+}
+
+function renderResults(data) {
+  const area = document.getElementById('resultsArea');
+  const list = document.getElementById('resultsList');
+  const count = document.getElementById('resultsCount');
+
+  area.style.display = '';
+  document.getElementById('randomSection').style.display = 'none';
+
+  count.textContent = `Найдено: ${data.total.toLocaleString('ru')}`;
+  list.innerHTML = '';
+
+  if (data.results.length === 0) {
+    list.innerHTML = '<p style="text-align:center;color:var(--color-muted);padding:2rem;">Ничего не найдено</p>';
+    return;
+  }
+
+  data.results.forEach((item, i) => {
+    const card = document.createElement('div');
+    const posSlug = item.pos_slug || '';
+    card.className = 'word-card' + (item.type === 'verb' ? ' word-card--verb' : (posSlug ? ` word-card--${posSlug}` : ''));
+    card.style.animationDelay = `${i * 0.04}s`;
+
+    const trans = Array.isArray(item.translation_enriched) && item.translation_enriched.length
+      ? item.translation_enriched.slice(0, 3).join(' · ')
+      : (item.translation_ru || '');
+    const heb = item.headword || '';
+    const translit = item.translit || '';
+
+    if (item.type === 'verb') {
+      // ─── VERB CARD (compact) ───
+      card.innerHTML = `
+        <div class="word-card__top">
+          <div class="word-card__hebrew">${heb}</div>
+          <div class="word-card__pos word-card__pos--verb">глагол</div>
+        </div>
+        ${translit ? `<div class="word-card__translit">${translit}</div>` : ''}
+        <div class="word-card__translations">${trans}</div>
+        <div class="word-card__meta">
+          <span class="word-card__root">корень: <strong>${item.root || '—'}</strong></span>
+          <span class="word-card__badge">${item.binyan_label || item.binyan || ''}</span>
+          ${item.example_count ? `<span class="word-card__badge">${pluralRu(item.example_count, 'пример', 'примера', 'примеров')}</span>` : ''}
+          ${item.synonym_count ? `<span class="word-card__badge">${pluralRu(item.synonym_count, 'синоним', 'синонима', 'синонимов')}</span>` : ''}
+        </div>
+        ${isAdmin ? `<button class="card-delete-btn" onclick="event.stopPropagation();deleteWord(${item.id},'${item.type}')" title="Удалить"><img src="/static/icons/x.svg" width="14" height="14" class="t-icon" alt=""></button>` : ''}
+      `;
+    } else {
+      // ─── WORD CARD (compact) ───
+      const pos = item.pos_label || item.pos_slug || item.wordtype || '';
+      const posClass = item.pos_slug ? `word-card__pos--${item.pos_slug}` : '';
+      card.innerHTML = `
+        <div class="word-card__top">
+          <div class="word-card__hebrew">${heb}</div>
+          ${pos ? `<div class="word-card__pos ${posClass}">${pos}</div>` : ''}
+        </div>
+        ${translit ? `<div class="word-card__translit">${translit}</div>` : ''}
+        <div class="word-card__translations">${trans}</div>
+        <div class="word-card__meta">
+          ${item.gender ? `<span class="word-card__gender">${item.gender === 'f' ? 'жен.' : item.gender === 'm' ? 'муж.' : item.gender === 'm/f' ? 'м/ж' : item.gender}</span>` : ''}
+          ${item.number ? `<span class="word-card__gender">${item.number === 's' ? 'ед.' : item.number === 'p' ? 'мн.' : item.number}</span>` : ''}
+          ${item.example_count ? `<span class="word-card__badge">${pluralRu(item.example_count, 'пример', 'примера', 'примеров')}</span>` : ''}
+          ${item.synonym_count ? `<span class="word-card__badge">${pluralRu(item.synonym_count, 'синоним', 'синонима', 'синонимов')}</span>` : ''}
+          ${item.phrase_count ? `<span class="word-card__badge">${pluralRu(item.phrase_count, 'фраза', 'фразы', 'фраз')}</span>` : ''}
+        </div>
+        ${isAdmin ? `<button class="card-delete-btn" onclick="event.stopPropagation();deleteWord(${item.id},'${item.type}')" title="Удалить"><img src="/static/icons/x.svg" width="14" height="14" class="t-icon" alt=""></button>` : ''}
+      `;
+    }
+
+    card.addEventListener('click', () => showWordDetail(item.headword, item.id, item.type));
+    list.appendChild(card);
+
+    requestAnimationFrame(() => {
+      setTimeout(() => card.classList.add('word-card--visible'), 20);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════
+//  WORD DETAIL MODAL
+// ═══════════════════════════════════════════
+async function showWordDetail(queryWord, id = null, wordType = null) {
+  try {
+    const params = new URLSearchParams();
+    if (id) params.set('id', id);
+    if (wordType) params.set('type', wordType);
+    const qs = params.toString();
+    const url = qs
+      ? `/api/word/${encodeURIComponent(queryWord)}?${qs}`
+      : `/api/word/${encodeURIComponent(queryWord)}`;
+    const word = await api(url);
+
+    // Analytics: word view + virtual pageview
+    const wordLabel = word.headword || word.infinitive_he || queryWord;
+    const wType = wordType || (word.type === 'verb' ? 'verb' : (word.pos_slug || 'unknown'));
+    gtag('event', 'word_view', {
+      word: wordLabel,
+      word_type: wType,
+      source: state.wordSource || 'direct'
+    });
+    trackPageView('Слово: ' + wordLabel, '/word/' + encodeURIComponent(wordLabel));
+
+    const modal = document.getElementById('modal');
+    const content = document.getElementById('modalContent');
+
+    // ─── VARIANTS (multiple pos for same headword) ───
+    if (word.variants && word.variants.length > 0) {
+      const isEmpty = word.type === 'word_empty';
+      const headerMsg = word.message || (isEmpty ? 'У этого слова пока нет перевода' : `Найдено вариантов: ${word.variants.length}`);
+      content.innerHTML = `
+        <div class="modal__hebrew">${word.headword}</div>
+        <div style="margin-top:var(--space-md);color:var(--color-muted)">${headerMsg}</div>
+        ${word.other_count ? `<div style="margin-top:var(--space-xs);color:var(--color-muted);font-size:0.85rem">и ещё ${word.other_count} вариантов без перевода</div>` : ''}
+        <div style="margin-top:var(--space-md);display:flex;flex-direction:column;gap:0.75rem">
+          ${word.variants.map(v => {
+            const formsHtml = (v.forms || []).slice(0, 5).map(f => `
+              <div style="display:flex;gap:0.5rem;align-items:baseline;padding:0.25rem 0;border-bottom:1px solid var(--color-rule)">
+                <span style="min-width:80px;font-weight:500">${f.hebrew || ''}</span>
+                <span style="color:var(--color-muted);font-style:italic">${f.translit || ''}</span>
+              </div>
+            `).join('');
+            return `
+            <div class="word-card word-card--visible word-card--${v.pos_slug || 'default'}" style="opacity:1;transform:none">
+              <div class="word-card__top">
+                <div class="word-card__hebrew">${v.headword}</div>
+                <div class="word-card__pos word-card__pos--${v.pos_slug || 'default'}">${v.pos_label || v.pos_slug || v.wordtype || ''}</div>
+              </div>
+              ${v.translit ? `<div class="word-card__translit">${v.translit}</div>` : ''}
+              <div class="word-card__translations">${(v.translation_enriched || []).slice(0, 3).join(' · ') || '—'}</div>
+              <div class="word-card__meta">
+                ${v.gender ? `<span class="word-card__gender">${v.gender === 'f' ? 'жен.' : v.gender === 'm' ? 'муж.' : v.gender === 'm/f' ? 'м/ж' : v.gender}</span>` : ''}
+                ${v.number ? `<span class="word-card__gender">${v.number === 's' ? 'ед.' : v.number === 'p' ? 'мн.' : v.number}</span>` : ''}
+                ${v.form_count ? `<span class="word-card__badge">${v.form_count} форм</span>` : ''}
+                ${v.phrase_count ? `<span class="word-card__badge">${v.phrase_count} фраз</span>` : ''}
+                ${v.example_count ? `<span class="word-card__badge">${v.example_count} прим.</span>` : ''}
+                ${v.synonym_count ? `<span class="word-card__badge">${v.synonym_count} син.</span>` : ''}
+              </div>
+              ${formsHtml ? `<div style="margin-top:0.5rem;font-size:0.9rem">${formsHtml}</div>` : ''}
+            </div>`;
+          }).join('')}
+        </div>
+      `;
+      modal.classList.add('modal-overlay--open');
+      return;
+    }
+
+    // ─── VERB-FORM MODAL (e.g., רץ is a form of לרוץ) ───
+    if (word.type === 'word_form' && word.matched_by_form) {
+      const ctx = word.form_context || {};
+      const tenseRu = {present:'наст. вр.', past:'прош. вр.', future:'буд. вр.', imperative:'повел. накл.'}[ctx.tense] || ctx.tense || '';
+      const personRu = ctx.person ? {1:'1 л.', 2:'2 л.', 3:'3 л.'}[ctx.person] || '' : '';
+      const genderRu = ctx.gender ? {m:'м.р.', f:'ж.р.', mf:'м/ж'}[ctx.gender] || '' : '';
+      const numberRu = ctx.number ? {singular:'ед.ч.', plural:'мн.ч.'}[ctx.number] || '' : '';
+      const pgnStr = [personRu, genderRu, numberRu].filter(Boolean).join(', ');
+
+      // Paradigm (other forms in same tense)
+      const paradigmForms = (word.paradigm_forms || []).filter(f => f.hebrew !== word.headword).slice(0, 8);
+      const paradigmHtml = paradigmForms.map(f => {
+        const p = f.person ? {1:'1',2:'2',3:'3'}[f.person]||'' : '';
+        const g = f.gender ? {m:'м',f:'ж',mf:'м/ж'}[f.gender]||'' : '';
+        const n = f.number ? {singular:'ед',plural:'мн'}[f.number]||'' : '';
+        return `<tr><td>${[p,g,n].filter(Boolean).join(' ')}</td><td>${f.nikud||f.hebrew}</td><td>${f.hebrew}</td><td>${f.translit||''}</td></tr>`;
+      }).join('');
+
+      const verbTrans = word.verb_translation_enriched || [];
+      // Split comma-separated enriched translations into individual items
+      const verbTransSplit = verbTrans.flatMap(t => String(t).split(',').map(s => s.trim()).filter(Boolean));
+      const verbTransHtml = verbTransSplit.length ? verbTransSplit.map(t => `<li>${t}</li>`).join('') : (word.verb_translation_ru ? `<li>${word.verb_translation_ru}</li>` : '<li>—</li>');
+
+      // Examples
+      const examples = (word.examples || []).slice(0, 4).map(ex => `
+        <div class=\"modal__example-row\">
+          <div class=\"modal__example-heb\">${ex.hebrew}</div>
+          <div class=\"modal__example-trans\">${ex.translation || ''}</div>
+        </div>
+      `).join('');
+
+      // Synonyms
+      const synonyms = (word.synonyms || []).slice(0, 6).map(s =>
+        `<span class=\"modal__chip\">${s.hebrew}${s.translation ? ' — ' + s.translation : ''}</span>`
+      ).join('');
+
+      content.innerHTML = `
+        <div class="modal__header" style="border-radius:var(--radius-lg) var(--radius-lg) 0 0; padding:var(--space-md) var(--space-lg)">
+          <div class="modal__hebrew" style="font-size:2rem">${word.headword}</div>
+          ${word.headword_nikud ? `<div class="modal__nikud">${word.headword_nikud}</div>` : ''}
+          ${word.translit ? `<div class="modal__translit">${word.translit}</div>` : ''}
+        </div>
+
+        <div class="modal__section" style="background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:8px; padding:1rem; margin:1rem 0">
+          <div style="font-size:0.85rem; color:var(--color-muted); margin-bottom:0.5rem">Форма глагола</div>
+          <div style="font-size:1.2rem; font-weight:700; margin-bottom:0.25rem">
+            <a href="javascript:void(0)" onclick="event.stopPropagation();showWordDetail('${word.verb_headword}')" style="color:var(--color-accent);text-decoration:underline;text-underline-offset:4px">${word.verb_headword}</a>
+            <span style="color:var(--color-muted);font-size:0.9rem;font-weight:400"> — ${word.verb_binyan_label}</span>
+          </div>
+          <div style="font-size:0.85rem;color:var(--color-muted)">${tenseRu}${pgnStr ? ', ' + pgnStr : ''}</div>
+          ${ctx.nikud && ctx.nikud !== word.headword ? `<div style="font-size:1rem;color:var(--color-muted);margin-top:0.25rem">${ctx.nikud}</div>` : ''}
+        </div>
+
+        ${word.also_word ? `
+        <div style="background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:8px; padding:0.75rem 1rem; margin:0.75rem 0; font-size:0.85rem">
+          <span style="color:var(--color-muted)">Также </span>
+          <span style="color:var(--color-muted);font-weight:600">${word.also_word.pos_label}</span>
+          <span style="color:var(--color-muted)"> — </span>
+          <span style="color:var(--color-muted)">${word.also_word.translation}</span>
+        </div>` : ''}
+
+        <div class="modal__section">
+          <div class="modal__section-title">перевод глагола</div>
+          <ul class="modal__trans">${verbTransHtml}</ul>
+        </div>
+
+        ${paradigmHtml ? `
+        <div class="modal__section">
+          <div class="modal__section-title">другие формы (${tenseRu})</div>
+          <table class="modal__forms-table"><tbody>${paradigmHtml}</tbody></table>
+        </div>` : ''}
+
+        ${examples ? `
+        <div class="modal__section">
+          <div class="modal__section-title">примеры</div>
+          ${examples}
+        </div>` : ''}
+
+        ${synonyms ? `
+        <div class="modal__section">
+          <div class="modal__section-title">синонимы</div>
+          <div class="modal__chips">${synonyms}</div>
+        </div>` : ''}
+
+        <div style="margin-top:1.5rem;text-align:center">
+          <a href="javascript:void(0)" onclick="event.stopPropagation();showWordDetail('${word.verb_headword}')"
+             style="display:inline-block;background:var(--color-surface);color:var(--color-accent);padding:0.75rem 1.5rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.95rem;border:1px solid var(--color-rule)">
+            открыть глагол ${word.verb_headword} полностью
+          </a>
+        </div>
+      `;
+      modal.classList.add('modal-overlay--open');
+      return;
+    }
+
+    // ─── VERB MODAL ───
+    if (word.type === 'verb') {
+      const examples = (word.examples || []).slice(0, 5).map(ex => `
+        <div class="modal__example-row">
+          <div class="modal__example-heb">${ex.hebrew}</div>
+          <div class="modal__example-trans">${ex.translation || ''}</div>
+        </div>
+      `).join('');
+      const synonyms = (word.synonyms || []).slice(0, 8).map(s =>
+        `<span class="modal__chip">${s.hebrew}${s.translation ? ' — ' + s.translation : ''}</span>`
+      ).join('');
+      // Deduplicate: skip translation_ru if it's already the first enriched translation
+      const transRu = word.translation_ru || '';
+      const enriched = word.translation_enriched || [];
+      const enrichedClean = enriched.filter(t => t !== transRu);
+      const translations = enrichedClean.map(t => `<li>${t}</li>`).join('');
+
+      // Same-root verbs
+      const rootVerbs = (word.same_root_verbs || []).map(v => `
+        <span class="modal__chip modal__chip--root" onclick="event.stopPropagation();showWordDetail('${v.headword}')" style="cursor:pointer">
+          ${v.nikud || v.headword} <small>(${v.binyan_label})</small> — ${v.translation_ru || ''}
+        </span>
+      `).join('');
+      const rootWords = (word.same_root_words || []).slice(0, 6).map(w => `
+        <span class="modal__chip modal__chip--root" onclick="event.stopPropagation();showWordDetail('${w.headword}')" style="cursor:pointer">
+          ${w.nikud || w.headword} <small>(${w.pos_label})</small> — ${w.translation || ''}
+        </span>
+      `).join('');
+
+      // Verb forms table
+      const verbForms = (word.verb_forms || []);
+      const formsByTense = {};
+      verbForms.forEach(f => {
+        const t = f.tense || 'other';
+        if (!formsByTense[t]) formsByTense[t] = [];
+        formsByTense[t].push(f);
+      });
+      const tenseOrder = ['present', 'past', 'future', 'imperative'];
+      const formsHtml = tenseOrder.map(tense => {
+        const forms = formsByTense[tense];
+        if (!forms || !forms.length) return '';
+        const rows = forms.map(f => {
+          const personLabel = f.person ? {1:'1-е',2:'2-е',3:'3-е'}[f.person]||'' : '';
+          const genderLabel = f.gender ? {m:'м',f:'ж',mf:'м/ж'}[f.gender]||'' : '';
+          const numberLabel = f.number ? {singular:'ед',plural:'мн'}[f.number]||'' : '';
+          const pgn = [personLabel, genderLabel, numberLabel].filter(Boolean).join(' ');
+          return `
+          <tr>
+            <td style="color:var(--color-muted);font-size:0.75rem;width:60px">${pgn}</td>
+            <td style="font-weight:600">${f.nikud || f.hebrew || ''}</td>
+            <td>${f.hebrew || ''}</td>
+            <td style="font-style:italic;color:var(--color-muted)">${f.translit || ''}</td>
+          </tr>`;
+        }).join('');
+        const tenseRu = {present:'настоящее',past:'прошедшее',future:'будущее',imperative:'повелительное'}[tense]||tense;
+        return `<div class="modal__tense-group">
+          <div class="modal__tense-title">${tenseRu}</div>
+          <table class="modal__forms-table"><tbody>${rows}</tbody></table>
+        </div>`;
+      }).join('');
+
+      content.innerHTML = `
+        <div class="modal__header modal__header--verb">
+          <div>
+            <div class="modal__hebrew modal__hebrew--verb">${word.headword}</div>
+            ${word.headword_nikud ? `<div class="modal__nikud">${word.headword_nikud}</div>` : ''}
+            ${word.translit ? `<div class="modal__translit">${word.translit}</div>` : ''}
+          </div>
+          <div class="modal__binyan-badge">${word.binyan_label || word.binyan || 'verb'}</div>
+        </div>
+
+        <div class="modal__info-grid">
+          <div class="modal__info-item">
+            <div class="modal__info-label">корень</div>
+            <div class="modal__info-value">${word.root || '—'}</div>
+          </div>
+          <div class="modal__info-item">
+            <div class="modal__info-label">биньян</div>
+            <div class="modal__info-value">${word.binyan_label || word.binyan || '—'}</div>
+          </div>
+        </div>
+
+        <div class="modal__section">
+          <div class="modal__section-title">переводы</div>
+          <ul class="modal__trans">${translations || '<li>—</li>'}</ul>
+        </div>
+
+        ${formsHtml ? `
+        <div class="modal__section">
+          <div class="modal__section-title">спряжения (${verbForms.length} форм)</div>
+          ${formsHtml}
+        </div>` : ''}
+
+        ${examples ? `
+        <div class="modal__section">
+          <div class="modal__section-title">примеры (${(word.examples || []).length})</div>
+          ${examples}
+        </div>` : ''}
+
+        ${synonyms ? `
+        <div class="modal__section">
+          <div class="modal__section-title">синонимы</div>
+          <div class="modal__chips">${synonyms}</div>
+        </div>` : ''}
+
+        ${rootVerbs || rootWords ? `
+        <div class="modal__section">
+          <div class="modal__section-title">однокоренные слова</div>
+          <div class="modal__chips">${rootVerbs}${rootWords}</div>
+        </div>` : ''}
+
+        ${word.notes ? `<div class="modal__notes">${word.notes}</div>` : ''}
+
+        <div style="margin-top:var(--space-md);text-align:right">
+          <button class="feedback-flag-inline" onclick="event.stopPropagation();openFeedback(${word.id})"><img src="/static/icons/message-report.svg" class="icon icon--sm t-icon" alt=""> сообщить об ошибке</button>
+          ${isAdmin ? `<button class="delete-word-btn" onclick="event.stopPropagation();deleteWord(${word.id},'${word.type}')" title="Удалить слово"><img src="/static/icons/trash.svg" width="16" height="16" class="t-icon" alt=""></button>` : ''}
+        </div>
+      `;
+      modal.classList.add('modal-overlay--open');
+      return;
+    }
+
+    // ─── WORD MODAL ───
+    const translations = (word.translation_enriched || []).map(t => `<li>${t}</li>`).join('');
+    const examples = (word.examples || []).slice(0, 5).map(ex => `
+      <div class="modal__example-row">
+        <div class="modal__example-heb">${ex.hebrew}</div>
+        <div class="modal__example-trans">${ex.translation || ''}</div>
+      </div>
+    `).join('');
+    const synonyms = (word.synonyms || []).slice(0, 8).map(s =>
+      `<span class="modal__chip">${s.hebrew}${s.translation ? ' — ' + s.translation : ''}</span>`
+    ).join('');
+    const phrases = (word.phrases || []).slice(0, 8).map(p => `
+      <div class="modal__phrase">
+        <div class="modal__phrase-heb">${p.hebrew || ''}</div>
+        ${p.nikud ? `<div class="modal__phrase-nikud">${p.nikud}</div>` : ''}
+        ${p.translit ? `<div class="modal__phrase-translit">${p.translit}</div>` : ''}
+        <div class="modal__phrase-trans">${p.translation || ''}</div>
+      </div>
+    `).join('');
+    const forms = (word.forms || []).slice(0, 6).map(f => `
+      <div class="modal__form">
+        <span class="modal__form-heb">${f.hebrew || ''}</span>
+        ${f.nikud ? `<span class="modal__form-nikud">${f.nikud}</span>` : ''}
+        ${f.translit ? `<span class="modal__form-translit">${f.translit}</span>` : ''}
+      </div>
+    `).join('');
+
+    content.innerHTML = `
+      <div class="modal__hebrew">${word.headword}</div>
+      ${word.headword_nikud ? `<div class="modal__nikud">${word.headword_nikud}</div>` : ''}
+      ${word.translit ? `<div class="modal__translit">${word.translit}</div>` : ''}
+
+      ${word.also_verb_form ? `
+      <div style="background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:8px; padding:0.75rem 1rem; margin:0.75rem 0; font-size:0.85rem">
+        <span style="color:var(--color-muted)">Также форма глагола </span>
+        <a href="javascript:void(0)" onclick="event.stopPropagation();showWordDetail('${word.also_verb_form.infinitive}')"
+           style="color:var(--color-accent);text-decoration:underline;text-underline-offset:3px;font-weight:600">${word.also_verb_form.infinitive}</a>
+        <span style="color:var(--color-muted)"> — ${word.also_verb_form.translation}</span>
+        <span style="color:var(--color-muted);font-size:0.8rem;display:block;margin-top:0.25rem">${word.also_verb_form.tense === 'present' ? 'наст. вр.' : word.also_verb_form.tense === 'past' ? 'прош. вр.' : word.also_verb_form.tense === 'future' ? 'буд. вр.' : word.also_verb_form.tense}${word.also_verb_form.person ? ', ' + word.also_verb_form.person + ' л.' : ''}${word.also_verb_form.gender ? ', ' + (word.also_verb_form.gender === 'm' ? 'м.р.' : 'ж.р.') : ''}${word.also_verb_form.number ? ', ' + (word.also_verb_form.number === 'singular' ? 'ед.ч.' : 'мн.ч.') : ''}</span>
+      </div>` : ''}
+
+      <div class="modal__info-grid">
+        <div class="modal__info-item">
+          <div class="modal__info-label">часть речи</div>
+          <div class="modal__info-value">${word.pos_label || word.pos_slug || word.wordtype || '—'}</div>
+        </div>
+        ${word.gender ? `
+        <div class="modal__info-item">
+          <div class="modal__info-label">род</div>
+          <div class="modal__info-value">${word.gender === 'f' ? 'женский' : word.gender === 'm' ? 'мужской' : word.gender === 'mf' ? 'м/ж' : word.gender}</div>
+        </div>` : ''}
+        ${word.number ? `
+        <div class="modal__info-item">
+          <div class="modal__info-label">число</div>
+          <div class="modal__info-value">${word.number === 's' ? 'ед.' : word.number === 'p' ? 'мн.' : word.number}</div>
+        </div>` : ''}
+      </div>
+
+      <div class="modal__section">
+        <div class="modal__section-title">переводы</div>
+        <ul class="modal__trans">${translations}</ul>
+      </div>
+
+      ${forms ? `
+      <div class="modal__section">
+        <div class="modal__section-title">формы</div>
+        <div class="modal__forms">${forms}</div>
+      </div>` : ''}
+
+      ${examples ? `
+      <div class="modal__section">
+        <div class="modal__section-title">примеры (${(word.examples || []).length})</div>
+        ${examples}
+      </div>` : ''}
+
+      ${synonyms ? `
+      <div class="modal__section">
+        <div class="modal__section-title">синонимы</div>
+        <div class="modal__chips">${synonyms}</div>
+      </div>` : ''}
+
+      ${phrases ? `
+      <div class="modal__section">
+        <div class="modal__section-title">фразы (${(word.phrases || []).length})</div>
+        <div class="modal__phrases">${phrases}</div>
+      </div>` : ''}
+
+      ${word.notes ? `<div class="modal__notes">${word.notes}</div>` : ''}
+
+      <div style="margin-top:var(--space-md);text-align:right">
+        <button class="feedback-flag-inline" onclick="event.stopPropagation();openFeedback(${word.id})"><svg class="icon icon--sm" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> сообщить об ошибке</button>
+        ${isAdmin ? `<button class="delete-word-btn" onclick="event.stopPropagation();deleteWord(${word.id},'${word.type}')" title="Удалить слово"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>` : ''}
+      </div>
+    `;
+
+    modal.classList.add('modal-overlay--open');
+  } catch (e) {
+    console.error('Failed to load word:', e);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  ADMIN
+// ═══════════════════════════════════════════
+async function checkAdmin() {
+  try {
+    const data = await api('/api/admin/session');
+    isAdmin = data.admin === true;
+  } catch (e) {
+    isAdmin = false;
+  }
+}
+
+async function deleteWord(id, type) {
+  if (!confirm('Удалить это слово навсегда? Отменить будет нельзя.')) return;
+  try {
+    const resp = await fetch(`/api/admin/word/${id}?type=${type}`, { method: 'DELETE' });
+    if (!resp.ok) {
+      const err = await resp.json();
+      alert('Ошибка: ' + (err.detail || resp.status));
+      return;
+    }
+    document.getElementById('modal').classList.remove('modal-overlay--open');
+    // Re-run search if there was an active query
+    if (state.currentQuery) {
+      performSearch();
+    }
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  RANDOM
+// ═══════════════════════════════════════════
+async function showRandom() {
+  try {
+    const data = await api('/api/random?n=1');
+    if (data.results.length > 0) {
+      const item = data.results[0];
+      const word = item.headword || item.infinitive_he || '';
+      if (word) {
+        state.wordSource = 'random';
+        gtag('event', 'random_word');
+        showWordDetail(word);
+      }
+    }
+  } catch (e) {
+    console.error('Random failed:', e);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  EVENT BINDING
+// ═══════════════════════════════════════════
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  state.currentLetter = '';
+
+  // Auto-detect RTL: Hebrew chars → right-to-left, else LTR
+  const val = e.target.value;
+  const hasHebrew = /[\u0590-\u05FF]/.test(val);
+  e.target.dir = hasHebrew ? 'rtl' : 'ltr';
+
+  clearTimeout(state.debounceTimer);
+  state.debounceTimer = setTimeout(() => {
+    state.currentQuery = e.target.value;
+    if (state.currentQuery.trim()) {
+      performSearch();
+    } else {
+      document.getElementById('resultsArea').style.display = 'none';
+      document.getElementById('randomSection').style.display = '';
+    }
+  }, 250);
+});
+
+// Enter triggers search with active filter (even without query text)
+document.getElementById('searchInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    clearTimeout(state.debounceTimer);
+    state.currentQuery = e.target.value;
+    if (state.currentQuery.trim() || state.currentPos || state.currentLetter) {
+      performSearch();
+    }
+  }
+});
+
+document.getElementById('randomBtn').addEventListener('click', showRandom);
+document.getElementById('randomBtnBig').addEventListener('click', showRandom);
+
+document.getElementById('modalClose').addEventListener('click', () => {
+  document.getElementById('modal').classList.remove('modal-overlay--open');
+});
+
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) {
+    document.getElementById('modal').classList.remove('modal-overlay--open');
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    // Don't close the word modal if feedback popup is open
+    if (feedbackActivePopup) return;
+    document.getElementById('modal').classList.remove('modal-overlay--open');
+  }
+});
+
+// ═══════════════════════════════════════════
+//  FEEDBACK SYSTEM
+// ═══════════════════════════════════════════
+let feedbackWordId = null;
+let feedbackActivePopup = null;
+
+function openFeedback(wordId) {
+  // Close any open popup
+  if (feedbackActivePopup) feedbackActivePopup.remove();
+
+  feedbackWordId = wordId;
+  const btn = document.querySelector('.feedback-flag-inline');
+  if (!btn) return;
+
+  const popup = document.createElement('div');
+  popup.className = 'feedback-popup feedback-popup--open';
+  popup.style.position = 'fixed';
+  popup.style.top = '50%';
+  popup.style.left = '50%';
+  popup.style.transform = 'translate(-50%, -50%)';
+  popup.style.zIndex = '400';
+  popup.style.animation = 'none';
+  popup.innerHTML = `
+    <textarea placeholder="Что не так? Опиши ошибку…" id="feedbackText"></textarea>
+    <div class="feedback-popup__hint">Enter — отправить, Esc — отмена</div>
+  `;
+  document.body.appendChild(popup);
+  feedbackActivePopup = popup;
+
+  const textarea = popup.querySelector('textarea');
+  textarea.focus();
+  textarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      submitFeedback();
+    }
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      popup.remove();
+      feedbackActivePopup = null;
+      document.removeEventListener('click', closeFeedbackOnOutside);
+    }
+  });
+  setTimeout(() => {
+    document.addEventListener('click', closeFeedbackOnOutside);
+  }, 0);
+}
+
+function closeFeedbackOnOutside(e) {
+  if (feedbackActivePopup && !feedbackActivePopup.contains(e.target) && !e.target.closest('.feedback-flag-inline')) {
+    feedbackActivePopup.remove();
+    feedbackActivePopup = null;
+    document.removeEventListener('click', closeFeedbackOnOutside);
+  }
+}
+
+async function submitFeedback() {
+  const textarea = document.getElementById('feedbackText');
+  if (!textarea || !textarea.value.trim()) return;
+
+  const comment = textarea.value.trim();
+  try {
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        word_id: feedbackWordId,
+        field_name: 'card',
+        comment: comment
+      })
+    });
+    // Analytics: feedback submitted
+    gtag('event', 'feedback_submit');
+    // Mark button as sent
+    const btn = document.querySelector('.feedback-flag-inline');
+    if (btn) {
+      btn.innerHTML = '<img src="/static/icons/circle-check.svg" class="icon icon--sm t-icon" alt=""> спасибо!';
+      btn.style.pointerEvents = 'none';
+    }
+  } catch (e) {
+    console.error('Feedback failed:', e);
+  }
+  // Close popup
+  if (feedbackActivePopup) {
+    feedbackActivePopup.remove();
+    feedbackActivePopup = null;
+  }
+  document.removeEventListener('click', closeFeedbackOnOutside);
+}
+
+// ═══════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════
+function initTheme() {
+  const saved = localStorage.getItem('daber-theme');
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    updateThemeIcon(true);
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    updateThemeIcon(false);
+  }
+  updateParticleColor();
+}
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const newTheme = isLight ? 'dark' : 'light';
+  if (isLight) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('daber-theme', 'dark');
+    updateThemeIcon(false);
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('daber-theme', 'light');
+    updateThemeIcon(true);
+  }
+  updateParticleColor();
+  gtag('event', 'theme_toggle', { theme: newTheme });
+}
+function updateThemeIcon(isLight) {
+  const icon = document.getElementById('themeIcon');
+  if (!icon) return;
+  if (isLight) {
+    // Moon icon (Tabler)
+    icon.innerHTML = '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>';
+  } else {
+    // Sun icon (Tabler)  
+    icon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
+  }
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+loadStats();
+initTheme();
+checkAdmin();
+loadFactTeaser();
+
+// ═══════════════════════════════════════════
+//  FACT TEASER
+// ═══════════════════════════════════════════
+async function loadFactTeaser() {
+  try {
+    const res = await fetch('/api/facts/random');
+    if (!res.ok) return;
+    const fact = await res.json();
+    const el = document.getElementById('factTeaser');
+    if (!el) return;
+    el.style.display = 'block';
+    el.innerHTML = `
+      <div class="fact-teaser__label">Интересный факт</div>
+      <div class="fact-teaser__title">${escHtml(fact.title)}</div>
+      <div class="fact-teaser__body">${escHtml(fact.fact_body).substring(0, 180)}...</div>
+      <a href="/facts/${fact.id}" class="fact-teaser__link">Читать дальше →</a>`;
+  } catch (e) {
+    // Silently fail — fact teaser is optional
+  }
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+</script>
+
+<!-- Theme toggle -->
+<button class="theme-toggle" onclick="toggleTheme()" title="Сменить тему" aria-label="Сменить тему">
+  <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+</button>
+</body>
+</html>

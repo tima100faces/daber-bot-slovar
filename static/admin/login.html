@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daber Dict — Admin</title>
+<link rel="stylesheet" href="/static/fonts.css?v=1">
+<link rel="stylesheet" href="/static/design-system.css">
+<style>
+  .login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: var(--space-lg);
+  }
+  .login-box {
+    background: var(--color-surface);
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+  }
+  .login-box h1 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    margin: 0 0 var(--space-xs);
+  }
+  .login-box p {
+    color: var(--color-muted);
+    font-size: 0.875rem;
+    margin: 0 0 var(--space-xl);
+    line-height: 1.5;
+  }
+  .qr-wrap {
+    margin: 0 auto var(--space-lg);
+    width: 200px;
+    height: 200px;
+    background: white;
+    border-radius: var(--radius-md);
+    padding: var(--space-sm);
+    display: flex;
+  }
+  .qr-wrap img {
+    width: 100%;
+    height: 100%;
+  }
+  .code-input {
+    background: var(--color-paper);
+    border: 1px solid var(--color-rule);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    text-align: center;
+    letter-spacing: 0.5em;
+    padding: 14px var(--space-md);
+    border-radius: var(--radius-md);
+    width: 160px;
+    outline: none;
+    caret-color: var(--color-accent);
+    transition: border-color 0.2s;
+  }
+  .code-input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-dim);
+  }
+  .btn {
+    display: block;
+    width: 100%;
+    margin-top: var(--space-lg);
+    padding: 12px;
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--color-accent);
+    color: #fff;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.88; }
+  .error {
+    color: var(--color-red);
+    font-size: 0.8125rem;
+    margin-top: var(--space-md);
+    min-height: 1.2em;
+  }
+</style>
+</head>
+<body class="login-page">
+<div class="login-box">
+  <h1>Daber Dict</h1>
+
+  <input type="text" class="code-input" id="code" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" placeholder="000000" autofocus>
+
+  <button class="btn" onclick="login()">Войти</button>
+  <div class="error" id="error"></div>
+</div>
+
+<script>
+const input = document.getElementById('code');
+const errEl = document.getElementById('error');
+
+input.addEventListener('input', () => {
+  input.value = input.value.replace(/\D/g, '').slice(0, 6);
+  if (input.value.length === 6) login();
+});
+
+async function login() {
+  const code = input.value.trim();
+  if (code.length !== 6) { errEl.textContent = 'Введи 6 цифр'; return; }
+  errEl.textContent = '';
+  try {
+    const res = await fetch('/admin/api/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({code})
+    });
+    if (res.ok) {
+      window.location.href = '/admin/';
+    } else {
+      const data = await res.json();
+      errEl.textContent = data.detail || 'Неверный код. Попробуй ещё раз.';
+    }
+  } catch(e) {
+    errEl.textContent = 'Ошибка сети. Проверь соединение.';
+  }
+}
+</script>
+</body>
+</html>

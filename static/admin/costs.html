@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daber Dict · Затраты</title>
+<link rel="stylesheet" href="/static/fonts.css?v=1">
+<link rel="stylesheet" href="/static/design-system.css">
+<link rel="stylesheet" href="/admin/static/_admin.css?v=3">
+</head>
+<body class="admin-body">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <a href="/" style="display:flex;align-items:center;text-decoration:none"><span class="logo-img"></span><img src="/daber-logo.svg" class="logo-fallback" alt="Daber"></a>
+    <span class="admin-label">Admin</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/admin/pending" class="nav-item"><img src="/static/icons/list-check.svg" class="nav-icon" alt="">Очередь<span class="nav-badge" id="count-pending">0</span></a>
+    <a href="/admin/approved" class="nav-item"><img src="/static/icons/circle-check.svg" class="nav-icon" alt="">Одобрено<span class="nav-badge" id="count-approved">0</span></a>
+    <a href="/admin/rejected" class="nav-item"><img src="/static/icons/circle-x.svg" class="nav-icon" alt="">Отклонено<span class="nav-badge" id="count-rejected">0</span></a>
+    <a href="/admin/feedback" class="nav-item"><img src="/static/icons/message-report.svg" class="nav-icon" alt="">Жалобы<span class="nav-badge" id="count-feedback">0</span></a>
+    <a href="/admin/words" class="nav-item"><img src="/static/icons/books.svg" class="nav-icon" alt="">Словарь</a>
+    <a href="/admin/costs" class="nav-item active"><img src="/static/icons/coins.svg" class="nav-icon" alt="">Затраты</a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="nav-item logout-item" onclick="logout()"><img src="/static/icons/logout.svg" class="nav-icon" alt="">Выйти</button>
+  </div>
+</aside>
+
+<div class="main-area">
+  <header class="topbar">
+    <button class="burger" onclick="toggleSidebar()"><img src="/static/icons/menu-2.svg" class="nav-icon" alt=""></button>
+    <h1>Затраты</h1>
+  </header>
+  <main class="content" id="content"><div class="spinner">Загрузка...</div></main>
+</div>
+
+<script src="/admin/static/_core.js"></script>
+<script>
+var usd = function(n) { return '$' + (n || 0).toFixed(6); };
+var usd2 = function(n) { return '$' + (n || 0).toFixed(4); };
+var ils = function(n) { return '\u20AA' + ((n || 0) * 3.6).toFixed(2); };
+var num = function(n) { return (n || 0).toLocaleString(); };
+
+async function loadCosts() {
+  const content = document.getElementById('content');
+  content.innerHTML = '<div class="spinner">Загрузка...</div>';
+  const [sumRes, histRes, statusRes] = await Promise.all([
+    fetch('/admin/api/costs/summary'),
+    fetch('/admin/api/costs?days=14'),
+    fetch('/admin/api/enrichment/status'),
+  ]);
+  if (!sumRes.ok) throw new Error(sumRes.status);
+  const summary = await sumRes.json();
+  const history = await histRes.json();
+  const status = await statusRes.json();
+  renderCosts(summary, history, status);
+}
+
+function renderCosts(summary, history, status) {
+  const content = document.getElementById('content');
+  const { today, month, week, pricing, today_models } = summary;
+  const { paused, daily_limit, today_inserted } = status;
+
+  const pauseLabel = paused ? 'Возобновить' : 'Пауза';
+  const pauseBg = paused ? 'background:#38a169;color:#fff' : 'background:#e53e3e;color:#fff';
+  const statusClass = paused ? 'badge-red' : 'badge-green';
+  const statusText = paused ? 'На паузе' : 'Активен';
+
+  var daysRows = '';
+  (history.days || []).forEach(function(d) {
+    daysRows += '<tr><td>' + d.day + '</td><td>' + d.requests + '</td><td>' + num(d.total_tokens) + '</td><td style="font-family:var(--font-mono)">' + usd(d.cost_usd) + '</td><td>' + (d.words_inserted || 0) + '</td><td>' + (d.errors > 0 ? d.errors : '\u2713') + '</td></tr>';
+  });
+  if (!daysRows) daysRows = '<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--color-muted)">\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445</td></tr>';
+
+  var modelBreakdown = '';
+  if (today_models && today_models.length) {
+    modelBreakdown = today_models.map(function(m) {
+      var label = (pricing[m.model] && pricing[m.model].label) || m.model;
+      return '<div style="display:flex;justify-content:space-between;font-size:0.75rem;padding:2px 0"><span>' + label + '</span><span style="font-family:var(--font-mono)">' + usd2(m.cost_usd) + '</span></div>';
+    }).join('');
+  }
+
+  var html = '<div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-lg);flex-wrap:wrap">' +
+    '<button onclick="toggleEnrichment()" style="padding:6px 16px;border:none;border-radius:var(--radius-md);font-family:var(--font-body);font-size:0.85rem;cursor:pointer;' + pauseBg + '">' + pauseLabel + '</button>' +
+    '<button id="runEnrichBtn" onclick="runEnrichment()" style="padding:6px 16px;border:none;border-radius:var(--radius-md);font-family:var(--font-body);font-size:0.85rem;cursor:pointer;background:var(--color-accent);color:#fff">\u0421\u043e\u0431\u0440\u0430\u0442\u044c \u0441\u043b\u043e\u0432\u0430</button>' +
+    ' \u0421\u0442\u0430\u0442\u0443\u0441: <span class="' + statusClass + '" style="display:inline-block;padding:2px 10px;border-radius:var(--radius-pill);font-size:0.75rem;margin-left:8px">' + statusText + '</span>' +
+    '<span style="color:var(--color-muted);font-size:0.85rem;margin-left:auto">' +
+    ' \u041b\u0438\u043c\u0438\u0442: <input type="number" id="dailyLimit" value="' + daily_limit + '" min="0" max="500" ' +
+    'style="width:50px;padding:4px;border:1px solid var(--color-rule);border-radius:var(--radius-sm);background:var(--color-surface);color:var(--color-ink);font-family:var(--font-mono);text-align:center;font-size:0.85rem" ' +
+    'onchange="setDailyLimit(this.value)">' +
+    ' \u0441\u043b\u043e\u0432/\u0434\u0435\u043d\u044c \u00b7 \u0421\u0435\u0433\u043e\u0434\u043d\u044f: ' + today_inserted +
+    '</span></div>';
+
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl)">' +
+    '<div class="pw-card" style="text-align:center"><div style="font-size:0.75rem;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.5px">\u0421\u0435\u0433\u043e\u0434\u043d\u044f</div><div style="font-size:2rem;font-weight:700;font-family:var(--font-mono);margin:8px 0">' + usd(today.cost_usd) + '</div><div style="font-size:0.8rem;color:var(--color-muted)">' + ils(today.cost_usd) + ' \u00b7 ' + today.requests + ' \u0437\u0430\u043f\u0440\u043e\u0441\u043e\u0432</div>' + (modelBreakdown ? '<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--color-rule)">' + modelBreakdown + '</div>' : '') + '</div>' +
+    '<div class="pw-card" style="text-align:center"><div style="font-size:0.75rem;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.5px">7 \u0434\u043d\u0435\u0439</div><div style="font-size:2rem;font-weight:700;font-family:var(--font-mono);margin:8px 0">' + usd(week.cost_usd) + '</div><div style="font-size:0.8rem;color:var(--color-muted)">' + ils(week.cost_usd) + '</div></div>' +
+    '<div class="pw-card" style="text-align:center"><div style="font-size:0.75rem;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.5px">\u041c\u0435\u0441\u044f\u0446</div><div style="font-size:2rem;font-weight:700;font-family:var(--font-mono);margin:8px 0">' + usd(month.cost_usd) + '</div><div style="font-size:0.8rem;color:var(--color-muted)">' + ils(month.cost_usd) + ' \u00b7 ' + month.requests + ' \u0437\u0430\u043f\u0440\u043e\u0441\u043e\u0432</div></div>' +
+    '<div class="pw-card" style="text-align:center;border-left:3px solid var(--color-accent)"><div style="font-size:0.75rem;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.5px">\u0422\u043e\u043a\u0435\u043d\u043e\u0432 \u0441\u0435\u0433\u043e\u0434\u043d\u044f</div><div style="font-size:1.5rem;font-weight:700;font-family:var(--font-mono);margin:8px 0">' + num(today.total_tokens) + '</div><div style="font-size:0.75rem;color:var(--color-muted)">prompt + output</div></div>' +
+  '</div>';
+
+  html += '<h2 style="font-size:1rem;font-weight:600;margin-bottom:var(--space-md)">\u0418\u0441\u0442\u043e\u0440\u0438\u044f (14 \u0434\u043d\u0435\u0439)</h2>' +
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.85rem"><thead><tr style="text-align:left;border-bottom:2px solid var(--color-rule)"><th style="padding:8px">\u0414\u0430\u0442\u0430</th><th style="padding:8px">\u0417\u0430\u043f\u0440\u043e\u0441\u043e\u0432</th><th style="padding:8px">\u0422\u043e\u043a\u0435\u043d\u043e\u0432</th><th style="padding:8px">\u0421\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c</th><th style="padding:8px">\u0421\u043b\u043e\u0432</th><th style="padding:8px">\u041e\u0448\u0438\u0431\u043e\u043a</th></tr></thead><tbody>' + daysRows + '</tbody></table></div>';
+
+  var summary14 = history.summary;
+  html += '<div style="margin-top:var(--space-md);padding:var(--space-md);background:var(--color-surface);border-radius:var(--radius-md);font-size:0.8rem;color:var(--color-muted)">\u0417\u0430 14 \u0434\u043d\u0435\u0439: <strong>' + usd(summary14.total_cost_usd) + '</strong> (' + ils(summary14.total_cost_usd) + ') \u00b7 ' + num(summary14.total_tokens) + ' \u0442\u043e\u043a\u0435\u043d\u043e\u0432 \u00b7 ' + summary14.total_words_inserted + ' \u0441\u043b\u043e\u0432 \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u043e</div>';
+
+  content.innerHTML = html;
+}
+
+async function toggleEnrichment() {
+  const res = await fetch('/admin/api/enrichment/toggle', { method: 'POST' });
+  if (!res.ok) throw new Error(res.status);
+  loadCosts();
+}
+
+async function setDailyLimit(val) {
+  const limit = parseInt(val) || 30;
+  await fetch('/admin/api/enrichment/limit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ limit }) });
+}
+
+async function runEnrichment() {
+  const btn = document.getElementById('runEnrichBtn');
+  btn.disabled = true; btn.textContent = 'Собираю...'; btn.style.opacity = '0.7';
+  try {
+    const res = await fetch('/admin/api/enrichment/run', { method: 'POST' });
+    if (!res.ok) { const err = await res.json(); alert('Ошибка: ' + (err.detail || res.status)); btn.disabled = false; btn.textContent = 'Собрать слова'; btn.style.opacity = '1'; return; }
+    const poll = setInterval(async () => {
+      const s = await fetch('/admin/api/enrichment/run-status');
+      const state = await s.json();
+      if (!state.running) {
+        clearInterval(poll);
+        btn.disabled = false; btn.textContent = 'Собрать слова'; btn.style.opacity = '1';
+        if (state.error) alert('Ошибка: ' + state.error);
+        loadCosts();
+      }
+    }, 3000);
+  } catch (e) { alert('Ошибка: ' + e.message); btn.disabled = false; btn.textContent = 'Собрать слова'; btn.style.opacity = '1'; }
+}
+
+function onPageLoad() { loadCosts(); }
+</script>
+</body>
+</html>

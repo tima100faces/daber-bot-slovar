@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daber Dict · Очередь</title>
+<link rel="stylesheet" href="/static/fonts.css?v=1">
+<link rel="stylesheet" href="/static/design-system.css">
+<link rel="stylesheet" href="/admin/static/_admin.css?v=3">
+</head>
+<body class="admin-body">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <a href="/" style="display:flex;align-items:center;text-decoration:none"><span class="logo-img"></span><img src="/daber-logo.svg" class="logo-fallback" alt="Daber"></a>
+    <span class="admin-label">Admin</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/admin/pending" class="nav-item active">
+      <img src="/static/icons/list-check.svg" class="nav-icon" alt="">
+      Очередь
+      <span class="nav-badge" id="count-pending">0</span>
+    </a>
+    <a href="/admin/approved" class="nav-item">
+      <img src="/static/icons/circle-check.svg" class="nav-icon" alt="">
+      Одобрено
+      <span class="nav-badge" id="count-approved">0</span>
+    </a>
+    <a href="/admin/rejected" class="nav-item">
+      <img src="/static/icons/circle-x.svg" class="nav-icon" alt="">
+      Отклонено
+      <span class="nav-badge" id="count-rejected">0</span>
+    </a>
+    <a href="/admin/feedback" class="nav-item">
+      <img src="/static/icons/message-report.svg" class="nav-icon" alt="">
+      Жалобы
+      <span class="nav-badge" id="count-feedback">0</span>
+    </a>
+    <a href="/admin/words" class="nav-item">
+      <img src="/static/icons/books.svg" class="nav-icon" alt="">
+      Словарь
+    </a>
+    <a href="/admin/costs" class="nav-item">
+      <img src="/static/icons/coins.svg" class="nav-icon" alt="">
+      Затраты
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="nav-item logout-item" onclick="logout()">
+      <img src="/static/icons/logout.svg" class="nav-icon" alt="">
+      Выйти
+    </button>
+  </div>
+</aside>
+
+<div class="main-area">
+  <header class="topbar">
+    <button class="burger" onclick="toggleSidebar()" aria-label="Меню">
+      <img src="/static/icons/menu-2.svg" class="nav-icon" alt="">
+    </button>
+    <h1>Очередь</h1>
+  </header>
+  <main class="content" id="content">
+    <div class="spinner">Загрузка...</div>
+  </main>
+</div>
+
+<script src="/admin/static/_core.js"></script>
+<script>
+// ── Pending ──
+async function loadPending() {
+  const res = await fetch('/admin/api/pending?status=pending');
+  if (res.status === 401) { window.location.href = '/admin/login'; return; }
+  const words = await res.json();
+
+  const content = document.getElementById('content');
+  if (!words.length) {
+    content.innerHTML = '<div class="empty">Нет слов на проверку</div>';
+    return;
+  }
+
+  content.innerHTML = words.map(w => {
+    const ex = w.examples ? (typeof w.examples === 'string' ? JSON.parse(w.examples) : w.examples) : [];
+    const syn = w.synonyms ? (typeof w.synonyms === 'string' ? JSON.parse(w.synonyms) : w.synonyms) : [];
+    const posLabelStr = posLabel(w);
+    const src = w.source ? ' · ' + w.source : '';
+
+    return `<div class="pw-card" id="pw-${w.id}">
+      <div class="head">
+        <span class="hebrew">${w.headword || ''}</span>
+        <span class="nikud">${w.headword_nikud || ''}</span>
+        <span class="translit">${w.translit || ''}</span>
+        <span class="badge badge-pos">${posLabelStr}</span>
+        ${w.already_exists ? '<span class="badge badge-duplicate">уже в словаре</span>' : ''}
+      </div>
+      <div class="translation">${(w.translation_enriched && w.translation_enriched.length ? w.translation_enriched.join('; ') : (w.translation_ru || '—'))}</div>
+      <div class="meta">${new Date(w.created_at).toLocaleString('ru')}${src}</div>
+      ${ex.length ? `<ul class="examples-list">${ex.map(e => `<li><span class="he">${e.hebrew}</span> — ${e.translation}</li>`).join('')}</ul>` : ''}
+      ${syn.length ? `<div class="meta">Синонимы: ${syn.map(s => s.hebrew || s).join(', ')}</div>` : ''}
+      ${w.reviewer_note ? `<div style="margin-top:8px;padding:6px 10px;background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius-sm);font-size:0.8rem;color:#856404">${w.reviewer_note}</div>` : ''}
+      <div class="actions">
+        <button class="btn-approve" onclick="approveWord(${w.id})"><img src="/static/icons/check.svg" class="btn-icon" alt=""><span class="btn-label">Одобрить</span></button>
+        <button class="btn-reject" onclick="rejectWord(${w.id})"><img src="/static/icons/x.svg" class="btn-icon" alt=""><span class="btn-label">Отклонить</span></button>
+        <button class="btn-edit" onclick="editPendingWord(${w.id})"><img src="/static/icons/pencil.svg" class="btn-icon" alt=""><span class="btn-label">Ред.</span></button>
+        <button class="btn-check" onclick="checkWord(${w.id})" id="btn-check-${w.id}"><img src="/static/icons/search.svg" class="btn-icon" alt=""><span class="btn-label">Проверить</span></button>
+        <button class="btn-preview" onclick="previewWord(${w.id})"><img src="/static/icons/eye.svg" class="btn-icon" alt=""><span class="btn-label">Смотр.</span></button>
+      </div>
+      <div class="check-result" id="check-${w.id}" style="display:none"></div>
+      <div class="edit-form" id="edit-${w.id}">
+        <label>Транслитерация</label>
+        <input id="edit-translit-${w.id}" value="${(w.translit || '').replace(/"/g,'&quot;')}">
+        <label>Перевод</label>
+        <input id="edit-translation-${w.id}" value="${(w.translation_ru || '').replace(/"/g,'&quot;')}">
+        <div class="edit-row">
+          <label>Часть речи</label>
+          <select id="edit-pos-${w.id}">
+            <option value="">—</option>
+            ${Object.entries(POS_RU).map(([slug, label]) => `<option value="${slug}" ${w.pos_slug === slug ? 'selected' : ''}>${label}</option>`).join('')}
+          </select>
+          <label>Род</label>
+          <select id="edit-gender-${w.id}">
+            ${Object.entries(GENDER_RU).map(([v,l]) => `<option value="${v}" ${(w.gender||'')===v?'selected':''}>${l}</option>`).join('')}
+          </select>
+          <label>Число</label>
+          <select id="edit-number-${w.id}">
+            ${Object.entries(NUMBER_RU).map(([v,l]) => `<option value="${v}" ${(w.number||'')===v?'selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>
+        <label>Примеры (каждый с новой строки: иврит — перевод)</label>
+        <textarea id="edit-examples-${w.id}">${ex.map(e => e.hebrew + ' — ' + e.translation).join('\n')}</textarea>
+        <label>Синонимы (каждый с новой строки: иврит — перевод)</label>
+        <textarea id="edit-synonyms-${w.id}">${syn.map(s => (s.hebrew || s) + (s.translation ? ' — ' + s.translation : '')).join('\n')}</textarea>
+        <label>Описание</label>
+        <textarea id="edit-notes-${w.id}" style="min-height:80px">${(w.notes || '').replace(/"/g,'&quot;')}</textarea>
+        <div class="edit-actions">
+          <button class="btn-save" onclick="saveEdit(${w.id})">Сохранить</button>
+          <button class="btn-cancel" onclick="cancelEdit(${w.id})">Отмена</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function editWord(id) {
+  document.getElementById('edit-' + id).classList.toggle('open');
+}
+
+function cancelEdit(id) {
+  document.getElementById('edit-' + id).classList.remove('open');
+}
+
+async function saveEdit(id) {
+  const translit = document.getElementById('edit-translit-' + id).value.trim();
+  const translation_ru = document.getElementById('edit-translation-' + id).value.trim();
+  const pos_slug = document.getElementById('edit-pos-' + id).value;
+  const gender = document.getElementById('edit-gender-' + id).value;
+  const number = document.getElementById('edit-number-' + id).value;
+  const examplesRaw = document.getElementById('edit-examples-' + id).value.trim();
+  const synonymsRaw = document.getElementById('edit-synonyms-' + id).value.trim();
+  const notes = document.getElementById('edit-notes-' + id).value.trim();
+
+  const examples = examplesRaw ? examplesRaw.split('\n').map(line => {
+    const m = line.match(/^(.+?)\s*[—–-]\s*(.+)$/);
+    return m ? { hebrew: m[1].trim(), translation: m[2].trim() } : { hebrew: line.trim(), translation: '' };
+  }) : [];
+
+  const synonyms = synonymsRaw ? synonymsRaw.split('\n').map(line => {
+    const m = line.match(/^(.+?)\s*[—–-]\s*(.+)$/);
+    return m ? { hebrew: m[1].trim(), translation: m[2].trim() } : { hebrew: line.trim(), translation: '' };
+  }) : [];
+
+  const body = { translit, translation_ru, pos_slug, gender, number, examples, synonyms, notes };
+
+  try {
+    const res = await fetch('/admin/api/pending/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      alert('Ошибка: ' + (err.detail || res.status));
+      return;
+    }
+    document.getElementById('edit-' + id).classList.remove('open');
+    const card = document.getElementById('pw-' + id);
+    if (translit) card.querySelector('.translit').textContent = translit;
+    if (translation_ru) card.querySelector('.translation').textContent = translation_ru;
+    if (notes) {
+      let notesEl = card.querySelector('.pw-notes');
+      if (!notesEl) {
+        notesEl = document.createElement('div');
+        notesEl.className = 'pw-notes';
+        card.appendChild(notesEl);
+      }
+      notesEl.textContent = notes;
+    }
+    const badge = card.querySelector('.badge-pos');
+    if (badge) {
+      badge.textContent = posLabel({ pos_slug, gender }) || '—';
+    }
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+async function approveWord(id) {
+  const card = document.getElementById('pw-' + id);
+  try {
+    const res = await fetch('/admin/api/pending/' + id + '/approve', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      card.style.opacity = '0.5';
+      card.querySelector('.actions').innerHTML = data.already_existed
+        ? '<span class="badge badge-approved">уже в словаре</span>'
+        : '<span class="badge badge-approved">добавлено</span>';
+      setTimeout(() => { card.remove(); loadAllCounts(); loadPending(); }, 800);
+    }
+  } catch(e) { alert('Ошибка'); }
+}
+
+async function rejectWord(id) {
+  const card = document.getElementById('pw-' + id);
+  try {
+    const res = await fetch('/admin/api/pending/' + id + '/reject?note=', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      card.style.opacity = '0.5';
+      card.querySelector('.actions').innerHTML = '<span class="badge badge-rejected">отклонено</span>';
+      setTimeout(() => { card.remove(); loadAllCounts(); loadPending(); }, 800);
+    }
+  } catch(e) { alert('Ошибка'); }
+}
+
+async function checkWord(id) {
+  const btn = document.getElementById('btn-check-' + id);
+  const resultDiv = document.getElementById('check-' + id);
+  btn.disabled = true;
+  btn.textContent = 'Проверяю...';
+  resultDiv.style.display = 'none';
+
+  try {
+    const res = await fetch('/admin/api/pending/' + id + '/check');
+    const data = await res.json();
+
+    let html = '';
+    let cls = 'check-result--clean';
+
+    if (data.duplicates.length > 0) {
+      cls = 'check-result--dup';
+      html += '<strong><img src="/static/icons/circle-x.svg" style="width:18px;height:18px;vertical-align:-4px;filter:invert(1)" alt=""> Найдены совпадения:</strong><ul>';
+      data.duplicates.forEach(d => {
+        const sameMeaning = data.pending_translation && d.translation &&
+          (d.translation.includes(data.pending_translation) || data.pending_translation.includes(d.translation));
+        const icon = sameMeaning 
+          ? '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e53e3e;margin-right:4px"></span>' 
+          : '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#38a169;margin-right:4px"></span>';
+        const label = sameMeaning ? 'то же значение' : 'другое значение (омограф)';
+        html += `<li>${icon} <b>${d.headword}</b> <em>(${d.pos})</em> — ${d.translation}
+          <br><small style="color:var(--color-muted)">↳ pending: ${data.pending_translation || '—'} (${data.pending_pos}) — ${label}</small></li>`;
+      });
+      html += '</ul>';
+    }
+
+    if (data.warnings.length > 0) {
+      if (!data.duplicates.length) cls = 'check-result--warn';
+      html += '<strong><img src="/static/icons/message-report.svg" style="width:18px;height:18px;vertical-align:-4px;filter:invert(1)" alt=""> Предупреждения:</strong><ul>';
+      data.warnings.forEach(w => { html += '<li>' + w + '</li>'; });
+      html += '</ul>';
+    }
+
+    if (data.is_clean) {
+      html = '<img src="/static/icons/circle-check.svg" style="width:20px;height:20px;vertical-align:-5px;filter:invert(1)" alt=""> Всё чисто — слово можно одобрять.';
+    }
+
+    resultDiv.className = 'check-result ' + cls;
+    resultDiv.innerHTML = html;
+    resultDiv.style.display = 'block';
+  } catch(e) {
+    resultDiv.className = 'check-result check-result--dup';
+    resultDiv.innerHTML = '❌ Ошибка проверки';
+    resultDiv.style.display = 'block';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Проверить';
+}
+
+async function previewWord(pwId) {
+  const overlay = document.createElement('div');
+  overlay.className = 'preview-overlay';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+  const card = document.createElement('div');
+  card.className = 'preview-card';
+  card.innerHTML = '<div class="spinner">Загрузка...</div>';
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  try {
+    const res = await fetch('/admin/api/pending/' + pwId + '/preview');
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+
+    const posRu = POS_RU[data.pos] || data.pos || '';
+    const genderRu = GENDER_RU[data.gender] || '';
+    const meta = [posRu, genderRu].filter(Boolean).join(' · ');
+    const examples = (data.examples || []).slice(0, 3).map(e =>
+      `<li><span class="he" style="direction:rtl;display:inline">${e.hebrew}</span> — ${e.translation}</li>`
+    ).join('');
+    const synonyms = (data.synonyms || []).slice(0, 3).map(s =>
+      `<span style="display:inline-block;margin:2px 4px;padding:2px 8px;background:var(--color-surface-2);border-radius:var(--radius-sm);font-size:0.85rem"><span style="direction:rtl;display:inline">${s.hebrew}</span> ${s.translation}</span>`
+    ).join('');
+
+    card.innerHTML = `
+      <button class="preview-close" onclick="this.closest('.preview-overlay').remove()"><img src="/static/icons/x.svg" style="width:20px;height:20px;filter:invert(1)" alt=""></button>
+      <div style="font-size:1.4rem;direction:rtl;text-align:right;margin-bottom:4px">${data.headword || ''}</div>
+      <div style="font-size:1.1rem;direction:rtl;text-align:right;color:var(--color-muted);margin-bottom:4px">${data.nikud || data.headword || ''}</div>
+      <div style="color:var(--color-accent);font-size:1rem;margin-bottom:4px">${data.translit || ''}</div>
+      <div style="font-size:0.8rem;color:var(--color-muted);margin-bottom:12px">${meta}</div>
+      <div style="font-size:1rem;margin-bottom:8px">${Array.isArray(data.translations) ? data.translations.join('; ') : (data.translations || '—')}</div>
+      ${examples ? '<div style="font-size:0.85rem;color:var(--color-muted);margin-top:8px">' + examples + '</div>' : ''}
+      ${synonyms ? '<div style="margin-top:8px">' + synonyms + '</div>' : ''}
+      ${data.notes ? '<div style="margin-top:12px;font-size:0.8rem;color:var(--color-muted);line-height:1.5;font-style:italic;border-top:1px solid var(--color-rule);padding-top:8px">' + data.notes + '</div>' : ''}
+      <div style="margin-top:8px;font-size:0.75rem;color:var(--color-muted)">Источник: ${data.source || '—'} · Статус: ${data.status}</div>`;
+  } catch(e) {
+    card.innerHTML = `<button class="preview-close" onclick="this.closest('.preview-overlay').remove()"><img src="/static/icons/x.svg" style="width:20px;height:20px;filter:invert(1)" alt=""></button>
+      <div style="padding:20px;text-align:center;color:var(--color-muted)">Предпросмотр недоступен</div>`;
+  }
+}
+
+async function editPendingWord(id) {
+  const res = await fetch(`/admin/api/pending?id=${id}`);
+  const data = await res.json();
+  const w = Array.isArray(data) ? data[0] : data;
+  if (!w || !w.id) { alert('Слово не найдено'); return; }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'preview-overlay';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+  const trans = w.translation_ru || '';
+  overlay.innerHTML = `<div class="preview-card edit-card" onclick="event.stopPropagation()">
+    <h3 style="margin:0 0 var(--space-lg);font-family:var(--font-display)"><img src="/static/icons/pencil.svg" style="width:18px;height:18px;vertical-align:-4px;filter:invert(1)" alt=""> Редактировать #${w.id}</h3>
+    <div class="edit-grid">
+      <label>Слово (headword)<input id="ed-headword" value="${esc(w.headword)}"></label>
+      <label>Никуд<input id="ed-nikud" value="${esc(w.headword_nikud)}"></label>
+      <label>Транслит<input id="ed-translit" value="${esc(w.translit)}"></label>
+      <label>Часть речи
+        <select id="ed-pos">${[
+          {v:'',l:'—'}, ...Object.entries(POS_RU).map(([v,l]) => ({v,l}))
+        ].map(o =>
+          `<option value="${o.v}" ${(w.pos_slug||'')===o.v?'selected':''}>${o.l}</option>`
+        ).join('')}</select>
+      </label>
+      <label>Род
+        <select id="ed-gender">${Object.entries(GENDER_RU).map(([v,l]) =>
+          `<option value="${v}" ${(w.gender||'')===v?'selected':''}>${l}</option>`
+        ).join('')}</select>
+      </label>
+      <label>Число
+        <select id="ed-number">${Object.entries(NUMBER_RU).map(([v,l]) =>
+          `<option value="${v}" ${(w.number||'')===v?'selected':''}>${l}</option>`
+        ).join('')}</select>
+      </label>
+      <label style="grid-column:span 2">Основной перевод<input id="ed-translation" value="${esc(trans)}"></label>
+      <label style="grid-column:span 2">Все варианты<input id="ed-enriched" value="${esc((w.translation_enriched||[]).join('; '))}" style="color:var(--color-muted)"></label>
+      <label style="grid-column:span 2">Заметки<textarea id="ed-notes" rows="3">${esc(w.notes||'')}</textarea></label>
+    </div>
+    <div class="edit-btns">
+      <button class="mode-btn" onclick="savePendingEdit(${id})" style="background:var(--color-accent);color:#fff">Сохранить</button>
+      <button class="mode-btn" onclick="this.closest('.preview-overlay').remove()">Отмена</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function savePendingEdit(id) {
+  const enrichedRaw = document.getElementById('ed-enriched').value.trim();
+  const translation_enriched = enrichedRaw ? enrichedRaw.split(';').map(s => s.trim()).filter(Boolean) : [];
+  const body = {
+    headword: document.getElementById('ed-headword').value.trim(),
+    headword_nikud: document.getElementById('ed-nikud').value.trim(),
+    translit: document.getElementById('ed-translit').value.trim(),
+    pos_slug: document.getElementById('ed-pos').value,
+    gender: document.getElementById('ed-gender').value,
+    number: document.getElementById('ed-number').value,
+    translation_ru: document.getElementById('ed-translation').value.trim(),
+    translation_enriched: translation_enriched,
+    notes: document.getElementById('ed-notes').value.trim(),
+  };
+
+  try {
+    const res = await fetch(`/admin/api/pending/${id}`, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.detail || 'Save failed'); }
+    document.querySelector('.preview-overlay').remove();
+    loadPending();
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// Init
+function onPageLoad() { loadPending(); }
+</script>
+</body>
+</html>

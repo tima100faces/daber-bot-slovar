@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daber Dict · Жалобы</title>
+<link rel="stylesheet" href="/static/fonts.css?v=1">
+<link rel="stylesheet" href="/static/design-system.css">
+<link rel="stylesheet" href="/admin/static/_admin.css?v=3">
+</head>
+<body class="admin-body">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <a href="/" style="display:flex;align-items:center;text-decoration:none"><span class="logo-img"></span><img src="/daber-logo.svg" class="logo-fallback" alt="Daber"></a>
+    <span class="admin-label">Admin</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/admin/pending" class="nav-item"><img src="/static/icons/list-check.svg" class="nav-icon" alt="">Очередь<span class="nav-badge" id="count-pending">0</span></a>
+    <a href="/admin/approved" class="nav-item"><img src="/static/icons/circle-check.svg" class="nav-icon" alt="">Одобрено<span class="nav-badge" id="count-approved">0</span></a>
+    <a href="/admin/rejected" class="nav-item"><img src="/static/icons/circle-x.svg" class="nav-icon" alt="">Отклонено<span class="nav-badge" id="count-rejected">0</span></a>
+    <a href="/admin/feedback" class="nav-item active"><img src="/static/icons/message-report.svg" class="nav-icon" alt="">Жалобы<span class="nav-badge" id="count-feedback">0</span></a>
+    <a href="/admin/words" class="nav-item"><img src="/static/icons/books.svg" class="nav-icon" alt="">Словарь</a>
+    <a href="/admin/costs" class="nav-item"><img src="/static/icons/coins.svg" class="nav-icon" alt="">Затраты</a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="nav-item logout-item" onclick="logout()"><img src="/static/icons/logout.svg" class="nav-icon" alt="">Выйти</button>
+  </div>
+</aside>
+
+<div class="main-area">
+  <header class="topbar">
+    <button class="burger" onclick="toggleSidebar()"><img src="/static/icons/menu-2.svg" class="nav-icon" alt=""></button>
+    <h1>Жалобы</h1>
+  </header>
+  <main class="content" id="content"><div class="spinner">Загрузка...</div></main>
+</div>
+
+<script src="/admin/static/_core.js"></script>
+<script>
+async function loadFeedback() {
+  const res = await fetch('/admin/api/feedback');
+  if (res.status === 401) { window.location.href = '/admin/login'; return; }
+  const items = await res.json();
+  const content = document.getElementById('content');
+  if (!items.length) { content.innerHTML = '<div class="empty">Нет жалоб</div>'; return; }
+  content.innerHTML = items.map(f => `<div class="fb-card">
+    <div class="fb-head">
+      <span><span class="fb-word">${f.headword || ''}</span><span style="color:var(--color-muted);font-size:0.8125rem"> · ${f.headword_nikud || ''}</span></span>
+      <button class="fb-toggle" onclick="toggleFeedback(${f.id})" id="fb-btn-${f.id}">${f.resolved ? 'решено' : 'не решено'}</button>
+    </div>
+    <div class="fb-comment">${f.comment || ''}</div>
+    <div class="fb-meta">${f.field_name || ''}${f.selected_text ? ' · «' + f.selected_text + '»' : ''} · ${new Date(f.created_at).toLocaleString('ru')} · Транслит: ${f.translit || '—'}</div>
+  </div>`).join('');
+}
+async function toggleFeedback(id) {
+  const res = await fetch('/admin/api/feedback/' + id + '/toggle', { method: 'POST' });
+  const data = await res.json();
+  if (data.ok) {
+    const btn = document.getElementById('fb-btn-' + id);
+    btn.textContent = data.resolved ? 'решено' : 'не решено';
+  }
+}
+function onPageLoad() { loadFeedback(); }
+</script>
+</body>
+</html>

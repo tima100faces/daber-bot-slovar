@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">Факт об иврите — דבר</title>
+<meta property="og:title" id="ogTitle" content="Факт об иврите">
+<meta property="og:description" id="ogDesc" content="">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="/static/fonts.css?v=1">
+<link rel="stylesheet" href="/static/design-system.css?v=2">
+<link rel="stylesheet" href="/static/components.css?v=1">
+<style>
+.fact-detail {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 4rem 0 var(--space-2xl);
+}
+.fact-detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: var(--space-xl);
+  transition: color 0.2s;
+}
+.fact-detail__back:hover { color: var(--color-accent); }
+
+.fact-detail__type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-md);
+}
+.fact-type-did_you_know { color: var(--color-accent); }
+.fact-type-story { color: var(--color-green); }
+.fact-type-etymology { color: var(--color-orange); }
+.fact-type-comparison { color: oklch(58% 0.22 285); }
+
+.fact-detail__title {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: var(--space-lg);
+}
+
+.fact-detail__body {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--color-ink);
+  margin-bottom: var(--space-xl);
+}
+
+.fact-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md) var(--space-xl);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-rule);
+  font-size: 0.85rem;
+  color: var(--color-neutral);
+}
+.fact-detail__source {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 768px) {
+  .fact-detail { padding: 2rem 0 var(--space-xl); }
+  .fact-detail__body { font-size: 1rem; }
+}
+</style>
+</head>
+<body>
+<main class="page-main">
+  <div class="container">
+    <div class="fact-detail" id="content">
+      <div style="text-align:center;padding:4rem 0;color:var(--color-neutral)">Загрузка...</div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__links">
+      <a href="/">словарь</a>
+      <a href="/facts">все факты</a>
+      <a href="/terms.html">условия использования</a>
+      <a href="/privacy.html">конфиденциальность</a>
+    </div>
+  </div>
+</footer>
+
+<script type="application/ld+json" id="schemaData"></script>
+
+<script>
+const TYPE_LABELS = {
+  did_you_know: 'А вы знали?',
+  story: 'История',
+  etymology: 'Этимология',
+  comparison: 'Сравнение',
+};
+const TYPE_ICONS = { did_you_know: '💡', story: '📖', etymology: '🔍', comparison: '⚖️' };
+
+async function loadFact() {
+  const factId = window.location.pathname.split('/').filter(Boolean).pop();
+  if (!factId || isNaN(factId)) {
+    document.getElementById('content').innerHTML = '<div style="text-align:center;padding:4rem 0;color:var(--color-muted)">Факт не найден</div>';
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/facts/${factId}`);
+    if (!res.ok) throw new Error('Not found');
+    const fact = await res.json();
+    renderFact(fact);
+    setMeta(fact);
+    setSchema(fact);
+  } catch (e) {
+    document.getElementById('content').innerHTML = '<div style="text-align:center;padding:4rem 0;color:var(--color-muted)">Факт не найден</div>';
+  }
+}
+
+function renderFact(fact) {
+  const date = fact.published_at ? new Date(fact.published_at).toLocaleDateString('ru', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+  document.getElementById('content').innerHTML = `
+    <a href="/facts" class="fact-detail__back">← Все факты</a>
+    <div class="fact-detail__type fact-type-${fact.fact_type}">${TYPE_ICONS[fact.fact_type] || ''} ${TYPE_LABELS[fact.fact_type] || fact.fact_type}</div>
+    <h1 class="fact-detail__title">${esc(fact.title)}</h1>
+    <div class="fact-detail__body">${esc(fact.fact_body).replace(/\n\n/g, '</p><p class="fact-detail__body">')}</div>
+    <div class="fact-detail__meta">
+      ${date ? `<span>${date}</span>` : ''}
+      ${fact.source_url ? `<a href="${escAttr(fact.source_url)}" class="fact-detail__source" target="_blank" rel="noopener">Источник</a>` : ''}
+      <a href="/facts" style="color:var(--color-muted);text-decoration:none">← все факты</a>
+    </div>`;
+}
+
+function setMeta(fact) {
+  document.title = `${fact.title} — דבר`;
+  document.getElementById('pageTitle').textContent = fact.title + ' — דבר';
+  document.getElementById('ogTitle').setAttribute('content', fact.title);
+  document.getElementById('ogDesc').setAttribute('content', fact.fact_body.substring(0, 200));
+}
+
+function setSchema(fact) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    'headline': fact.title,
+    'description': fact.fact_body.substring(0, 200),
+    'datePublished': fact.published_at || fact.created_at,
+    'dateModified': fact.published_at || fact.created_at,
+    'author': { '@type': 'Organization', 'name': 'דבר — ивритский словарь' },
+    'publisher': { '@type': 'Organization', 'name': 'דבר', 'url': 'https://slovar.daber.me' },
+    'mainEntityOfPage': { '@type': 'WebPage', '@id': window.location.href },
+  };
+  document.getElementById('schemaData').textContent = JSON.stringify(schema);
+}
+
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+
+loadFact();
+</script>
+</body>
+</html>

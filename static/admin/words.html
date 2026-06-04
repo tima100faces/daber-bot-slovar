@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daber Dict · Словарь</title>
+<link rel="stylesheet" href="/static/fonts.css?v=1">
+<link rel="stylesheet" href="/static/design-system.css">
+<link rel="stylesheet" href="/admin/static/_admin.css?v=3">
+</head>
+<body class="admin-body">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <a href="/" style="display:flex;align-items:center;text-decoration:none"><span class="logo-img"></span><img src="/daber-logo.svg" class="logo-fallback" alt="Daber"></a>
+    <span class="admin-label">Admin</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/admin/pending" class="nav-item"><img src="/static/icons/list-check.svg" class="nav-icon" alt="">Очередь<span class="nav-badge" id="count-pending">0</span></a>
+    <a href="/admin/approved" class="nav-item"><img src="/static/icons/circle-check.svg" class="nav-icon" alt="">Одобрено<span class="nav-badge" id="count-approved">0</span></a>
+    <a href="/admin/rejected" class="nav-item"><img src="/static/icons/circle-x.svg" class="nav-icon" alt="">Отклонено<span class="nav-badge" id="count-rejected">0</span></a>
+    <a href="/admin/feedback" class="nav-item"><img src="/static/icons/message-report.svg" class="nav-icon" alt="">Жалобы<span class="nav-badge" id="count-feedback">0</span></a>
+    <a href="/admin/words" class="nav-item active"><img src="/static/icons/books.svg" class="nav-icon" alt="">Словарь</a>
+    <a href="/admin/costs" class="nav-item"><img src="/static/icons/coins.svg" class="nav-icon" alt="">Затраты</a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="nav-item logout-item" onclick="logout()"><img src="/static/icons/logout.svg" class="nav-icon" alt="">Выйти</button>
+  </div>
+</aside>
+
+<div class="main-area">
+  <header class="topbar">
+    <button class="burger" onclick="toggleSidebar()"><img src="/static/icons/menu-2.svg" class="nav-icon" alt=""></button>
+    <h1>Словарь</h1>
+  </header>
+  <main class="content" id="content"><div class="spinner">Загрузка...</div></main>
+</div>
+
+<script src="/admin/static/_core.js"></script>
+<script>
+let wordsMode = 'suspicious';
+let wordsQuery = '';
+let wordsPage = 0;
+
+function getTranslation(w) {
+  const te = w.translation_enriched;
+  if (!te) return '';
+  if (typeof te === 'string') return te;
+  if (Array.isArray(te)) return te[0] || '';
+  if (typeof te === 'object') return te.ru || Object.values(te)[0] || '';
+  return '';
+}
+
+async function loadWords() {
+  const content = document.getElementById('content');
+  content.innerHTML = `
+    <div class="words-toolbar">
+      <div class="words-mode-btns">
+        <button class="mode-btn ${wordsMode === 'suspicious' ? 'active' : ''}" onclick="setWordsMode('suspicious')"><img src="/static/icons/message-report.svg" style="width:16px;height:16px;vertical-align:-3px;filter:invert(1)" alt=""> Подозрительные</button>
+        <button class="mode-btn ${wordsMode === 'all' ? 'active' : ''}" onclick="setWordsMode('all')">🔍 Все слова</button>
+      </div>
+      <div class="words-search" style="${wordsMode === 'all' ? '' : 'display:none'}">
+        <input type="text" id="words-search-input" placeholder="Поиск по слову или транслиту…" value="${wordsQuery}"
+               onkeydown="if(event.key==='Enter')searchWords()">
+        <button class="mode-btn" onclick="searchWords()">Найти</button>
+      </div>
+    </div>
+    <div id="words-results"><div class="spinner">Загрузка...</div></div>
+    <div id="words-pager" style="margin-top:var(--space-lg);display:flex;gap:var(--space-md);justify-content:center"></div>
+  `;
+  await fetchWords(0);
+}
+
+function setWordsMode(mode) { wordsMode = mode; wordsQuery = ''; loadWords(); }
+function searchWords() { wordsQuery = document.getElementById('words-search-input').value.trim(); fetchWords(0); }
+
+async function fetchWords(page) {
+  wordsPage = page;
+  const limit = 50;
+  const q = wordsMode === 'all' ? wordsQuery : '';
+  const mode = wordsMode;
+  const url = `/admin/api/words/search?mode=${mode}&q=${encodeURIComponent(q)}&limit=${limit}&offset=${page * limit}`;
+
+  try {
+    const res = await fetch(url);
+    if (res.status === 401) throw new Error('401');
+    const words = await res.json();
+
+    const results = document.getElementById('words-results');
+    if (!words.length) {
+      results.innerHTML = '<div class="empty">Ничего не найдено</div>';
+      document.getElementById('words-pager').innerHTML = '';
+      return;
+    }
+
+    results.innerHTML = `
+      <div class="badge-legend">
+        <span class="legend-item"><img src="/static/icons/message-report.svg" style="width:14px;height:14px;vertical-align:-2px;filter:invert(1)" alt=""> жалобы</span>
+        <span class="legend-item"><img src="/static/icons/circle-x.svg" style="width:14px;height:14px;vertical-align:-2px;filter:invert(1)" alt=""> проблемы (нет транслита/никуда)</span>
+      </div>
+      <div class="words-table-wrap"><table class="words-table">
+        <thead><tr>
+          <th></th><th>ID</th><th>Слово</th><th>Никуд</th><th>Транслит</th><th>Часть речи</th><th>Перевод</th><th></th>
+        </tr></thead>
+        <tbody>${words.map(w => {
+          const pos = POS_RU[w.pos_slug] || w.pos_slug || '';
+          let badge = '';
+          if (w.open_feedback > 0) badge = `<img src="/static/icons/message-report.svg" style="width:14px;height:14px;vertical-align:-2px;filter:invert(1)" alt="">${w.open_feedback}`;
+          else {
+            const issues = [];
+            if (!w.translit || w.translit === '') issues.push('пусто');
+            if (w.translit && w.translit.includes(' ') && !w.headword.includes(' ')) issues.push('фраза');
+            if (!w.headword_nikud || w.headword_nikud === w.headword) issues.push('никуд');
+            if (issues.length) badge = `<img src="/static/icons/circle-x.svg" style="width:14px;height:14px;vertical-align:-2px;filter:invert(1)" alt="">${issues.length}`;
+          }
+          const translitDisplay = w.translit || '<span style="color:var(--color-muted);font-style:italic">пусто</span>';
+          const trans = getTranslation(w);
+          return `<tr>
+            <td class="badge-cell">${badge}</td>
+            <td>${w.id}</td>
+            <td class="he-cell">${w.headword}</td>
+            <td class="he-cell">${w.headword_nikud || ''}</td>
+            <td>${translitDisplay}</td>
+            <td>${pos}</td>
+            <td class="trans-cell">${trans}</td>
+            <td><button class="mode-btn" onclick="editWord(${w.id})"><img src="/static/icons/pencil.svg" style="width:16px;height:16px;vertical-align:-3px;filter:invert(1)" alt=""></button></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>`;
+
+    const pager = document.getElementById('words-pager');
+    pager.innerHTML = `
+      <button class="mode-btn" onclick="fetchWords(${page - 1})" ${page === 0 ? 'disabled' : ''}>← Назад</button>
+      <span style="padding:6px 12px;color:var(--color-muted);font-size:0.85rem">стр. ${page + 1}</span>
+      <button class="mode-btn" onclick="fetchWords(${page + 1})" ${words.length < limit ? 'disabled' : ''}>Вперёд →</button>
+    `;
+  } catch(e) {
+    if (e.message.includes('401')) { window.location.href = '/admin/login'; return; }
+    document.getElementById('words-results').innerHTML = '<div class="empty">Ошибка загрузки</div>';
+  }
+}
+
+async function editWord(id) {
+  const res = await fetch(`/api/word/_?id=${id}`);
+  const w = await res.json();
+  const overlay = document.createElement('div');
+  overlay.className = 'preview-overlay';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  const trans = getTranslation(w);
+  overlay.innerHTML = `<div class="preview-card edit-card" onclick="event.stopPropagation()">
+    <h3 style="margin:0 0 var(--space-lg);font-family:var(--font-display)"><img src="/static/icons/pencil.svg" style="width:18px;height:18px;vertical-align:-4px;filter:invert(1)" alt=""> Редактировать #${w.id}</h3>
+    <div class="edit-grid">
+      <label>Слово (headword)<input id="ed-headword" value="${esc(w.headword)}"></label>
+      <label>Никуд<input id="ed-nikud" value="${esc(w.headword_nikud)}"></label>
+      <label>Транслит<input id="ed-translit" value="${esc(w.translit)}"></label>
+      <label>Часть речи<select id="ed-pos">${[{v:'',l:'—'}, ...Object.entries(POS_RU).map(([v,l]) => ({v,l}))].map(o => `<option value="${o.v}" ${(w.pos_slug||'')===o.v?'selected':''}>${o.l}</option>`).join('')}</select></label>
+      <label>Род<select id="ed-gender">${Object.entries(GENDER_RU).map(([v,l]) => `<option value="${v}" ${(w.gender||'')===v?'selected':''}>${l}</option>`).join('')}</select></label>
+      <label>Число<select id="ed-number">${Object.entries(NUMBER_RU).map(([v,l]) => `<option value="${v}" ${(w.number||'')===v?'selected':''}>${l}</option>`).join('')}</select></label>
+      <label style="grid-column:span 2">Перевод<input id="ed-translation" value="${esc(trans)}"></label>
+      <label style="grid-column:span 2">Заметки<textarea id="ed-notes" rows="3">${esc(w.notes)}</textarea></label>
+    </div>
+    <div class="edit-btns">
+      <button class="mode-btn" onclick="saveWord(${id})" style="background:var(--color-accent);color:#fff">Сохранить</button>
+      <button class="mode-btn" onclick="deleteWordAdmin(${id})" style="color:var(--color-red)">Удалить</button>
+      <button class="mode-btn" onclick="this.closest('.preview-overlay').remove()">Отмена</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function saveWord(id) {
+  const body = {
+    headword: document.getElementById('ed-headword').value.trim(),
+    headword_nikud: document.getElementById('ed-nikud').value.trim(),
+    translit: document.getElementById('ed-translit').value.trim(),
+    pos_slug: document.getElementById('ed-pos').value,
+    gender: document.getElementById('ed-gender').value,
+    number: document.getElementById('ed-number').value,
+    translation_ru: document.getElementById('ed-translation').value.trim(),
+    notes: document.getElementById('ed-notes').value.trim(),
+  };
+  try {
+    const res = await fetch(`/admin/api/word/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.detail || 'Save failed'); }
+    document.querySelector('.preview-overlay').remove();
+    fetchWords(wordsPage);
+  } catch(e) { alert('Ошибка: ' + e.message); }
+}
+
+async function deleteWordAdmin(id) {
+  if (!confirm('Точно удалить слово #' + id + '? Каскадно удалятся формы, фразы, примеры, синонимы.')) return;
+  try {
+    const res = await fetch(`/api/admin/word/${id}?type=word`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Delete failed');
+    document.querySelector('.preview-overlay').remove();
+    fetchWords(wordsPage);
+  } catch(e) { alert('Ошибка: ' + e.message); }
+}
+
+function onPageLoad() { loadWords(); }
+</script>
+</body>
+</html>
