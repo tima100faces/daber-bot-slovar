@@ -50,21 +50,21 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 # Russian part-of-speech names + display label
 POS_RU = {
-    "noun": ("существительное", "noun"),
-    "verb": ("глагол", "verb"),
-    "adj": ("прилагательное", "adj"),
-    "adv": ("наречие", "adv"),
-    "prep": ("предлог", "prep"),
-    "pron": ("местоимение", "pron"),
-    "conj": ("союз", "conj"),
-    "num": ("числительное", "num"),
-    "intj": ("междометие", "intj"),
-    "particle": ("частица", "particle"),
-    "pref": ("приставка", "pref"),
-    "suff": ("суффикс", "suff"),
-    "art": ("артикль", "art"),
+    "noun": ("существительные", "noun"),
+    "verb": ("глаголы", "verb"),
+    "adj": ("прилагательные", "adj"),
+    "adv": ("наречия", "adv"),
+    "prep": ("предлоги", "prep"),
+    "pron": ("местоимения", "pron"),
+    "conj": ("союзы", "conj"),
+    "num": ("числительные", "num"),
+    "intj": ("междометия", "intj"),
+    "particle": ("частицы", "particle"),
+    "pref": ("приставки", "pref"),
+    "suff": ("суффиксы", "suff"),
+    "art": ("артикли", "art"),
     "unknown": ("без категории", "unknown"),
-    "phrase": ("фраза", "phrase"),
+    "phrase": ("фразы", "phrase"),
 }
 # Wordtype raw → slug (IRIS sometimes has multi-word like "ед.ч., м.р., повел. накл.")
 # We don't try to map wordtype → pos_slug in API; pos_slug is the source of truth.
