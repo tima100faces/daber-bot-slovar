@@ -213,6 +213,182 @@
   .fact-teaser__title { font-size: 0.95rem; }
 }
 
+/* ── Word of the Day ── */
+.wotd {
+  margin: 2rem auto 0;
+  max-width: 480px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.wotd__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.wotd__header img { filter: brightness(0) invert(1); }
+.wotd__body { padding: var(--space-md); }
+.wotd__word {
+  font-family: var(--font-hebrew);
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 2px;
+}
+.wotd__nikud {
+  font-family: var(--font-hebrew);
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  margin-bottom: var(--space-xs);
+}
+.wotd__translit {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin-bottom: var(--space-sm);
+  font-style: italic;
+}
+.wotd__translation {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
+}
+.wotd__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+.wotd__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--color-surface-1);
+  color: var(--color-muted);
+}
+.wotd__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.wotd__link:hover { color: var(--color-accent-2); }
+
+/* ── Quiz ── */
+.quiz {
+  margin: var(--space-xl) auto 0;
+  max-width: 480px;
+  display: none;
+}
+.quiz--visible { display: block; }
+.quiz__header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-muted);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+.quiz__card {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+}
+.quiz__question {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-muted);
+  margin-bottom: var(--space-sm);
+}
+.quiz__word {
+  font-family: var(--font-hebrew);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+.quiz__hint {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  font-style: italic;
+  margin-bottom: var(--space-lg);
+}
+.quiz__options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.quiz__option {
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  color: var(--color-text);
+}
+.quiz__option:hover { border-color: var(--color-accent); background: var(--color-surface-2); }
+.quiz__option--correct {
+  border-color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.1) !important;
+  color: #22c55e !important;
+}
+.quiz__option--wrong {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+.quiz__option--disabled { pointer-events: none; opacity: 0.7; }
+.quiz__feedback {
+  margin-top: var(--space-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: none;
+}
+.quiz__feedback--show { display: block; }
+.quiz__score {
+  margin-top: var(--space-sm);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+.quiz__next {
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-xl);
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: none;
+}
+.quiz__next--show { display: inline-block; }
+.quiz__next:hover { background: var(--color-accent-2); }
+
 /* ── Responsive (page-specific overrides only) ── */
 @media (max-width: 768px) {
   .hero { padding: 3.5rem 0 var(--space-xl); }
@@ -255,6 +431,17 @@
   </div>
 </section>
 
+<!-- Word of the Day -->
+<section class="container reveal">
+  <div class="wotd" id="wotdCard" style="display:none">
+    <div class="wotd__header">
+      <span>СЛОВО ДНЯ</span>
+      <span id="wotdDate"></span>
+    </div>
+    <div class="wotd__body" id="wotdBody"></div>
+  </div>
+</section>
+
 <!-- Search -->
 <section class="container reveal" id="search">
   <div class="search-section">
@@ -281,6 +468,23 @@
     <button class="btn btn--accent" id="randomBtnBig"><img src="/static/icons/dice-6.svg" class="icon icon--sm t-icon" alt=""> Слово дня</button>
   </div>
   <div class="fact-teaser" id="factTeaser" style="display:none"></div>
+
+  <!-- Quiz -->
+  <div class="quiz" id="quizSection">
+    <div class="quiz__header">
+      <img src="/static/icons/bulb.svg" class="icon icon--sm t-icon" alt="">
+      ВИКТОРИНА
+    </div>
+    <div class="quiz__card" id="quizCard">
+      <div class="quiz__question">Что означает это слово?</div>
+      <div class="quiz__word" id="quizWord"></div>
+      <div class="quiz__hint" id="quizHint"></div>
+      <div class="quiz__options" id="quizOptions"></div>
+      <div class="quiz__feedback" id="quizFeedback"></div>
+      <div class="quiz__score" id="quizScore"></div>
+      <button class="quiz__next" id="quizNext" onclick="loadQuiz()">Следующий вопрос →</button>
+    </div>
+  </div>
 </section>
 
 <!-- Modal -->
@@ -1295,6 +1499,8 @@ loadStats();
 initTheme();
 checkAdmin();
 loadFactTeaser();
+loadWordOfDay();
+loadQuiz();
 
 // ═══════════════════════════════════════════
 //  FACT TEASER
@@ -1308,7 +1514,7 @@ async function loadFactTeaser() {
     if (!el) return;
     el.style.display = 'block';
     el.innerHTML = `
-      <a href="/facts/${fact.id}" class="fact-teaser__wrapper">
+      <a href="/facts/${fact.id}" class="fact-teaser__wrapper" onclick="gtag('event', 'fact_click', { fact_id: '${fact.id}', fact_title: '${escHtml(fact.title).replace(/'/g, "\\'")}' });">
         <div class="fact-teaser__label">Интересный факт</div>
         <div class="fact-teaser__title">${escHtml(fact.title)}</div>
         <div class="fact-teaser__body">${escHtml(fact.fact_body).substring(0, 180)}...</div>
@@ -1321,6 +1527,138 @@ async function loadFactTeaser() {
 
 function escHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ═══════════════════════════════════════════
+//  WORD OF THE DAY
+// ═══════════════════════════════════════════
+async function loadWordOfDay() {
+  try {
+    const res = await fetch('/api/word-of-day');
+    if (!res.ok) return;
+    const w = await res.json();
+    const card = document.getElementById('wotdCard');
+    const body = document.getElementById('wotdBody');
+    const date = document.getElementById('wotdDate');
+    if (!card || !body) return;
+
+    // Extract first translation
+    let translation = '';
+    const te = w.translation_enriched;
+    if (Array.isArray(te)) translation = te[0];
+    else if (typeof te === 'string') {
+      try { const p = JSON.parse(te); translation = Array.isArray(p) ? p[0] : te; }
+      catch(e) { translation = te; }
+    }
+
+    const posLabel = posLabelText(w.pos_slug);
+    const badges = [];
+    if (posLabel) badges.push(`<span class="wotd__badge">${posLabel}</span>`);
+    if (w.gender) badges.push(`<span class="wotd__badge">${w.gender === 'f' ? 'жен.' : 'муж.'}</span>`);
+    if (w.example_count) badges.push(`<span class="wotd__badge"><img src="/static/icons/list-check.svg" class="icon icon--sm t-icon" alt=""> ${w.example_count} примеров</span>`);
+
+    const today = new Date().toLocaleDateString('ru', { day: 'numeric', month: 'long' });
+    date.textContent = today;
+
+    body.innerHTML = `
+      <div class="wotd__word">${escHtml(w.headword)}</div>
+      ${w.headword_nikud ? `<div class="wotd__nikud">${escHtml(w.headword_nikud)}</div>` : ''}
+      <div class="wotd__translit">[${escHtml(w.translit || '')}]</div>
+      <div class="wotd__translation">${escHtml(translation)}</div>
+      <div class="wotd__meta">${badges.join('')}</div>
+      <a href="/?q=${encodeURIComponent(w.headword)}" class="wotd__link">
+        Подробнее <img src="/static/icons/chevron-right.svg" class="icon icon--sm t-icon" alt="">
+      </a>`;
+
+    card.style.display = 'block';
+    gtag('event', 'wotd_view', { word_id: w.id, headword: w.headword });
+  } catch (e) {
+    // Silently fail
+  }
+}
+
+function posLabelText(slug) {
+  const map = {
+    noun: 'существительное', verb: 'глагол', adjective: 'прилагательное',
+    adverb: 'наречие', preposition: 'предлог', pronoun: 'местоимение',
+    conjunction: 'союз', interjection: 'междометие', numeral: 'числительное',
+    particle: 'частица', prefix: 'приставка', suffix: 'суффикс',
+    article: 'артикль', phrase: 'фраза'
+  };
+  return map[slug] || '';
+}
+
+// ═══════════════════════════════════════════
+//  QUIZ
+// ═══════════════════════════════════════════
+let quizScore = 0;
+let quizTotal = 0;
+
+async function loadQuiz() {
+  try {
+    const section = document.getElementById('quizSection');
+    const res = await fetch('/api/quiz');
+    if (!res.ok) return;
+    const q = await res.json();
+
+    section.classList.add('quiz--visible');
+    document.getElementById('quizWord').innerHTML = `${escHtml(q.headword)} ${q.headword_nikud ? `<span style="font-size:0.7em;color:var(--color-muted)">${escHtml(q.headword_nikud)}</span>` : ''}`;
+    document.getElementById('quizHint').textContent = q.translit ? `[${q.translit}]` : '';
+
+    const optDiv = document.getElementById('quizOptions');
+    optDiv.innerHTML = q.options.map((opt, i) =>
+      `<button class="quiz__option" onclick="checkAnswer(${i})" data-index="${i}">${escHtml(truncateText(opt, 80))}</button>`
+    ).join('');
+
+    // Store correct index
+    optDiv.dataset.correct = q.correct_index;
+
+    document.getElementById('quizFeedback').classList.remove('quiz__feedback--show');
+    document.getElementById('quizFeedback').textContent = '';
+    document.getElementById('quizNext').classList.remove('quiz__next--show');
+  } catch (e) {
+    // Silently fail
+  }
+}
+
+function checkAnswer(chosenIdx) {
+  const optDiv = document.getElementById('quizOptions');
+  const correctIdx = parseInt(optDiv.dataset.correct);
+  const feedback = document.getElementById('quizFeedback');
+  const scoreEl = document.getElementById('quizScore');
+  const nextBtn = document.getElementById('quizNext');
+  const options = optDiv.querySelectorAll('.quiz__option');
+
+  // Disable all options
+  options.forEach(opt => opt.classList.add('quiz__option--disabled'));
+
+  // Mark correct
+  options[correctIdx].classList.add('quiz__option--correct');
+
+  quizTotal++;
+  if (chosenIdx === correctIdx) {
+    quizScore++;
+    feedback.textContent = 'Правильно!';
+    feedback.style.color = '#22c55e';
+  } else {
+    feedback.textContent = 'Неправильно';
+    feedback.style.color = '#ef4444';
+    options[chosenIdx].classList.add('quiz__option--wrong');
+  }
+  feedback.classList.add('quiz__feedback--show');
+
+  scoreEl.textContent = `Счёт: ${quizScore} / ${quizTotal}`;
+  nextBtn.classList.add('quiz__next--show');
+
+  gtag('event', 'quiz_answer', {
+    correct: chosenIdx === correctIdx,
+    score: quizScore,
+    total: quizTotal
+  });
+}
+
+function truncateText(text, maxLen) {
+  return text.length > maxLen ? text.substring(0, maxLen) + '…' : text;
 }
 </script>
 

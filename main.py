@@ -1898,6 +1898,129 @@ def admin_costs_summary(request: Request):
     }
 
 
+# ─── Word of the Day ──────────────────────────────────────────────────────
+
+@app.get("/api/word-of-day")
+def word_of_day():
+    """Deterministic word of the day based on date. Same word for everyone all day."""
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        # Use date as seed: same word for everyone on the same day
+        import datetime
+        today = datetime.date.today().isoformat()
+        day_hash = sum(ord(c) for c in today)
+        cur.execute("SELECT COUNT(*) as cnt FROM words")
+        total = cur.fetchone()["cnt"]
+        idx = (day_hash % total) + 1
+        cur.execute("""
+            SELECT id, headword, headword_nikud, translit, pos_slug, gender, number,
+                   translation_enriched, example_count
+            FROM words
+            ORDER BY id LIMIT 1 OFFSET %s
+        """, (idx - 1,))
+        word = cur.fetchone()
+        if not word:
+            raise HTTPException(status_code=404)
+        return dict(word)
+    finally:
+        conn.close()
+
+
+# ─── Quiz ─────────────────────────────────────────────────────────────────
+
+@app.get("/api/quiz")
+def quiz():
+    """Get a random word + 3 distractors for the mini-quiz."""
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    try:
+        import random
+        # Get one random word with decent frequency
+        cur.execute("""
+            SELECT id, headword, headword_nikud, translit, pos_slug,
+                   translation_enriched
+            FROM words WHERE translation_enriched IS NOT NULL
+            ORDER BY RANDOM() LIMIT 1
+        """)
+        target = cur.fetchone()
+        if not target:
+            raise HTTPException(status_code=404)
+
+        # Extract first translation
+        import json
+        te = target["translation_enriched"]
+        if isinstance(te, list):
+            correct_answer = te[0]
+        elif isinstance(te, str):
+            try:
+                parsed = json.loads(te)
+                correct_answer = parsed[0] if isinstance(parsed, list) else te
+            except (json.JSONDecodeError, IndexError):
+                correct_answer = te
+        else:
+            correct_answer = str(te)
+
+        # Get 3 distractors (random other translations)
+        # Use a subquery to get 3 random distinct non-empty enriched translations
+        cur.execute("""
+            SELECT translation_enriched FROM (
+                SELECT DISTINCT ON (translation_enriched) translation_enriched
+                FROM words
+                WHERE id != %s AND translation_enriched IS NOT NULL
+            ) t
+            ORDER BY RANDOM() LIMIT 10
+        """, (target["id"],))
+
+        distractor_raws = []
+        for row in cur.fetchall():
+            te_val = row["translation_enriched"]
+            if isinstance(te_val, list):
+                distractor_raws.append(te_val[0])
+            elif isinstance(te_val, str):
+                try:
+                    p = json.loads(te_val)
+                    distractor_raws.append(p[0] if isinstance(p, list) else te_val)
+                except json.JSONDecodeError:
+                    distractor_raws.append(te_val)
+            else:
+                distractor_raws.append(str(te_val))
+
+        # Deduplicate and pick 3
+        distractors = []
+        seen = {correct_answer.lower().strip()}
+        for d in distractor_raws:
+            key = d.lower().strip()
+            if key not in seen and len(distractors) < 3:
+                seen.add(key)
+                distractors.append(d)
+
+        # If we don't have 3 unique, add generic fallbacks
+        fallbacks = ["человек", "дом", "хороший", "идти", "большой", "дело", "говорить"]
+        while len(distractors) < 3:
+            for fb in fallbacks:
+                if fb.lower() not in seen and len(distractors) < 3:
+                    seen.add(fb.lower())
+                    distractors.append(fb)
+
+        # Shuffle options
+        options = [correct_answer] + distractors
+        random.shuffle(options)
+        correct_index = options.index(correct_answer)
+
+        return {
+            "headword": target["headword"],
+            "headword_nikud": target.get("headword_nikud"),
+            "translit": target.get("translit"),
+            "pos_slug": target.get("pos_slug"),
+            "options": options,
+            "correct_index": correct_index,
+            "word_id": target["id"],
+        }
+    finally:
+        conn.close()
+
+
 # ─── Language Facts API ────────────────────────────────────────────────────
 
 @app.get("/api/facts/random")
