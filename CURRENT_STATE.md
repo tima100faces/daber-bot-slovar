@@ -1,13 +1,18 @@
 # DABER — Current State (04.06.2026)
 
-## Сегодня сделано: Блог фактов, Arimo, вынос CSS
+## Сегодня сделано: фиксы, дедупликация, новые факты
 
 ### Блог «Факты об иврите»
-- ✅ Таблица `language_facts` (fact_type, title, fact_body, source_url, is_published)
-- ✅ **API**: `GET /api/facts/random`, `GET /api/facts`, `GET /api/facts/{id}`, админ-CRUD
-- ✅ **Страница `/facts`**: лента с пагинацией, 4 типа фактов (история, этимология, сравнение, а вы знали)
-- ✅ **Страница `/facts/{id}`**: отдельный факт + Schema.org Article для Google
-- ✅ **Главная**: карточка «Интересный факт» под кнопкой «Слово дня» (JS: `loadFactTeaser`)
+- ✅ **18 фактов опубликовано** (10 старых уникальных + 8 новых), 34 дубликата скрыто
+- ✅ **API**: `GET /api/facts/random`, `GET /api/facts` (пагинация), `GET /api/facts/{id}`
+- ✅ **Страница `/facts`**: lazy load (IntersectionObserver), 4 типа, без эмодзи
+- ✅ **Страница `/facts/{id}`**: Schema.org Article, без эмодзи
+- ✅ **Главная**: карточка факта `<a href>` (не onclick)
+- ✅ **Иконки**: CSS-маски `.icon--mask`, Tabler SVG, видны в любой теме
+- ✅ **Админка**: `/admin/facts` — генерация, публикация, удаление; единые кнопки `.btn`
+- ✅ **NGINX**: `location /facts` → прокси на uvicorn
+- ✅ **Анти-дубликация**: скрипт проверяет существующие факты перед генерацией
+- ✅ **Новые источники**: Wikipedia API (15 статей, 33K chars) + NatGeo/Britannica
 - ✅ **Админка `/admin/facts`**: список, опубликовать/снять/удалить, сгенерировать
 - ✅ **Генерация**: `enrichment/generate_facts.py` — Sonnet рерайтит источники в факты
 - ✅ **Источники**: NatGeo + Britannica → `enrichment/sources_raw.md` (11K chars)
