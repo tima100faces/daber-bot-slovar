@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Интересные факты об иврите — דבר</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GW34SVV5T5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GW34SVV5T5', { send_page_view: false });
+  gtag('event', 'page_view', { page_title: 'Факты об иврите — список', page_location: '/facts' });
+</script>
 <meta property="og:title" content="Интересные факты об иврите">
 <meta property="og:description" content="Удивительные истории, этимология и факты о языке иврит">
 <meta property="og:type" content="website">
@@ -251,7 +259,7 @@ function renderFacts(data, reset) {
   const html = data.facts.map(f => {
     const date = f.published_at ? new Date(f.published_at).toLocaleDateString('ru') : '';
     return `
-      <a href="/facts/${f.id}" class="fact-card">
+      <a href="/facts/${f.id}" class="fact-card" onclick="gtag('event', 'fact_click', { fact_id: '${f.id}', fact_title: '${esc(f.title).replace(/'/g, "\\'")}', fact_type: '${f.fact_type}' });">
         <div class="fact-card__type fact-type-${f.fact_type}">${TYPE_ICONS[f.fact_type] || ''} ${TYPE_LABELS[f.fact_type] || f.fact_type}</div>
         <div class="fact-card__title">${esc(f.title)}</div>
         <div class="fact-card__body">${esc(f.fact_body)}</div>

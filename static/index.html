@@ -231,7 +231,6 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 .wotd__header img { filter: brightness(0) invert(1); }
 .wotd__body { padding: var(--space-md); }
@@ -1518,6 +1517,17 @@ initTheme();
 checkAdmin();
 loadFactTeaser();
 
+// Handle URL params on page load (e.g. /?q=слово from WOTD «Подробнее»)
+(function() {
+  const params = new URLSearchParams(location.search);
+  const q = params.get('q');
+  if (q) {
+    document.getElementById('searchInput').value = q;
+    state.currentQuery = q;
+    performSearch();
+  }
+})();
+
 // ═══════════════════════════════════════════
 //  FACT TEASER
 // ═══════════════════════════════════════════
@@ -1565,8 +1575,12 @@ async function openWotd() {
     const posLabel = posLabelText(w.pos_slug);
     const badges = [];
     if (posLabel) badges.push(`<span class="wotd__badge">${posLabel}</span>`);
-    if (w.gender) badges.push(`<span class="wotd__badge">${w.gender === 'f' ? 'жен.' : 'муж.'}</span>`);
-    if (w.example_count) badges.push(`<span class="wotd__badge"><img src="/static/icons/list-check.svg" class="icon icon--sm t-icon" alt=""> ${w.example_count} примеров</span>`);
+    if (w.gender) badges.push(`<span class="wotd__badge">${w.gender === 'f' ? 'ж.р.' : 'м.р.'}</span>`);
+    if (w.example_count) {
+      const ec = w.example_count;
+      const exLabel = ec === 1 ? 'пример' : (ec >= 2 && ec <= 4 ? 'примера' : 'примеров');
+      badges.push(`<span class="wotd__badge"><img src="/static/icons/list-check.svg" class="icon icon--sm t-icon" alt=""> ${ec} ${exLabel}</span>`);
+    }
 
     const today = new Date().toLocaleDateString('ru', { day: 'numeric', month: 'long' });
     const translit = fixStress(w.translit || '');

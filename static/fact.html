@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="pageTitle">Факт об иврите — דבר</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GW34SVV5T5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GW34SVV5T5', { send_page_view: false });
+</script>
 <meta property="og:title" id="ogTitle" content="Факт об иврите">
 <meta property="og:description" id="ogDesc" content="">
 <meta property="og:type" content="article">
@@ -157,6 +164,7 @@ async function loadFact() {
     renderFact(fact);
     setMeta(fact);
     setSchema(fact);
+    gtag('event', 'page_view', { page_title: fact.title, page_location: '/facts/' + fact.id, fact_type: fact.fact_type });
   } catch (e) {
     document.getElementById('content').innerHTML = '<div style="text-align:center;padding:4rem 0;color:var(--color-muted)">Факт не найден</div>';
   }

@@ -1902,22 +1902,54 @@ def admin_costs_summary(request: Request):
 
 @app.get("/api/word-of-day")
 def word_of_day():
-    """Deterministic word of the day based on date. Same word for everyone all day."""
+    """Deterministic word of the day based on date. Same word for everyone all day.
+    
+    Selection: 
+    - Exclude function words (prepositions, conjunctions, pronouns, etc.)
+    - Exclude very short words (length < 3, likely function words)
+    - Prefer words with freq_rank 200–10000 (OpenSubtitles 2018 corpus)
+    - Fall back to words without frequency data (keep existing POS/length filters)
+    - Bias toward words with fewer examples (less common = more interesting)
+    """
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     try:
-        # Use date as seed: same word for everyone on the same day
         import datetime
         today = datetime.date.today().isoformat()
         day_hash = sum(ord(c) for c in today)
-        cur.execute("SELECT COUNT(*) as cnt FROM words")
+        
+        # Exclude function-word POS, very short headwords, and too-common/too-rare words
+        cur.execute("""
+            SELECT COUNT(*) as cnt FROM words w
+            LEFT JOIN word_frequencies f ON f.headword = w.headword
+            WHERE w.pos_slug IS NOT NULL
+              AND w.translation_enriched IS NOT NULL
+              AND w.pos_slug NOT IN ('prep', 'conj', 'pron', 'pref', 'det', 'article',
+                                     'intj', 'part', 'particle', 'suffix')
+              AND LENGTH(w.headword) >= 3
+              AND (f.freq_rank BETWEEN 200 AND 10000 OR f.freq_rank IS NULL)
+        """)
         total = cur.fetchone()["cnt"]
+        if total == 0:
+            raise HTTPException(status_code=404)
+        
         idx = (day_hash % total) + 1
         cur.execute("""
-            SELECT id, headword, headword_nikud, translit, pos_slug, gender, number,
-                   translation_enriched, example_count
-            FROM words
-            ORDER BY id LIMIT 1 OFFSET %s
+            SELECT w.id, w.headword, w.headword_nikud, w.translit,
+                   w.pos_slug, w.gender, w.number,
+                   w.translation_enriched, w.example_count
+            FROM words w
+            LEFT JOIN word_frequencies f ON f.headword = w.headword
+            WHERE w.pos_slug IS NOT NULL
+              AND w.translation_enriched IS NOT NULL
+              AND w.pos_slug NOT IN ('prep', 'conj', 'pron', 'pref', 'det', 'article',
+                                     'intj', 'part', 'particle', 'suffix')
+              AND LENGTH(w.headword) >= 3
+              AND (f.freq_rank BETWEEN 200 AND 10000 OR f.freq_rank IS NULL)
+            ORDER BY 
+              CASE WHEN f.freq_rank IS NOT NULL THEN 0 ELSE 1 END,
+              w.example_count ASC, w.id
+            LIMIT 1 OFFSET %s
         """, (idx - 1,))
         word = cur.fetchone()
         if not word:
