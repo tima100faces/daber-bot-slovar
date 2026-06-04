@@ -1059,6 +1059,27 @@ class FeedbackIn(BaseModel):
     selected_text: str | None = None
     comment: str
 
+class ContactIn(BaseModel):
+    subject: str = "другое"
+    contact: str | None = None
+    message: str
+
+@app.post("/api/contact")
+def submit_contact(c: ContactIn):
+    if not c.message.strip():
+        raise HTTPException(400, "Сообщение не может быть пустым")
+    if len(c.message) > 5000:
+        raise HTTPException(400, "Слишком длинное сообщение (макс 5000 символов)")
+    conn = get_db_writable()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO contact_messages (subject, contact, message) VALUES (%s, %s, %s) RETURNING id",
+        (c.subject, c.contact, c.message.strip()),
+    )
+    new_id = cur.fetchone()[0]
+    conn.close()
+    return {"ok": True, "id": new_id}
+
 @app.post("/api/feedback")
 def submit_feedback(fb: FeedbackIn):
     conn = get_db_writable()
@@ -1627,6 +1648,41 @@ def admin_feedback_toggle(fb_id: int, request: Request):
     conn.close()
     if not row:
         raise HTTPException(404, "Feedback not found")
+    return {"ok": True, "id": row[0], "resolved": row[1]}
+
+
+# ─── Contact Messages (admin) ──────────────────────────────────────────────
+
+@app.get("/admin/api/contact")
+def admin_contact_list(request: Request, resolved: Optional[bool] = Query(None)):
+    admin_required(request)
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    if resolved is None:
+        cur.execute("SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT 100")
+    else:
+        cur.execute("SELECT * FROM contact_messages WHERE resolved = %s ORDER BY created_at DESC LIMIT 100", (resolved,))
+    rows = [dict(r) for r in cur.fetchall()]
+    for r in rows:
+        r["created_at"] = r["created_at"].isoformat() if r.get("created_at") else None
+    conn.close()
+    return rows
+
+
+@app.post("/admin/api/contact/{msg_id}/toggle")
+def admin_contact_toggle(msg_id: int, request: Request):
+    admin_required(request)
+    conn = get_db_writable()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE contact_messages SET resolved = NOT resolved WHERE id = %s RETURNING id, resolved",
+        (msg_id,),
+    )
+    row = cur.fetchone()
+    conn.commit()
+    conn.close()
+    if not row:
+        raise HTTPException(404, "Message not found")
     return {"ok": True, "id": row[0], "resolved": row[1]}
 
 
@@ -2256,6 +2312,10 @@ def admin_rejected_page():
 @app.get("/admin/feedback")
 def admin_feedback_page():
     return FileResponse(str(ADMIN_STATIC / "feedback.html"))
+
+@app.get("/admin/contact")
+def admin_contact_page():
+    return FileResponse(str(ADMIN_STATIC / "contact.html"))
 
 @app.get("/admin/words")
 def admin_words_page():

@@ -494,6 +494,27 @@
   </div>
 </div>
 
+<!-- Contact Modal -->
+<div class="modal-overlay" id="contactModal">
+  <div class="modal" style="max-width:480px">
+    <div class="wotd__header" style="border-radius:var(--radius-lg) var(--radius-lg) 0 0; padding:var(--space-lg); text-align:center">
+      <div class="modal__hebrew" style="font-size:1.3rem">Обратная связь</div>
+    </div>
+    <div style="padding:var(--space-lg); display:flex; flex-direction:column; gap:var(--space-md)">
+      <select id="contactSubject" style="width:100%; padding:0.65rem; border-radius:var(--radius-md); border:1px solid var(--color-rule); background:var(--color-surface); color:var(--color-ink); font-family:var(--font-body); font-size:0.9rem">
+        <option value="другое">Тема сообщения</option>
+        <option value="предложить слово">Предложить слово</option>
+        <option value="сообщить об ошибке">Сообщить об ошибке на сайте</option>
+        <option value="предложить сотрудничество">Предложить сотрудничество</option>
+        <option value="другое">Другое</option>
+      </select>
+      <input type="text" id="contactField" placeholder="Email или телефон (чтобы мы могли ответить)" style="width:100%; padding:0.65rem; border-radius:var(--radius-md); border:1px solid var(--color-rule); background:var(--color-surface); color:var(--color-ink); font-family:var(--font-body); font-size:0.9rem; box-sizing:border-box">
+      <textarea id="contactMessage" placeholder="Ваше сообщение…" rows="5" style="width:100%; padding:0.65rem; border-radius:var(--radius-md); border:1px solid var(--color-rule); background:var(--color-surface); color:var(--color-ink); font-family:var(--font-body); font-size:0.9rem; resize:vertical; box-sizing:border-box"></textarea>
+      <button class="btn btn--accent" onclick="submitContact()" id="contactSendBtn" style="width:100%; justify-content:center">Отправить</button>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <!-- Footer -->
@@ -502,6 +523,7 @@
     <div class="footer__links">
       <a href="/terms.html">условия использования</a>
       <a href="/privacy.html">конфиденциальность</a>
+      <a href="#" onclick="openContact();return false">обратная связь</a>
     </div>
   </div>
 </footer>
@@ -1821,6 +1843,73 @@ function posLabelText(slug) {
 
 function truncateText(text, maxLen) {
   return text.length > maxLen ? text.substring(0, maxLen) + '…' : text;
+}
+
+// ═══════════════════════════════════════════
+//  CONTACT FORM
+// ═══════════════════════════════════════════
+function openContact() {
+  document.getElementById('contactModal').classList.add('modal-overlay--open');
+}
+
+function closeContact() {
+  document.getElementById('contactModal').classList.remove('modal-overlay--open');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const cm = document.getElementById('contactModal');
+  if (cm) {
+    cm.addEventListener('click', (e) => {
+      if (e.target === cm) closeContact();
+    });
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('contactModal').classList.contains('modal-overlay--open')) {
+    // Don't close if word modal is also open or feedback popup is active
+    if (feedbackActivePopup) return;
+    closeContact();
+  }
+});
+
+async function submitContact() {
+  const subject = document.getElementById('contactSubject').value;
+  const contact = document.getElementById('contactField').value.trim();
+  const message = document.getElementById('contactMessage').value.trim();
+  if (!message) return;
+
+  const btn = document.getElementById('contactSendBtn');
+  btn.disabled = true;
+  btn.textContent = 'Отправка…';
+
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, contact: contact || null, message })
+    });
+    if (res.ok) {
+      gtag('event', 'contact_submit', { subject });
+      btn.textContent = 'Отправлено ✓';
+      setTimeout(closeContact, 1500);
+      setTimeout(() => {
+        btn.textContent = 'Отправить';
+        btn.disabled = false;
+        document.getElementById('contactMessage').value = '';
+        document.getElementById('contactField').value = '';
+      }, 2000);
+    } else {
+      const err = await res.json();
+      alert(err.detail || 'Ошибка');
+      btn.textContent = 'Отправить';
+      btn.disabled = false;
+    }
+  } catch {
+    alert('Ошибка сети');
+    btn.textContent = 'Отправить';
+    btn.disabled = false;
+  }
 }
 </script>
 

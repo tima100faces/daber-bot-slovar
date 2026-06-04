@@ -888,5 +888,16 @@ ALTER TABLE ONLY public.word_synonyms
 -- PostgreSQL database dump complete
 --
 
+-- Name: contact_messages; Type: TABLE (added 2026-06-04)
+CREATE TABLE IF NOT EXISTS public.contact_messages (
+    id SERIAL PRIMARY KEY,
+    subject TEXT NOT NULL DEFAULT 'другое',
+    contact TEXT,
+    message TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    resolved BOOLEAN DEFAULT false
+);
+CREATE INDEX IF NOT EXISTS idx_contact_resolved ON public.contact_messages(resolved);
+
 \unrestrict 5QetnKYTQQ6aCHrj0d00lk8VlNffBSySerfSw7NNnACGc74bQpnQCAs2ni6nbcR
 

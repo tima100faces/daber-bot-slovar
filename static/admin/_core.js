@@ -40,17 +40,19 @@ function logout() {
 // ── Counters ──
 async function loadAllCounts() {
   try {
-    const [p, a, r, f] = await Promise.all([
+    const [p, a, r, f, c] = await Promise.all([
       fetch('/admin/api/pending?status=pending').then(r => r.ok ? r.json() : []),
       fetch('/admin/api/pending?status=approved').then(r => r.ok ? r.json() : []),
       fetch('/admin/api/pending?status=rejected').then(r => r.ok ? r.json() : []),
-      fetch('/admin/api/feedback').then(r => r.ok ? r.json() : [])
+      fetch('/admin/api/feedback').then(r => r.ok ? r.json() : []),
+      fetch('/admin/api/contact').then(r => r.ok ? r.json() : [])
     ]);
     const setCnt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
     setCnt('count-pending', p.length);
     setCnt('count-approved', a.length);
     setCnt('count-rejected', r.length);
     setCnt('count-feedback', f.length);
+    setCnt('count-contact', c.filter(m => !m.resolved).length);
   } catch(e) { /* counters stay as-is */ }
 }
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Daber Dict · Одобрено</title>
+<title>Daber Dict · Сообщения</title>
 <link rel="stylesheet" href="/static/fonts.css?v=1">
 <link rel="stylesheet" href="/static/design-system.css">
 <link rel="stylesheet" href="/admin/static/_admin.css?v=4">
@@ -19,10 +19,10 @@
   </div>
   <nav class="sidebar-nav">
     <a href="/admin/pending" class="nav-item"><img src="/static/icons/list-check.svg" class="nav-icon" alt="">Очередь<span class="nav-badge" id="count-pending">0</span></a>
-    <a href="/admin/approved" class="nav-item active"><img src="/static/icons/circle-check.svg" class="nav-icon" alt="">Одобрено<span class="nav-badge" id="count-approved">0</span></a>
+    <a href="/admin/approved" class="nav-item"><img src="/static/icons/circle-check.svg" class="nav-icon" alt="">Одобрено<span class="nav-badge" id="count-approved">0</span></a>
     <a href="/admin/rejected" class="nav-item"><img src="/static/icons/circle-x.svg" class="nav-icon" alt="">Отклонено<span class="nav-badge" id="count-rejected">0</span></a>
     <a href="/admin/feedback" class="nav-item"><img src="/static/icons/message-report.svg" class="nav-icon" alt="">Жалобы<span class="nav-badge" id="count-feedback">0</span></a>
-    <a href="/admin/contact" class="nav-item"><img src="/static/icons/scale.svg" class="nav-icon" alt="">Сообщения<span class="nav-badge" id="count-contact">0</span></a>
+    <a href="/admin/contact" class="nav-item active"><img src="/static/icons/scale.svg" class="nav-icon" alt="">Сообщения<span class="nav-badge" id="count-contact">0</span></a>
     <a href="/admin/words" class="nav-item"><img src="/static/icons/books.svg" class="nav-icon" alt="">Словарь</a>
     <a href="/admin/costs" class="nav-item"><img src="/static/icons/coins.svg" class="nav-icon" alt="">Затраты</a>
     <a href="/admin/facts" class="nav-item"><img src="/static/icons/dice-6.svg" class="nav-icon" alt="">Факты</a>
@@ -35,35 +35,47 @@
 <div class="main-area">
   <header class="topbar">
     <button class="burger" onclick="toggleSidebar()"><img src="/static/icons/menu-2.svg" class="nav-icon" alt=""></button>
-    <h1>Одобрено</h1>
+    <h1>Сообщения</h1>
   </header>
   <main class="content" id="content"><div class="spinner">Загрузка...</div></main>
 </div>
 
 <script src="/admin/static/_core.js"></script>
 <script>
-async function loadApproved() {
-  const res = await fetch('/admin/api/pending?status=approved');
+async function loadMessages() {
+  const res = await fetch('/admin/api/contact');
   if (res.status === 401) { window.location.href = '/admin/login'; return; }
-  const words = await res.json();
+  const items = await res.json();
+  document.getElementById('count-contact').textContent = items.filter(i => !i.resolved).length;
   const content = document.getElementById('content');
-  if (!words.length) { content.innerHTML = '<div class="empty">Нет одобренных слов</div>'; return; }
-  content.innerHTML = words.map(w => {
-    const posLabelStr = posLabel(w);
-    return `<div class="pw-card card-muted">
-    <div class="head">
-      <span class="hebrew">${w.headword || ''}</span>
-      <span class="nikud">${w.headword_nikud || ''}</span>
-      <span class="translit">${w.translit || ''}</span>
-      <span class="badge badge-pos">${posLabelStr}</span>
-      <span class="badge badge-approved"><img src="/static/icons/circle-check.svg" style="width:14px;height:14px;vertical-align:-2px;filter:brightness(0) saturate(0)" alt=""></span>
+  if (!items.length) { content.innerHTML = '<div class="empty">Нет сообщений</div>'; return; }
+  content.innerHTML = items.map(m => {
+    let contactHtml = '';
+    if (m.contact) {
+      const isEmail = m.contact.includes('@');
+      if (isEmail) contactHtml = `<a href="mailto:${m.contact}" class="fb-meta">${m.contact}</a>`;
+      else contactHtml = `<span class="fb-meta">${m.contact}</span>`;
+    }
+    return `<div class="fb-card">
+    <div class="fb-head">
+      <span class="fb-word">${m.subject}</span>
+      <button class="fb-toggle" onclick="toggleMsg(${m.id})" id="msg-btn-${m.id}">${m.resolved ? 'решено' : 'не решено'}</button>
     </div>
-    <div class="translation">${w.translation_ru || '—'}</div>
-    <div class="meta">${new Date(w.reviewed_at || w.created_at).toLocaleString('ru')}${w.source ? ' · ' + w.source : ''}</div>
+    <div class="fb-comment">${m.message.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+    <div class="fb-meta">${contactHtml}${m.contact ? ' · ' : ''}${new Date(m.created_at).toLocaleString('ru')}</div>
   </div>`;
   }).join('');
 }
-function onPageLoad() { loadApproved(); }
+async function toggleMsg(id) {
+  const res = await fetch('/admin/api/contact/' + id + '/toggle', { method: 'POST' });
+  const data = await res.json();
+  if (data.ok) {
+    const btn = document.getElementById('msg-btn-' + id);
+    btn.textContent = data.resolved ? 'решено' : 'не решено';
+    loadMessages();
+  }
+}
+function onPageLoad() { loadMessages(); }
 </script>
 </body>
 </html>
