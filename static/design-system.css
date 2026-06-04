@@ -127,25 +127,27 @@ body {
 
 /* ── Theme Toggle (in navbar) ── */
 .theme-toggle {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 1px solid var(--color-rule);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: none;
   background: transparent;
   color: var(--color-ink);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.3s;
+  transition: background 0.2s;
   flex-shrink: 0;
+  padding: 0;
+  margin: calc(-1 * var(--space-xs));
 }
 .theme-toggle:hover {
   background: var(--color-surface-2);
 }
 .theme-toggle svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   stroke: currentColor;
   fill: none;
   stroke-width: 2;

@@ -47,7 +47,6 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--card-shadow);
   transition: transform 0.4s var(--ease-out), opacity 0.4s var(--ease-out);
-  overflow: hidden;
 }
 .nav--hidden {
   transform: translateX(-50%) translateY(-150%);
@@ -650,10 +649,6 @@
   }
   .modal__hebrew { font-size: 2rem; }
   .modal__hebrew--verb { font-size: 2rem; }
-  .theme-toggle {
-    width: 28px;
-    height: 28px;
-  }
   .footer {
     padding: var(--space-md) 0;
     font-size: 0.8rem;
