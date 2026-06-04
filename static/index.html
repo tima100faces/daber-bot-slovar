@@ -328,16 +328,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: #ef4444; /* red — drives currentColor in inline SVG */
 }
-.quiz__heart img {
-  width: 22px;
-  height: 22px;
-  color: #ef4444;
-  fill: #ef4444;
-}
-.quiz__heart--lost img {
-  color: var(--color-muted);
-  fill: none;
+.quiz__heart--lost {
+  color: var(--color-muted); /* muted outline for lost lives */
 }
 
 .quiz__question {
@@ -496,7 +490,6 @@
 <!-- Modal -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <button class="modal__close" id="modalClose"><img src="/static/icons/x.svg" class="icon icon--lg t-icon" alt=""></button>
     <div id="modalContent"></div>
   </div>
 </div>
@@ -1348,18 +1341,9 @@ document.getElementById('searchInput').addEventListener('keydown', (e) => {
 
 document.getElementById('randomBtn').addEventListener('click', showRandom);
 
-document.getElementById('modalClose').addEventListener('click', () => {
-  document.getElementById('modal').classList.remove('modal-overlay--open');
-  document.getElementById('modalClose').style.display = '';
-  const mi = document.getElementById('modal').querySelector('.modal');
-  mi.style.padding = '';
-  mi.style.overflow = '';
-});
-
 document.getElementById('modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) {
     document.getElementById('modal').classList.remove('modal-overlay--open');
-    document.getElementById('modalClose').style.display = '';
     const mi = document.getElementById('modal').querySelector('.modal');
     mi.style.padding = '';
     mi.style.overflow = '';
@@ -1371,7 +1355,6 @@ document.addEventListener('keydown', (e) => {
     // Don't close the word modal if feedback popup is open
     if (feedbackActivePopup) return;
     document.getElementById('modal').classList.remove('modal-overlay--open');
-    document.getElementById('modalClose').style.display = '';
     const mi = document.getElementById('modal').querySelector('.modal');
     mi.style.padding = '';
     mi.style.overflow = '';
@@ -1602,7 +1585,6 @@ async function openWotd() {
       </div>`;
 
     document.getElementById('modalContent').innerHTML = html;
-    document.getElementById('modalClose').style.display = 'none';
     const modalInner = document.getElementById('modal').querySelector('.modal');
     modalInner.style.padding = '0';
     modalInner.style.overflow = 'hidden';
@@ -1661,9 +1643,13 @@ function renderHearts(lives) {
   let html = '';
   for (let i = 0; i < QUIZ_MAX_LIVES; i++) {
     const alive = i < lives;
-    html += `<span class="quiz__heart ${alive ? '' : 'quiz__heart--lost'}">
-      <img src="/static/icons/heart.svg" class="icon icon--sm" alt="" style="filter: ${alive ? 'none' : 'grayscale(1) opacity(0.35)'};">
-    </span>`;
+    // Inline SVG with currentColor — driven by CSS .quiz__heart / .quiz__heart--lost
+    html += `<span class="quiz__heart${alive ? '' : ' quiz__heart--lost'}">`
+      + `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" `
+      + `stroke-width="2" stroke-linecap="round" stroke-linejoin="round">`
+      + `<path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"`
+      + ` fill="${alive ? 'currentColor' : 'none'}" stroke="currentColor"/>`
+      + `</svg></span>`;
   }
   return html;
 }
