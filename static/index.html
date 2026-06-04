@@ -1303,7 +1303,7 @@ async function loadFactTeaser() {
     if (!el) return;
     el.style.display = 'block';
     el.style.cursor = 'pointer';
-    el.onclick = function() { window.location = '/facts/' + fact.id; };
+    el.addEventListener('click', function() { window.location.href = '/facts/' + fact.id; });
     el.innerHTML = `
       <div class="fact-teaser__label">Интересный факт</div>
       <div class="fact-teaser__title">${escHtml(fact.title)}</div>

@@ -3,121 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Факты — Daber Admin</title>
+<title>Daber Dict · Факты</title>
 <link rel="stylesheet" href="/static/fonts.css?v=1">
 <link rel="stylesheet" href="/static/design-system.css?v=2">
 <link rel="stylesheet" href="/static/admin/_admin.css?v=3">
 <style>
 .pending-card {
-  background: var(--color-surface, #1c1c2a);
-  border: 1px solid var(--color-rule, #2a2a3a);
-  border-radius: var(--radius-lg, 12px);
-  padding: var(--space-lg, 1.2rem);
-  margin-bottom: var(--space-md, 0.8rem);
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
 }
 .pending-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-sm, 0.4rem);
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: var(--space-sm);
 }
 .pending-card__title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: var(--space-sm, 0.4rem);
-  color: var(--color-ink, #e0e0e0);
+  font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-sm);
+  color: var(--color-ink);
 }
 .pending-card__body {
-  font-size: 0.9rem;
-  color: var(--color-muted, #999);
-  line-height: 1.55;
-  margin-bottom: var(--space-sm, 0.5rem);
+  font-size: 0.9rem; color: var(--color-muted); line-height: 1.55;
+  margin-bottom: var(--space-sm);
 }
 .pending-card__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md, 1rem);
-  font-size: 0.8rem;
-  color: var(--color-neutral, #777);
+  display: flex; flex-wrap: wrap; gap: var(--space-md);
+  font-size: 0.8rem; color: var(--color-neutral);
 }
-.btn--sm {
-  padding: 0.3rem 0.8rem;
-  font-size: 0.8rem;
-  border-radius: var(--radius-sm);
-}
+.btn--sm { padding: 0.3rem 0.8rem; font-size: 0.8rem; border-radius: var(--radius-sm); }
 </style>
 </head>
 <body>
-<div class="admin-body">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar__logo">
-      <a href="/admin" class="sidebar__logo-link">
-        <span class="logo-img"></span>
-      </a>
-    </div>
-    <nav class="sidebar__nav">
-      <a href="/admin/pending" class="sidebar__link"><img src="/static/icons/list-check.svg" class="nav-icon" alt=""> Модерация <span class="sidebar__badge" id="badgePending">—</span></a>
-      <a href="/admin/approved" class="sidebar__link"><img src="/static/icons/circle-check.svg" class="nav-icon" alt=""> Одобрено <span class="sidebar__badge" id="badgeApproved">—</span></a>
-      <a href="/admin/rejected" class="sidebar__link"><img src="/static/icons/circle-x.svg" class="nav-icon" alt=""> Отклонено <span class="sidebar__badge" id="badgeRejected">—</span></a>
-      <a href="/admin/feedback" class="sidebar__link"><img src="/static/icons/message-report.svg" class="nav-icon" alt=""> Жалобы <span class="sidebar__badge" id="badgeFeedback">—</span></a>
-      <a href="/admin/words" class="sidebar__link"><img src="/static/icons/books.svg" class="nav-icon" alt=""> Словарь</a>
-      <a href="/admin/costs" class="sidebar__link"><img src="/static/icons/coins.svg" class="nav-icon" alt=""> Затраты</a>
-      <a href="/admin/facts" class="sidebar__link sidebar__link--active"><img src="/static/icons/dice-6.svg" class="nav-icon" alt=""> Факты</a>
-    </nav>
-    <div class="sidebar__footer">
-      <a href="/admin/logout" class="sidebar__link"><img src="/static/icons/logout.svg" class="nav-icon" alt=""> Выйти</a>
-    </div>
-  </aside>
 
-  <main class="admin-content">
-    <div class="admin-header">
-      <h1>Факты об иврите</h1>
-      <button class="btn btn--accent" id="generateBtn" onclick="generateFacts()">Сгенерировать ещё</button>
-    </div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <a href="/" style="display:flex;align-items:center;text-decoration:none"><span class="logo-img"></span><img src="/daber-logo.svg" class="logo-fallback" alt="Daber"></a>
+    <span class="admin-label">Admin</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/admin/pending" class="nav-item"><img src="/static/icons/list-check.svg" class="nav-icon" alt="">Очередь<span class="nav-badge" id="count-pending">0</span></a>
+    <a href="/admin/approved" class="nav-item"><img src="/static/icons/circle-check.svg" class="nav-icon" alt="">Одобрено<span class="nav-badge" id="count-approved">0</span></a>
+    <a href="/admin/rejected" class="nav-item"><img src="/static/icons/circle-x.svg" class="nav-icon" alt="">Отклонено<span class="nav-badge" id="count-rejected">0</span></a>
+    <a href="/admin/feedback" class="nav-item"><img src="/static/icons/message-report.svg" class="nav-icon" alt="">Жалобы<span class="nav-badge" id="count-feedback">0</span></a>
+    <a href="/admin/words" class="nav-item"><img src="/static/icons/books.svg" class="nav-icon" alt="">Словарь</a>
+    <a href="/admin/costs" class="nav-item"><img src="/static/icons/coins.svg" class="nav-icon" alt="">Затраты</a>
+    <a href="/admin/facts" class="nav-item active"><img src="/static/icons/dice-6.svg" class="nav-icon" alt="">Факты</a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="nav-item logout-item" onclick="logout()"><img src="/static/icons/logout.svg" class="nav-icon" alt="">Выйти</button>
+  </div>
+</aside>
 
+<div class="main-area">
+  <header class="topbar">
+    <button class="burger" onclick="toggleSidebar()"><img src="/static/icons/menu-2.svg" class="nav-icon" alt=""></button>
+    <h1>Факты об иврите</h1>
+    <button class="btn btn--accent" id="generateBtn" onclick="generateFacts()" style="margin-left:auto">Сгенерировать ещё</button>
+  </header>
+  <main class="content" id="content">
     <div id="statusMsg" style="display:none;padding:0.5rem 1rem;border-radius:6px;margin-bottom:1rem;font-weight:600"></div>
-
-    <div class="card-list" id="factsList">
-      <div style="text-align:center;color:var(--color-muted);padding:2rem">Загрузка...</div>
-    </div>
+    <div id="factsList"><div class="spinner">Загрузка...</div></div>
   </main>
 </div>
 
-<script src="/static/admin/_core.js?v=1"></script>
+<script src="/admin/static/_core.js"></script>
 <script>
 const TYPE_LABELS = { did_you_know: 'А вы знали?', story: 'История', etymology: 'Этимология', comparison: 'Сравнение' };
 
 async function loadFacts() {
   try {
     const res = await fetch('/admin/api/facts');
+    if (res.status === 401) { window.location.href = '/admin/login'; return; }
     const facts = await res.json();
     renderFacts(facts);
   } catch (e) {
-    document.getElementById('factsList').innerHTML = '<div style="text-align:center;color:var(--color-red);padding:2rem">Ошибка загрузки</div>';
+    document.getElementById('factsList').innerHTML = '<div class="card-muted">Ошибка загрузки</div>';
   }
 }
 
 function renderFacts(facts) {
   const list = document.getElementById('factsList');
   if (!facts.length) {
-    list.innerHTML = '<div style="text-align:center;color:var(--color-muted);padding:2rem">Нет фактов. Нажмите «Сгенерировать».</div>';
+    list.innerHTML = '<div class="card-muted">Нет фактов. Нажмите «Сгенерировать».</div>';
     return;
   }
-
   list.innerHTML = facts.map(f => `
-    <div class="pending-card ${f.is_published ? 'card-published' : 'card-unpublished'}">
+    <div class="pending-card">
       <div class="pending-card__header">
-        <span class="pending-card__type" style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-accent)">${TYPE_LABELS[f.fact_type] || f.fact_type}</span>
+        <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-accent)">${TYPE_LABELS[f.fact_type] || f.fact_type}</span>
         <span style="font-size:0.75rem;color:var(--color-neutral)">#${f.id}</span>
       </div>
       <div class="pending-card__title">${esc(f.title)}</div>
       <div class="pending-card__body">${esc(f.fact_body)}</div>
       <div class="pending-card__meta">
-        <span style="font-size:0.75rem;color:var(--color-neutral)">${f.created_at ? new Date(f.created_at).toLocaleString('ru') : ''}</span>
-        ${f.source_url ? `<a href="${escAttr(f.source_url)}" target="_blank" style="font-size:0.75rem;color:var(--color-accent)">источник</a>` : ''}
-        <span style="font-size:0.75rem;color:${f.is_published ? 'var(--color-green)' : 'var(--color-orange)'}">${f.is_published ? '✓ опубл.' : '— черновик'}</span>
+        <span>${f.created_at ? new Date(f.created_at).toLocaleString('ru') : ''}</span>
+        ${f.source_url ? `<a href="${escAttr(f.source_url)}" target="_blank" style="color:var(--color-accent)">источник</a>` : ''}
+        <span style="color:${f.is_published ? 'var(--color-green)' : 'var(--color-orange)'}">${f.is_published ? '✓ опубл.' : '— черновик'}</span>
       </div>
-      <div class="pending-card__actions" style="display:flex;gap:0.5rem;margin-top:var(--space-sm)">
+      <div style="display:flex;gap:0.5rem;margin-top:var(--space-sm)">
         <button class="btn btn--sm" onclick="togglePublish(${f.id}, ${!f.is_published})">${f.is_published ? 'Снять с публикации' : 'Опубликовать'}</button>
         <button class="btn btn--sm" onclick="deleteFact(${f.id})" style="color:var(--color-red);border-color:var(--color-red)">Удалить</button>
       </div>
@@ -126,53 +110,39 @@ function renderFacts(facts) {
 }
 
 async function togglePublish(id, publish) {
-  try {
-    await fetch(`/admin/api/facts/${id}`, {
-      method: 'PUT',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({is_published: publish})
-    });
-    loadFacts();
-  } catch (e) {
-    showStatus('Ошибка', 'error');
-  }
+  await fetch(`/admin/api/facts/${id}`, {
+    method: 'PUT', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({is_published: publish})
+  });
+  loadFacts();
 }
 
 async function deleteFact(id) {
   if (!confirm('Удалить факт #' + id + '?')) return;
-  try {
-    await fetch(`/admin/api/facts/${id}`, {method: 'DELETE'});
-    loadFacts();
-    showStatus('Факт удалён', 'ok');
-  } catch (e) {
-    showStatus('Ошибка удаления', 'error');
-  }
+  await fetch(`/admin/api/facts/${id}`, {method: 'DELETE'});
+  loadFacts();
 }
 
 async function generateFacts() {
   const btn = document.getElementById('generateBtn');
-  btn.disabled = true;
-  btn.textContent = 'Генерирую...';
-  showStatus('Запущена генерация фактов через Claude Sonnet...', 'info');
-
+  btn.disabled = true; btn.textContent = 'Генерирую...';
+  showStatus('Запущена генерация через Claude Sonnet...', 'info');
   try {
     const res = await fetch('/admin/api/enrichment/generate-facts', {method: 'POST'});
     const data = await res.json();
     showStatus(data.message || 'Готово!', data.status === 'ok' ? 'ok' : 'error');
     loadFacts();
   } catch (e) {
-    showStatus('Ошибка: ' + e.message, 'error');
+    showStatus('Ошибка', 'error');
   }
-  btn.disabled = false;
-  btn.textContent = 'Сгенерировать ещё';
+  btn.disabled = false; btn.textContent = 'Сгенерировать ещё';
 }
 
 function showStatus(msg, type) {
   const el = document.getElementById('statusMsg');
-  el.style.display = 'block';
-  el.textContent = msg;
+  el.style.display = 'block'; el.textContent = msg;
   el.style.background = type === 'ok' ? 'var(--color-green)' : type === 'error' ? 'var(--color-red)' : 'var(--color-accent-dim)';
-  el.style.color = type === 'ok' || type === 'error' ? '#fff' : 'var(--color-ink)';
+  el.style.color = '#fff';
   setTimeout(() => el.style.display = 'none', 5000);
 }
 
