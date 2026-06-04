@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daber Dict · Верификация</title>
+<link rel="stylesheet" href="/static/fonts.css?v=1">
+<link rel="stylesheet" href="/static/design-system.css">
+<link rel="stylesheet" href="/admin/static/_admin.css?v=4">
+<style>
+.verify-card { background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-sm) }
+.verify-card--fix { border-left:3px solid var(--color-accent) }
+.verify-card--ok { border-left:3px solid var(--color-positive, #22c55e); opacity:0.6 }
+.verify-card--applied { border-left:3px solid var(--color-muted); opacity:0.4 }
+.verify-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem }
+.verify-word { font-size:1.1rem; font-weight:700 }
+.verify-current { font-size:0.8125rem; color:var(--color-muted); margin-bottom:0.25rem }
+.verify-fix { font-size:0.8125rem; color:var(--color-accent) }
+.verify-explanation { font-size:0.8125rem; color:var(--color-muted); margin-top:0.5rem; font-style:italic }
+.verify-actions { display:flex; gap:0.5rem; margin-top:0.75rem }
+.verify-actions button { font-size:0.8125rem; padding:0.35rem 0.75rem; border-radius:var(--radius-sm); border:1px solid var(--color-rule); background:var(--color-surface-2); color:var(--color-ink); cursor:pointer }
+.verify-actions button:hover { border-color:var(--color-accent) }
+.verify-actions .btn-apply { background:var(--color-accent); color:#fff; border-color:var(--color-accent) }
+.verify-actions .btn-apply:hover { background:var(--color-accent-2) }
+.verify-stats { display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap }
+.verify-stat { background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-md); padding:0.5rem 1rem; font-size:0.875rem }
+.verify-stat strong { color:var(--color-accent) }
+.filters { display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap }
+.filter-btn { font-size:0.8125rem; padding:0.35rem 0.75rem; border-radius:var(--radius-sm); border:1px solid var(--color-rule); background:var(--color-surface); color:var(--color-ink); cursor:pointer }
+.filter-btn.active { background:var(--color-accent); color:#fff; border-color:var(--color-accent) }
+</style>
+</head>
+<body class="admin-body">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <a href="/" style="display:flex;align-items:center;text-decoration:none"><span class="logo-img"></span><img src="/daber-logo.svg" class="logo-fallback" alt="Daber"></a>
+    <span class="admin-label">Admin</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/admin/pending" class="nav-item"><img src="/static/icons/list-check.svg" class="nav-icon" alt="">Очередь<span class="nav-badge" id="count-pending">0</span></a>
+    <a href="/admin/approved" class="nav-item"><img src="/static/icons/circle-check.svg" class="nav-icon" alt="">Одобрено<span class="nav-badge" id="count-approved">0</span></a>
+    <a href="/admin/rejected" class="nav-item"><img src="/static/icons/circle-x.svg" class="nav-icon" alt="">Отклонено<span class="nav-badge" id="count-rejected">0</span></a>
+    <a href="/admin/feedback" class="nav-item"><img src="/static/icons/message-report.svg" class="nav-icon" alt="">Жалобы<span class="nav-badge" id="count-feedback">0</span></a>
+    <a href="/admin/contact" class="nav-item"><img src="/static/icons/scale.svg" class="nav-icon" alt="">Сообщения<span class="nav-badge" id="count-contact">0</span></a>
+    <a href="/admin/verify" class="nav-item active"><img src="/static/icons/search.svg" class="nav-icon" alt="">Верификация<span class="nav-badge" id="count-verify">0</span></a>
+    <a href="/admin/words" class="nav-item"><img src="/static/icons/books.svg" class="nav-icon" alt="">Словарь</a>
+    <a href="/admin/costs" class="nav-item"><img src="/static/icons/coins.svg" class="nav-icon" alt="">Затраты</a>
+    <a href="/admin/facts" class="nav-item"><img src="/static/icons/dice-6.svg" class="nav-icon" alt="">Факты</a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="nav-item logout-item" onclick="logout()"><img src="/static/icons/logout.svg" class="nav-icon" alt="">Выйти</button>
+  </div>
+</aside>
+
+<div class="main-area">
+  <header class="topbar">
+    <button class="burger" onclick="toggleSidebar()"><img src="/static/icons/menu-2.svg" class="nav-icon" alt=""></button>
+    <h1>Верификация</h1>
+  </header>
+  <main class="content" id="content">
+    <div class="verify-stats" id="stats"></div>
+    <div class="filters">
+      <button class="filter-btn active" onclick="setFilter('all')">Все</button>
+      <button class="filter-btn" onclick="setFilter('fix')">Исправить</button>
+      <button class="filter-btn" onclick="setFilter('ok')">Ок</button>
+      <button class="filter-btn" onclick="setFilter('applied')">Применено</button>
+    </div>
+    <div id="list"><div class="spinner">Загрузка...</div></div>
+  </main>
+</div>
+
+<script src="/admin/static/_core.js"></script>
+<script>
+let allItems = [];
+let currentFilter = 'all';
+
+async function loadVerification() {
+  const res = await fetch('/admin/api/verify');
+  if (res.status === 401) { window.location.href = '/admin/login'; return; }
+  allItems = await res.json();
+  applyFilter();
+  updateStats();
+}
+
+function updateStats() {
+  const total = allItems.length;
+  const toFix = allItems.filter(i => i.sonnet_verdict === 'fix' && !i.applied).length;
+  const ok = allItems.filter(i => i.sonnet_verdict === 'ok').length;
+  const applied = allItems.filter(i => i.applied).length;
+  document.getElementById('stats').innerHTML = `
+    <div class="verify-stat">Всего: <strong>${total}</strong></div>
+    <div class="verify-stat">Исправить: <strong>${toFix}</strong></div>
+    <div class="verify-stat">Ок: <strong>${ok}</strong></div>
+    <div class="verify-stat">Применено: <strong>${applied}</strong></div>
+  `;
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.textContent.trim().toLowerCase().includes(f === 'all' ? 'все' : f === 'fix' ? 'испр' : f === 'ok' ? 'ок' : 'прим')));
+  applyFilter();
+}
+
+function applyFilter() {
+  let items = allItems;
+  if (currentFilter === 'fix') items = allItems.filter(i => i.sonnet_verdict === 'fix' && !i.applied);
+  else if (currentFilter === 'ok') items = allItems.filter(i => i.sonnet_verdict === 'ok');
+  else if (currentFilter === 'applied') items = allItems.filter(i => i.applied);
+  
+  const list = document.getElementById('list');
+  if (!items.length) { list.innerHTML = '<div class="empty">Нет результатов</div>'; return; }
+  
+  list.innerHTML = items.map(v => {
+    const isFix = v.sonnet_verdict === 'fix';
+    const isOk = v.sonnet_verdict === 'ok';
+    const isApplied = v.applied;
+    const cssClass = isApplied ? 'verify-card--applied' : (isFix ? 'verify-card--fix' : 'verify-card--ok');
+    
+    let fixes = [];
+    if (v.sonnet_pos) fixes.push(`POS: ${v.sonnet_pos}`);
+    if (v.sonnet_gender) fixes.push(`род: ${v.sonnet_gender}`);
+    if (v.sonnet_number) fixes.push(`число: ${v.sonnet_number}`);
+    if (v.sonnet_translit) fixes.push(`транслит: ${v.sonnet_translit}`);
+    if (v.sonnet_translation) fixes.push(`перевод: ${v.sonnet_translation}`);
+    
+    return `<div class="verify-card ${cssClass}">
+      <div class="verify-head">
+        <span class="verify-word">${v.headword}</span>
+        <span style="font-size:0.75rem;color:var(--color-muted)">${isApplied ? '✓ применено' : (isFix ? '⚠ исправить' : '✓ ок')}</span>
+      </div>
+      <div class="verify-current">Текущее: ${v.pos_slug || '?'} · ${v.gender || '—'} · ${v.translit || '—'} · ${(v.translation_enriched || '—')}</div>
+      ${isFix ? `<div class="verify-fix">→ ${fixes.join(' · ') || 'исправить'}</div>` : ''}
+      ${v.sonnet_explanation ? `<div class="verify-explanation">${v.sonnet_explanation}</div>` : ''}
+      ${isFix && !isApplied ? `<div class="verify-actions">
+        <button class="btn-apply" onclick="applyFix(${v.word_id}, ${v.id})">Применить исправления</button>
+        <button onclick="skipFix(${v.id})">Пропустить</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function applyFix(wordId, verifyId) {
+  const res = await fetch('/admin/api/verify/' + verifyId + '/apply', { method: 'POST' });
+  if (res.ok) {
+    const data = await res.json();
+    if (data.ok) {
+      // Update local state
+      const item = allItems.find(i => i.id === verifyId);
+      if (item) item.applied = true;
+      applyFilter();
+      updateStats();
+    }
+  } else {
+    alert('Ошибка применения');
+  }
+}
+
+async function skipFix(verifyId) {
+  const res = await fetch('/admin/api/verify/' + verifyId + '/skip', { method: 'POST' });
+  if (res.ok) {
+    const item = allItems.find(i => i.id === verifyId);
+    if (item) item.sonnet_verdict = 'ok';
+    applyFilter();
+    updateStats();
+  }
+}
+
+function onPageLoad() { loadVerification(); }
+</script>
+</body>
+</html>

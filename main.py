@@ -1686,6 +1686,90 @@ def admin_contact_toggle(msg_id: int, request: Request):
     return {"ok": True, "id": row[0], "resolved": row[1]}
 
 
+# ─── Word Verification (admin) ────────────────────────────────────────────
+
+@app.get("/admin/api/verify")
+def admin_verify_list(request: Request):
+    admin_required(request)
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("""
+        SELECT v.*, w.pos_slug, w.gender, w.number, w.translit, 
+               w.translation_enriched::text as translation_enriched
+        FROM word_verification v
+        JOIN words w ON w.id = v.word_id
+        ORDER BY 
+            CASE v.sonnet_verdict WHEN 'fix' THEN 0 WHEN 'error' THEN 1 ELSE 2 END,
+            v.created_at DESC
+        LIMIT 500
+    """)
+    rows = [dict(r) for r in cur.fetchall()]
+    for r in rows:
+        r["created_at"] = r["created_at"].isoformat() if r.get("created_at") else None
+    conn.close()
+    return rows
+
+
+@app.post("/admin/api/verify/{verify_id}/apply")
+def admin_verify_apply(verify_id: int, request: Request):
+    """Apply Sonnet's suggested fixes to the word."""
+    admin_required(request)
+    conn = get_db_writable()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    
+    # Get the verification record
+    cur.execute("SELECT * FROM word_verification WHERE id = %s", (verify_id,))
+    v = cur.fetchone()
+    if not v:
+        conn.close()
+        raise HTTPException(404, "Verification not found")
+    
+    # Build update query
+    updates = []
+    params = []
+    if v["sonnet_pos"]:
+        updates.append("pos_slug = %s")
+        params.append(v["sonnet_pos"])
+    if v["sonnet_gender"]:
+        updates.append("gender = %s")
+        params.append(v["sonnet_gender"])
+    if v["sonnet_number"]:
+        updates.append("number = %s")
+        params.append(v["sonnet_number"])
+    if v["sonnet_translit"]:
+        updates.append("translit = %s")
+        params.append(v["sonnet_translit"])
+    if v["sonnet_translation"]:
+        updates.append("translation_enriched = %s")
+        params.append(v["sonnet_translation"])
+    
+    if updates:
+        params.append(v["word_id"])
+        cur.execute(f"UPDATE words SET {', '.join(updates)} WHERE id = %s", params)
+    
+    # Mark as applied
+    cur.execute("UPDATE word_verification SET applied = true WHERE id = %s", (verify_id,))
+    
+    conn.commit()
+    conn.close()
+    return {"ok": True, "applied": len(updates), "fields": updates}
+
+
+@app.post("/admin/api/verify/{verify_id}/skip")
+def admin_verify_skip(verify_id: int, request: Request):
+    """Skip this verification — mark as ok."""
+    admin_required(request)
+    conn = get_db_writable()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE word_verification SET sonnet_verdict = 'ok' WHERE id = %s",
+        (verify_id,),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True}
+
+
 # ─── Enrichment Control ────────────────────────────────────────────────────
 
 @app.get("/admin/api/enrichment/status")
@@ -2316,6 +2400,10 @@ def admin_feedback_page():
 @app.get("/admin/contact")
 def admin_contact_page():
     return FileResponse(str(ADMIN_STATIC / "contact.html"))
+
+@app.get("/admin/verify")
+def admin_verify_page():
+    return FileResponse(str(ADMIN_STATIC / "verify.html"))
 
 @app.get("/admin/words")
 def admin_words_page():
