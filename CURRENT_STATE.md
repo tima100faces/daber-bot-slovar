@@ -1,6 +1,28 @@
 # DABER — Current State (04.06.2026)
 
-## Сегодня сделано: UI-перестройка админки
+## Сегодня сделано: Блог фактов, Arimo, вынос CSS
+
+### Блог «Факты об иврите»
+- ✅ Таблица `language_facts` (fact_type, title, fact_body, source_url, is_published)
+- ✅ **API**: `GET /api/facts/random`, `GET /api/facts`, `GET /api/facts/{id}`, админ-CRUD
+- ✅ **Страница `/facts`**: лента с пагинацией, 4 типа фактов (история, этимология, сравнение, а вы знали)
+- ✅ **Страница `/facts/{id}`**: отдельный факт + Schema.org Article для Google
+- ✅ **Главная**: карточка «Интересный факт» под кнопкой «Слово дня» (JS: `loadFactTeaser`)
+- ✅ **Админка `/admin/facts`**: список, опубликовать/снять/удалить, сгенерировать
+- ✅ **Генерация**: `enrichment/generate_facts.py` — Sonnet рерайтит источники в факты
+- ✅ **Источники**: NatGeo + Britannica → `enrichment/sources_raw.md` (11K chars)
+- ✅ 10 фактов сгенерированы и опубликованы
+
+### Шрифты и CSS
+- ✅ Arimo — единственный шрифт всего сайта (--font-body/display/hebrew)
+- ✅ **Вынос CSS**: `static/components.css` (1000 строк) — все переиспользуемые стили
+- ✅ `index.html` `<style>` сокращён с 1000 до 175 строк (только страничное)
+- ✅ Новый токен `--color-legal` для ссылок футера
+
+### Фиксы UI
+- ✅ Поле поиска светлее (`--color-surface-2`) — видно на солнце
+- ✅ Иконки на accent-кнопках белые (`brightness(0) invert(1)`)
+- ✅ Футер: меньше шрифт (0.8rem), меньше паддинг (1.5rem), muted цвет
 
 ### Модульная архитектура
 - ✅ **6 отдельных страниц**: `pending.html`, `approved.html`, `rejected.html`, `feedback.html`, `words.html`, `costs.html`
@@ -130,10 +152,14 @@ static/admin/
 ---
 
 ## Файлы
-- `main.py` — FastAPI (~1930 строк, добавлены роуты для страниц + RedirectResponse)
-- `static/index.html` — фронтенд словаря (маска логотипа, локальные Tabler-иконки)
+- `main.py` — FastAPI (~2100 строк, факты API, роуты страниц, enrichment-триггер)
+- `static/index.html` — фронтенд словаря (маска логотипа, локальные Tabler, карточка факта)
+- `static/components.css` — общие компонентные стили (~1000 строк, вынесены из index.html)
+- `static/facts.html` — страница ленты фактов
+- `static/fact.html` — страница отдельного факта + Schema.org
 - `static/admin/_admin.css` — общие стили админки (~450 строк)
 - `static/admin/_core.js` — общий JS админки (~75 строк)
+- `static/admin/facts.html` — админка фактов (список, генерация)
 - `static/admin/pending.html` — модерация (~420 строк)
 - `static/admin/approved.html` — одобренные (~90 строк)
 - `static/admin/rejected.html` — отклонённые (~90 строк)
@@ -142,11 +168,13 @@ static/admin/
 - `static/admin/costs.html` — затраты (~240 строк)
 - `static/admin/login.html` — TOTP-логин
 - `static/design-system.css`, `fonts.css` — дизайн-токены и шрифты
-- `static/icons/` — 16 локальных Tabler SVG
+- `static/icons/` — 19 локальных Tabler SVG
 - `enrichment/sources.py` — RSS/Telegram/Reddit источники
 - `enrichment/pipeline.py` — Gemini-экстракция + вызов верификации
 - `enrichment/verify.py` — Layer 1 (правила) + Layer 2 (Sonnet)
 - `enrichment/run.py` — оркестратор (сбор → экстракция → верификация)
+- `enrichment/generate_facts.py` — генерация фактов через Sonnet из источников
+- `enrichment/sources_raw.md` — сырой материал из NatGeo + Britannica
 - `backup.sh` — pg_dump ежедневно
 - `.env` — ANTHROPIC_API_KEY, ADMIN_TOTP_SECRET, DB_PASSWORD
 
@@ -154,9 +182,10 @@ static/admin/
 
 ## UI / UX
 - Тёмная/светлая темы, дизайн-токены в `design-system.css`
-- Локальные шрифты: Arimo (иврит), Inter, JetBrains Mono (0 внешних запросов)
-- Локальные иконки: Tabler 3.31.0 (0 внешних запросов)
+- Шрифт: Arimo для всего (body + display + hebrew), JetBrains Mono для кода
+- Локальные шрифты и иконки: 0 внешних запросов
 - Мобильные: 100dvh, бургер-меню, адаптивные чипы
-- SEO: Open Graph, favicon.svg
+- SEO: Open Graph, Schema.org Article, favicon.svg
+- Блог фактов: `/facts` + отдельные страницы с rich snippets
 - Cloudflare + nginx rate limit
 - Админка: модульная, сайдбар, букмаркабельные URL
