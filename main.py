@@ -1961,16 +1961,17 @@ def quiz():
         else:
             correct_answer = str(te)
 
-        # Get 3 distractors (random other translations)
-        # Use a subquery to get 3 random distinct non-empty enriched translations
+        # Get 3 distractors — same POS as target, random other translations
+        target_pos = target["pos_slug"]
         cur.execute("""
             SELECT translation_enriched FROM (
                 SELECT DISTINCT ON (translation_enriched) translation_enriched
                 FROM words
                 WHERE id != %s AND translation_enriched IS NOT NULL
+                  AND pos_slug = %s
             ) t
             ORDER BY RANDOM() LIMIT 10
-        """, (target["id"],))
+        """, (target["id"], target_pos))
 
         distractor_raws = []
         for row in cur.fetchall():
