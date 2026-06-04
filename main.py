@@ -1768,6 +1768,9 @@ def admin_verify_apply(verify_id: int, request: Request):
         params.append(v["word_id"])
         try:
             cur.execute(f"UPDATE words SET {', '.join(updates)} WHERE id = %s", params)
+            # Clear notes if any significant fields changed — they're now stale
+            if v["sonnet_pos"] or v["sonnet_gender"] or v["sonnet_number"] or v["sonnet_translation"]:
+                cur.execute("UPDATE words SET notes = NULL WHERE id = %s", (v["word_id"],))
         except psycopg2.errors.UniqueViolation:
             conn.rollback()
             # Find conflicting word
