@@ -171,10 +171,15 @@
   background: var(--color-surface);
   border: 1px solid var(--color-rule);
   border-radius: var(--radius-lg);
-  padding: var(--space-lg);
   transition: border-color 0.2s;
 }
 .fact-teaser:hover { border-color: var(--color-accent); }
+.fact-teaser__wrapper {
+  display: block;
+  padding: var(--space-lg);
+  text-decoration: none;
+  color: inherit;
+}
 .fact-teaser__label {
   font-size: 0.7rem;
   font-weight: 700;
@@ -204,7 +209,7 @@
 }
 .fact-teaser__link:hover { text-decoration: underline; }
 @media (max-width: 768px) {
-  .fact-teaser { padding: var(--space-md); margin: 0 auto var(--space-md); }
+  .fact-teaser__wrapper { padding: var(--space-md); }
   .fact-teaser__title { font-size: 0.95rem; }
 }
 
@@ -1302,13 +1307,13 @@ async function loadFactTeaser() {
     const el = document.getElementById('factTeaser');
     if (!el) return;
     el.style.display = 'block';
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', function() { window.location.href = '/facts/' + fact.id; });
     el.innerHTML = `
-      <div class="fact-teaser__label">Интересный факт</div>
-      <div class="fact-teaser__title">${escHtml(fact.title)}</div>
-      <div class="fact-teaser__body">${escHtml(fact.fact_body).substring(0, 180)}...</div>
-      <span class="fact-teaser__link">Читать дальше →</span>`;
+      <a href="/facts/${fact.id}" class="fact-teaser__wrapper">
+        <div class="fact-teaser__label">Интересный факт</div>
+        <div class="fact-teaser__title">${escHtml(fact.title)}</div>
+        <div class="fact-teaser__body">${escHtml(fact.fact_body).substring(0, 180)}...</div>
+        <span class="fact-teaser__link">Читать дальше →</span>
+      </a>`;
   } catch (e) {
     // Silently fail — fact teaser is optional
   }
