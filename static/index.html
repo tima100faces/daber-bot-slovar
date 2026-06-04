@@ -703,9 +703,12 @@ async function loadStats() {
     
     // Build POS filters
     const posNames = {
-      'noun': 'существительное', 'verb': 'глагол', 'adj': 'прилагательное', 'prep': 'предлог',
-      'adv': 'наречие', 'pron': 'местоимение', 'conj': 'союз', 'num': 'числительное',
-      'intj': 'междометие', 'particle': 'частица', 'pref': 'приставка'
+      'noun': 'существительные', 'verb': 'глаголы', 'adj': 'прилагательные',
+      'prep': 'предлоги', 'adv': 'наречия', 'pron': 'местоимения',
+      'conj': 'союзы', 'num': 'числительные', 'intj': 'междометия',
+      'particle': 'частицы', 'part': 'частицы', 'pref': 'приставки',
+      'phrase': 'фразы', 'det': 'артикли', 'article': 'артикли',
+      'suffix': 'суффиксы'
     };
     const posFilters = document.getElementById('posFilters');
     // All button
@@ -841,7 +844,7 @@ function renderResults(data) {
       `;
     } else {
       // ─── WORD CARD (compact) ───
-      const pos = item.pos_label || item.pos_slug || item.wordtype || '';
+      const pos = item.pos_label || posLabelText(item.pos_slug) || '';
       const posClass = item.pos_slug ? `word-card__pos--${item.pos_slug}` : '';
       card.innerHTML = `
         <div class="word-card__top">
@@ -917,7 +920,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
             <div class="word-card word-card--visible word-card--${v.pos_slug || 'default'}" style="opacity:1;transform:none">
               <div class="word-card__top">
                 <div class="word-card__hebrew">${v.headword}</div>
-                <div class="word-card__pos word-card__pos--${v.pos_slug || 'default'}">${v.pos_label || v.pos_slug || v.wordtype || ''}</div>
+                <div class="word-card__pos word-card__pos--${v.pos_slug || 'default'}">${v.pos_label || posLabelText(v.pos_slug) || ''}</div>
               </div>
               ${v.translit ? `<div class="word-card__translit">${v.translit}</div>` : ''}
               <div class="word-card__translations">${(v.translation_enriched || []).slice(0, 3).join(' · ') || '—'}</div>
@@ -1199,7 +1202,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
       <div class="modal__info-grid">
         <div class="modal__info-item">
           <div class="modal__info-label">часть речи</div>
-          <div class="modal__info-value">${word.pos_label || word.pos_slug || word.wordtype || '—'}</div>
+          <div class="modal__info-value">${word.pos_label || posLabelText(word.pos_slug) || '—'}</div>
         </div>
         ${word.gender ? `
         <div class="modal__info-item">
@@ -1806,11 +1809,12 @@ function checkAnswer(chosenIdx) {
 
 function posLabelText(slug) {
   const map = {
-    noun: 'существительное', verb: 'глагол', adjective: 'прилагательное',
-    adverb: 'наречие', preposition: 'предлог', pronoun: 'местоимение',
-    conjunction: 'союз', interjection: 'междометие', numeral: 'числительное',
-    particle: 'частица', prefix: 'приставка', suffix: 'суффикс',
-    article: 'артикль', phrase: 'фраза'
+    noun: 'существительные', verb: 'глаголы', adj: 'прилагательные',
+    adv: 'наречия', prep: 'предлоги', pron: 'местоимения',
+    conj: 'союзы', intj: 'междометия', num: 'числительные',
+    particle: 'частицы', part: 'частицы', pref: 'приставки',
+    suffix: 'суффиксы', det: 'артикли', article: 'артикли',
+    phrase: 'фразы'
   };
   return map[slug] || '';
 }
