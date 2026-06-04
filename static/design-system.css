@@ -127,8 +127,8 @@ body {
 
 /* ── Theme Toggle (in navbar) ── */
 .theme-toggle {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: 1px solid var(--color-rule);
   background: transparent;
@@ -144,8 +144,8 @@ body {
   background: var(--color-surface-2);
 }
 .theme-toggle svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   stroke: currentColor;
   fill: none;
   stroke-width: 2;
