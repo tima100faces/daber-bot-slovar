@@ -146,17 +146,15 @@ function applyFilter() {
 
 async function applyFix(wordId, verifyId) {
   const res = await fetch('/admin/api/verify/' + verifyId + '/apply', { method: 'POST', credentials: 'same-origin' });
-  if (res.ok) {
-    const data = await res.json();
-    if (data.ok) {
-      // Update local state
-      const item = allItems.find(i => i.id === verifyId);
-      if (item) item.applied = true;
-      applyFilter();
-      updateStats();
-    }
+  const data = await res.json().catch(() => null);
+  if (data && data.ok) {
+    const item = allItems.find(i => i.id === verifyId);
+    if (item) item.applied = true;
+    applyFilter();
+    updateStats();
   } else {
-    alert('Ошибка применения');
+    const msg = data?.detail || 'Ошибка применения';
+    alert(msg);
   }
 }
 

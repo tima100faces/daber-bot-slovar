@@ -1766,7 +1766,23 @@ def admin_verify_apply(verify_id: int, request: Request):
     
     if updates:
         params.append(v["word_id"])
-        cur.execute(f"UPDATE words SET {', '.join(updates)} WHERE id = %s", params)
+        try:
+            cur.execute(f"UPDATE words SET {', '.join(updates)} WHERE id = %s", params)
+        except psycopg2.errors.UniqueViolation:
+            conn.rollback()
+            # Find conflicting word
+            cur.execute(
+                "SELECT id, headword, pos_slug FROM words WHERE headword = (SELECT headword FROM words WHERE id = %s) AND id != %s",
+                (v["word_id"], v["word_id"]),
+            )
+            conflict = cur.fetchone()
+            conflict_info = f"id={conflict['id']}, pos={conflict['pos_slug']}" if conflict else "unknown"
+            conn.close()
+            return {
+                "ok": False,
+                "error": "duplicate",
+                "detail": f"Слово уже существует с таким POS: {conflict_info}. Сначала удалите дубликат."
+            }
     
     # Mark as applied (even if no field updates — Sonnet confirmed fix but no specific fields)
     cur.execute("UPDATE word_verification SET applied = true WHERE id = %s", (verify_id,))
