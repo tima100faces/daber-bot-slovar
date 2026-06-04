@@ -719,7 +719,7 @@ async function loadStats() {
     Object.entries(state.stats.pos_distribution).slice(0, 8).forEach(([slug, count]) => {
       const btn = document.createElement('button');
       btn.className = 'filter-chip';
-      btn.textContent = `${posNames[slug] || slug} (${count.toLocaleString('ru')})`;
+      btn.textContent = posNames[slug] || slug;
       btn.dataset.pos = slug;
       btn.addEventListener('click', () => setPosFilter(slug));
       posFilters.appendChild(btn);
@@ -728,7 +728,7 @@ async function loadStats() {
     if (state.stats.total_verbs) {
       const verbBtn = document.createElement('button');
       verbBtn.className = 'filter-chip';
-      verbBtn.textContent = `глагол (${state.stats.total_verbs.toLocaleString('ru')})`;
+      verbBtn.textContent = 'глаголы';
       verbBtn.dataset.pos = 'verb';
       verbBtn.addEventListener('click', () => setPosFilter('verb'));
       posFilters.appendChild(verbBtn);
