@@ -1727,21 +1727,27 @@ def admin_verify_apply(verify_id: int, request: Request):
     # Build update query
     updates = []
     params = []
+    field_names = []
     if v["sonnet_pos"]:
         updates.append("pos_slug = %s")
         params.append(v["sonnet_pos"])
+        field_names.append("pos: " + v["sonnet_pos"])
     if v["sonnet_gender"]:
         updates.append("gender = %s")
         params.append(v["sonnet_gender"])
+        field_names.append("gender: " + v["sonnet_gender"])
     if v["sonnet_number"]:
         updates.append("number = %s")
         params.append(v["sonnet_number"])
+        field_names.append("number: " + v["sonnet_number"])
     if v["sonnet_translit"]:
         updates.append("translit = %s")
         params.append(v["sonnet_translit"])
+        field_names.append("translit: " + v["sonnet_translit"])
     if v["sonnet_translation"]:
         updates.append("translation_enriched = %s")
         params.append(v["sonnet_translation"])
+        field_names.append("translation: " + v["sonnet_translation"])
     
     if updates:
         params.append(v["word_id"])
@@ -1752,7 +1758,7 @@ def admin_verify_apply(verify_id: int, request: Request):
     
     conn.commit()
     conn.close()
-    return {"ok": True, "applied": len(updates), "fields": updates}
+    return {"ok": True, "applied": len(updates), "fields": field_names}
 
 
 @app.post("/admin/api/verify/{verify_id}/skip")
