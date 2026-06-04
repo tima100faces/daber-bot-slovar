@@ -1745,14 +1745,20 @@ def admin_verify_apply(verify_id: int, request: Request):
         params.append(v["sonnet_translit"])
         field_names.append("translit: " + v["sonnet_translit"])
     if v["sonnet_translation"]:
-        # sonnet_translation is stored as PG array literal like {a,b,c}
+        # sonnet_translation formats vary: PG array literal {a,b,c}, plain "a, b, c", "a; b; c"
         # translation_enriched is jsonb — must convert to proper JSON array
         trans_raw = v["sonnet_translation"].strip()
-        if trans_raw.startswith("{") and trans_raw.endswith("}"):
-            inner = trans_raw[1:-1]
-            items = [it.strip().strip('"') for it in inner.split(",")]
+        try:
+            # Strip PG array braces if present
+            inner = trans_raw
+            if inner.startswith("{") and inner.endswith("}"):
+                inner = inner[1:-1]
+            # Detect separator (comma vs semicolon)
+            sep = ";" if inner.count(";") > inner.count(",") else ","
+            items = [it.strip().strip('"').strip("'") for it in inner.split(sep) if it.strip()]
             trans_json = json.dumps(items, ensure_ascii=False)
-        else:
+        except Exception:
+            # Fallback: wrap as single-item array
             trans_json = json.dumps([trans_raw], ensure_ascii=False)
         updates.append("translation_enriched = %s::jsonb")
         params.append(trans_json)
