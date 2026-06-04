@@ -650,10 +650,8 @@
   .modal__hebrew { font-size: 2rem; }
   .modal__hebrew--verb { font-size: 2rem; }
   .theme-toggle {
-    bottom: var(--space-md);
-    right: var(--space-md);
-    width: 38px;
-    height: 38px;
+    width: 32px;
+    height: 32px;
   }
   .footer {
     padding: var(--space-md) 0;

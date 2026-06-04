@@ -125,28 +125,23 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--color-rule); border-radius: var(--radius-sm); }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-neutral); }
 
-/* ── Theme Toggle ── */
+/* ── Theme Toggle (in navbar) ── */
 .theme-toggle {
-  position: fixed;
-  bottom: var(--space-lg);
-  right: var(--space-lg);
-  z-index: 200;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1px solid var(--color-rule);
-  background: var(--color-surface-2);
+  background: transparent;
   color: var(--color-ink);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s var(--ease-out), background 0.3s;
-  box-shadow: var(--card-shadow);
+  transition: background 0.3s;
+  flex-shrink: 0;
 }
 .theme-toggle:hover {
-  transform: scale(1.1);
-  background: var(--color-surface-elev);
+  background: var(--color-surface-2);
 }
 .theme-toggle svg {
   width: 20px;
