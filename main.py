@@ -2043,14 +2043,15 @@ def admin_generate_facts():
             cwd=Path(__file__).parent,
             capture_output=True,
             text=True,
-            timeout=120,
+            timeout=180,
         )
         if result.returncode == 0:
             return {"status": "ok", "message": result.stdout.strip().split('\n')[-1] or "Факты сгенерированы"}
         else:
-            return JSONResponse({"status": "error", "message": result.stderr[:500]}, status_code=500)
+            err = (result.stderr + "\n" + result.stdout)[:800].strip() or "Неизвестная ошибка"
+            return JSONResponse({"status": "error", "message": err}, status_code=500)
     except subprocess.TimeoutExpired:
-        return JSONResponse({"status": "error", "message": "Генерация заняла больше 2 минут"}, status_code=500)
+        return JSONResponse({"status": "error", "message": "Генерация заняла больше 3 минут (Sonnet не ответил)"}, status_code=500)
     except Exception as e:
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
 

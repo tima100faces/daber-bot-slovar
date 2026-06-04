@@ -31,7 +31,6 @@
   display: flex; flex-wrap: wrap; gap: var(--space-md);
   font-size: 0.8rem; color: var(--color-neutral);
 }
-.btn--sm { padding: 0.3rem 0.8rem; font-size: 0.8rem; border-radius: var(--radius-sm); }
 </style>
 </head>
 <body class="admin-body">
@@ -99,7 +98,7 @@ function renderFacts(facts) {
       <div class="pending-card__meta">
         <span>${f.created_at ? new Date(f.created_at).toLocaleString('ru') : ''}</span>
         ${f.source_url ? `<a href="${escAttr(f.source_url)}" target="_blank" style="color:var(--color-accent)">источник</a>` : ''}
-        <span style="color:${f.is_published ? 'var(--color-green)' : 'var(--color-orange)'}">${f.is_published ? '✓ опубл.' : '— черновик'}</span>
+        <span style="color:${f.is_published ? 'var(--color-green)' : 'var(--color-orange)'}">${f.is_published ? 'Опубликовано' : 'Черновик'}</span>
       </div>
       <div style="display:flex;gap:0.5rem;margin-top:var(--space-sm)">
         <button class="btn btn--sm" onclick="togglePublish(${f.id}, ${!f.is_published})">${f.is_published ? 'Снять с публикации' : 'Опубликовать'}</button>

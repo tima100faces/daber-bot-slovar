@@ -106,6 +106,14 @@
 }
 .fact-card__source:hover { color: var(--color-accent); }
 
+.icon--inline {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  display: inline;
+  color: inherit;
+}
+
 .pagination {
   display: flex;
   justify-content: center;
@@ -167,7 +175,6 @@
 
   <div class="container">
     <div class="fact-feed" id="feed"></div>
-    <div class="pagination" id="pager"></div>
     <div class="empty-state" id="empty" style="display:none">Пока нет опубликованных фактов. Загляните позже!</div>
   </div>
 </main>
@@ -190,36 +197,48 @@ const TYPE_LABELS = {
   comparison: 'Сравнение',
 };
 const TYPE_ICONS = {
-  did_you_know: '💡',
-  story: '📖',
-  etymology: '🔍',
-  comparison: '⚖️',
+  did_you_know: '<img src="/static/icons/bulb.svg" class="icon--inline" alt="">',
+  story: '<img src="/static/icons/book.svg" class="icon--inline" alt="">',
+  etymology: '<img src="/static/icons/search.svg" class="icon--inline" alt="">',
+  comparison: '<img src="/static/icons/scale.svg" class="icon--inline" alt="">',
 };
 
-async function loadFacts(page = 1) {
+let currentPage = 0;
+let totalPages = 1;
+let isLoading = false;
+
+async function loadFacts(reset = false) {
+  if (isLoading) return;
+  if (!reset && currentPage >= totalPages) return;
+  if (reset) { currentPage = 0; document.getElementById('feed').innerHTML = ''; }
+
+  isLoading = true;
+  const page = currentPage + 1;
   try {
     const res = await fetch(`/api/facts?page=${page}&limit=10`);
     const data = await res.json();
-    renderFacts(data);
-    renderPager(data);
+    renderFacts(data, reset);
+    currentPage = data.page;
+    totalPages = data.pages;
   } catch (e) {
     console.error('Failed to load facts:', e);
-    document.getElementById('empty').style.display = 'block';
+    if (reset) document.getElementById('empty').style.display = 'block';
   }
+  isLoading = false;
 }
 
-function renderFacts(data) {
+function renderFacts(data, reset) {
   const feed = document.getElementById('feed');
   const empty = document.getElementById('empty');
 
-  if (!data.facts.length) {
+  if (reset && !data.facts.length) {
     feed.innerHTML = '';
     empty.style.display = 'block';
     return;
   }
 
   empty.style.display = 'none';
-  feed.innerHTML = data.facts.map(f => {
+  const html = data.facts.map(f => {
     const date = f.published_at ? new Date(f.published_at).toLocaleDateString('ru') : '';
     return `
       <a href="/facts/${f.id}" class="fact-card">
@@ -232,24 +251,21 @@ function renderFacts(data) {
         </div>
       </a>`;
   }).join('');
+  feed.insertAdjacentHTML('beforeend', html);
 }
 
-function renderPager(data) {
-  const pager = document.getElementById('pager');
-  if (data.pages <= 1) { pager.innerHTML = ''; return; }
+// Lazy load via IntersectionObserver
+const sentinel = document.createElement('div');
+sentinel.id = 'scrollSentinel';
+sentinel.style.height = '1px';
+document.querySelector('.container').appendChild(sentinel);
 
-  let html = '';
-  html += `<button ${data.page <= 1 ? 'disabled' : ''} onclick="loadFacts(${data.page - 1})">← Назад</button>`;
-
-  const start = Math.max(1, data.page - 2);
-  const end = Math.min(data.pages, data.page + 2);
-  for (let p = start; p <= end; p++) {
-    html += `<button class="${p === data.page ? 'page-current' : ''}" onclick="loadFacts(${p})">${p}</button>`;
+const observer = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting && !isLoading && currentPage < totalPages) {
+    loadFacts();
   }
-
-  html += `<button ${data.page >= data.pages ? 'disabled' : ''} onclick="loadFacts(${data.page + 1})">Вперёд →</button>`;
-  pager.innerHTML = html;
-}
+}, { rootMargin: '300px' });
+observer.observe(sentinel);
 
 function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -258,7 +274,7 @@ function escAttr(s) {
   return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-loadFacts();
+loadFacts(true);
 </script>
 </body>
 </html>
