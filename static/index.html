@@ -231,6 +231,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 .wotd__header img { filter: brightness(0) invert(1); }
 .wotd__body { padding: var(--space-md); }
@@ -1350,11 +1351,19 @@ document.getElementById('randomBtn').addEventListener('click', showRandom);
 
 document.getElementById('modalClose').addEventListener('click', () => {
   document.getElementById('modal').classList.remove('modal-overlay--open');
+  document.getElementById('modalClose').style.display = '';
+  const mi = document.getElementById('modal').querySelector('.modal');
+  mi.style.padding = '';
+  mi.style.overflow = '';
 });
 
 document.getElementById('modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) {
     document.getElementById('modal').classList.remove('modal-overlay--open');
+    document.getElementById('modalClose').style.display = '';
+    const mi = document.getElementById('modal').querySelector('.modal');
+    mi.style.padding = '';
+    mi.style.overflow = '';
   }
 });
 
@@ -1363,6 +1372,10 @@ document.addEventListener('keydown', (e) => {
     // Don't close the word modal if feedback popup is open
     if (feedbackActivePopup) return;
     document.getElementById('modal').classList.remove('modal-overlay--open');
+    document.getElementById('modalClose').style.display = '';
+    const mi = document.getElementById('modal').querySelector('.modal');
+    mi.style.padding = '';
+    mi.style.overflow = '';
   }
 });
 
@@ -1556,29 +1569,45 @@ async function openWotd() {
     if (w.example_count) badges.push(`<span class="wotd__badge"><img src="/static/icons/list-check.svg" class="icon icon--sm t-icon" alt=""> ${w.example_count} примеров</span>`);
 
     const today = new Date().toLocaleDateString('ru', { day: 'numeric', month: 'long' });
+    const translit = fixStress(w.translit || '');
 
     const html = `
-      <div class="wotd">
-        <div class="wotd__header">
-          <span>СЛОВО ДНЯ</span>
-          <span>${today}</span>
-        </div>
-        <div class="wotd__body">
-          <div class="wotd__word">${escHtml(w.headword)}</div>
-          ${w.headword_nikud ? `<div class="wotd__nikud">${escHtml(w.headword_nikud)}</div>` : ''}
-          <div class="wotd__translit">[${escHtml(w.translit || '')}]</div>
-          <div class="wotd__translation">${escHtml(translation)}</div>
-          <div class="wotd__meta">${badges.join('')}</div>
-          <a href="/?q=${encodeURIComponent(w.headword)}" class="wotd__link">
-            Подробнее <img src="/static/icons/chevron-right.svg" class="icon icon--sm t-icon" alt="">
-          </a>
-        </div>
+      <div class="wotd__header">
+        <span>СЛОВО ДНЯ</span>
+        <span>${today}</span>
+      </div>
+      <div class="wotd__body">
+        <div class="wotd__word">${escHtml(w.headword)}</div>
+        ${w.headword_nikud ? `<div class="wotd__nikud">${escHtml(w.headword_nikud)}</div>` : ''}
+        <div class="wotd__translit">[${escHtml(translit)}]</div>
+        <div class="wotd__translation">${escHtml(translation)}</div>
+        <div class="wotd__meta">${badges.join('')}</div>
+        <a href="/?q=${encodeURIComponent(w.headword)}" class="wotd__link">
+          Подробнее <img src="/static/icons/chevron-right.svg" class="icon icon--sm t-icon" alt="">
+        </a>
       </div>`;
 
     document.getElementById('modalContent').innerHTML = html;
+    document.getElementById('modalClose').style.display = 'none';
+    const modalInner = document.getElementById('modal').querySelector('.modal');
+    modalInner.style.padding = '0';
+    modalInner.style.overflow = 'hidden';
     document.getElementById('modal').classList.add('modal-overlay--open');
     gtag('event', 'wotd_view', { word_id: w.id, headword: w.headword });
   } catch (e) {}
+}
+
+function fixStress(s) {
+  const map = {
+    'А': 'а́', 'О': 'о́', 'Е': 'е́', 'У': 'у́',
+    'И': 'и́', 'Ы': 'ы́', 'Э': 'э́', 'Ю': 'ю́', 'Я': 'я́',
+    'Ё': 'ё́',
+  };
+  let out = '';
+  for (const ch of s) {
+    out += map[ch] || ch;
+  }
+  return out;
 }
 
 // ═══════════════════════════════════════════
