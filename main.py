@@ -1953,16 +1953,26 @@ def get_fact(fact_id: int):
     return dict(row)
 
 
-# Admin: list all facts (including unpublished)
+# Admin: list all facts (including unpublished) with filter and sort
 @app.get("/admin/api/facts")
-def admin_list_facts():
+def admin_list_facts(filter: str = "all", sort: str = "newest"):
     conn = psycopg2.connect(**PG)
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cur.execute("""
-        SELECT id, fact_type, title, fact_body, source_url, source_raw, is_published, created_at, published_at
+    
+    where = ""
+    if filter == "published":
+        where = "WHERE is_published = true"
+    elif filter == "unpublished":
+        where = "WHERE is_published = false"
+    
+    order = "ORDER BY COALESCE(published_at, created_at) DESC" if sort == "newest" else "ORDER BY COALESCE(published_at, created_at) ASC"
+    
+    cur.execute(f"""
+        SELECT id, fact_type, title, fact_body, source_url, is_published, created_at, published_at
         FROM language_facts
-        ORDER BY created_at DESC
-        LIMIT 100
+        {where}
+        {order}
+        LIMIT 200
     """)
     rows = cur.fetchall()
     conn.close()
@@ -2006,7 +2016,7 @@ async def admin_update_fact(fact_id: int, request: Request):
             source_url = %s,
             source_raw = %s,
             is_published = COALESCE(%s, is_published),
-            published_at = CASE WHEN %s AND published_at IS NULL THEN now() ELSE published_at END
+            published_at = CASE WHEN COALESCE(%s, is_published) = true THEN now() ELSE published_at END
         WHERE id = %s
     """, (
         body.get("fact_type"),

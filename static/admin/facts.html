@@ -31,6 +31,12 @@
   display: flex; flex-wrap: wrap; gap: var(--space-md);
   font-size: 0.8rem; color: var(--color-neutral);
 }
+.filter-bar {
+  display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap;
+  margin-bottom: var(--space-lg); padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-rule);
+}
+.filter-bar label { font-size: 0.8rem; color: var(--color-muted); }
 </style>
 </head>
 <body class="admin-body">
@@ -62,6 +68,15 @@
   </header>
   <main class="content" id="content">
     <div id="statusMsg" style="display:none;padding:0.5rem 1rem;border-radius:6px;margin-bottom:1rem;font-weight:600"></div>
+
+    <div class="filter-bar">
+      <label>Показать:</label>
+      <button class="mode-btn active" data-filter="all" onclick="setFilter('all', this)">Все</button>
+      <button class="mode-btn" data-filter="published" onclick="setFilter('published', this)">Опубликованные</button>
+      <button class="mode-btn" data-filter="unpublished" onclick="setFilter('unpublished', this)">Черновики</button>
+      <span style="margin-left:auto;font-size:0.75rem;color:var(--color-muted)" id="counter"></span>
+    </div>
+
     <div id="factsList"><div class="spinner">Загрузка...</div></div>
   </main>
 </div>
@@ -70,9 +85,18 @@
 <script>
 const TYPE_LABELS = { did_you_know: 'А вы знали?', story: 'История', etymology: 'Этимология', comparison: 'Сравнение' };
 
+let currentFilter = 'all';
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-bar .mode-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadFacts();
+}
+
 async function loadFacts() {
   try {
-    const res = await fetch('/admin/api/facts');
+    const res = await fetch(`/admin/api/facts?filter=${currentFilter}&sort=newest`);
     if (res.status === 401) { window.location.href = '/admin/login'; return; }
     const facts = await res.json();
     renderFacts(facts);
@@ -83,11 +107,20 @@ async function loadFacts() {
 
 function renderFacts(facts) {
   const list = document.getElementById('factsList');
+  document.getElementById('counter').textContent = `Найдено: ${facts.length}`;
+
   if (!facts.length) {
     list.innerHTML = '<div class="card-muted">Нет фактов. Нажмите «Сгенерировать».</div>';
     return;
   }
-  list.innerHTML = facts.map(f => `
+  list.innerHTML = facts.map(f => {
+    const pubDate = f.published_at ? new Date(f.published_at) : null;
+    const createDate = f.created_at ? new Date(f.created_at) : null;
+    const dateStr = pubDate
+      ? `Опубл: ${pubDate.toLocaleDateString('ru')}`
+      : (createDate ? `Создан: ${createDate.toLocaleDateString('ru')}` : '');
+
+    return `
     <div class="pending-card">
       <div class="pending-card__header">
         <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-accent)">${TYPE_LABELS[f.fact_type] || f.fact_type}</span>
@@ -96,7 +129,7 @@ function renderFacts(facts) {
       <div class="pending-card__title">${esc(f.title)}</div>
       <div class="pending-card__body">${esc(f.fact_body)}</div>
       <div class="pending-card__meta">
-        <span>${f.created_at ? new Date(f.created_at).toLocaleString('ru') : ''}</span>
+        <span>${dateStr}</span>
         ${f.source_url ? `<a href="${escAttr(f.source_url)}" target="_blank" style="color:var(--color-accent)">источник</a>` : ''}
         <span style="color:${f.is_published ? 'var(--color-green)' : 'var(--color-orange)'}">${f.is_published ? 'Опубликовано' : 'Черновик'}</span>
       </div>
@@ -104,8 +137,8 @@ function renderFacts(facts) {
         <button class="btn btn--sm" onclick="togglePublish(${f.id}, ${!f.is_published})">${f.is_published ? 'Снять с публикации' : 'Опубликовать'}</button>
         <button class="btn btn--sm btn--danger" onclick="deleteFact(${f.id})">Удалить</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 async function togglePublish(id, publish) {
