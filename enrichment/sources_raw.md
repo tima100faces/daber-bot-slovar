@@ -1,94 +1,154 @@
-# Source Material for Hebrew Language Facts
+# Hebrew Language Sources
+# 16 articles via Wikipedia API
 
-## 1. National Geographic — Revival of Hebrew
-URL: https://www.nationalgeographic.com/history/article/hebrew-wasnt-spoken-for-2000-years-heres-how-it-was-revived
+## [Hebrew language](https://en.wikipedia.org/wiki/Hebrew_language)
 
-# Hebrew wasn’t spoken for 2,000 years. Here’s how it was revived.
-
-The religious language that lay dormant for millennia is now global, used by millions of people around the world—including in China.
-
-Today, Hebrew is a thriving language—used by millions of speakers around the world to communicate all their thoughts and desires.
-
-That may have seemed almost impossible less than 150 years ago, when the language was thought to exist only in ancient religious texts.
-
-For some two thousand years, Hebrew lay dormant as Jewish communities scattered across the globe, and adopted the languages of their new homes. By the late 1800s, Hebrew vocabulary was limited to archaic and religious concepts of the Hebrew Bible—and lacked words for everything from “newspaper” and “academia” to “muffin” and “car.”
-
-Here’s a look at the bumpy road to modernizing Hebrew and the debates that surround its continuing evolution today.
-
-## Hebrew never really died
-
-The Jewish people were once known as Hebrews for their language, which flourished from roughly the 13th to second centuries B.C.—when the Hebrew Bible, also known as the Old Testament, was collected. Hebrew was used in daily life until the second century B.C. at latest, experts believe.
-
-But beginning in the second century B.C., Jewish people became increasingly ostracized and oppressed. Through the rise and fall of Rome, the Middle Ages, Renaissance, and beyond, they were forced to migrate around Europe and adopted the language of the country they were in. They also formed new languages like Yiddish, which mixed Hebrew, German, and Slavic languages.
-
-Still, the Jewish people were known as “People of the Book.” As part of traditions like studying the Torah and reading it aloud, Jews continued to learn Hebrew to read from the Bible and written Hebrew lived on for more than a millennium mostly through religious practice.
-
-There were exceptions: more educated Jews exchanged messages in Hebrew, sometimes between merchants for records of business, says Meirav Reuveny, a Hebrew language historian at the Hebrew University of Jerusalem. A 10th-century trove of documents showed that some women, a group generally confined to domestic duties at the time, also wrote letters, exchanged legal documents, and recorded business in Hebrew. From the 10th to 14th centuries, there was an explosion of secular Hebrew poetry in Andalusia, Spain.
-
-## Waking the giant
-
-In the 19th century, most Jews in Europe were still second-class citizens when a new movement emerged that looked to Hebrew as a way to inspire hope through the Jewish people’s glorious past, Reuveny says. Hebrew revivalists wanted to expand the language beyond the abstract concepts in the Bible—they wanted to use it to talk about modern events, politics, philosophy, and medicine.
-
-Among the leaders of the movement was Eliezer Ben-Yehuda, credited as the father of Modern Hebrew.
-
-“One person cannot invent a language,” Reuveny says. “But he makes a good hero, something important for a social movement.”
-
-Ben-Yehuda was born in 1858 in Lithuania, where Jews were heavily discriminated against and violent pogroms terrorized Jewish communities regularly. When Ben-Yehuda traveled to Paris in 1878, he was empowered by the growing Jewish nationalist movement he witnessed there.
-
-He believed Jews needed a country and language to flourish. He moved to Jerusalem in 1881, where he and his wife made the decision to only speak Hebrew—despite missing words for essential modern items and concepts. They raised their son Itamar Ben-Avi to be the first native Hebrew speaker in almost 2,000 years.
-
-In the beginning, Hebrew went through growing pains: the language needed many new words. Ben-Yehuda made a dictionary of new Hebrew words (including מילון, or milon, the word for dictionary). Hebrew newspapers across Europe invented their own words, too, Reuveny says.
-
-Many people saw this as an unwelcome change—swapping an ancient and sacred language to a new and strange one. Hebrew revivalists chose a difficult way of life by speaking only Hebrew, before it could meet the needs of modern life.
-
-Gradually, the language was standardized in the early 20th century. The first Modern Hebrew dictionary was released in its completed form in 1922. Hebrew language schools were opened, then Hebrew became the language of instruction of all subjects in Jerusalem schools (the first in 1913).
-
-After the state of Israel was established in 1948, people flocked from all over the world. Many young adults learned Hebrew through the young nation’s mandatory military service, though most families in Israel became Hebrew speakers over one to two generations.
-
-Today, of the 9.5 million people in Israel aged 20 and over, almost everyone uses Hebrew, and 55 percent speak it as their native language. Around the world there are around 15 million Hebrew speakers; in the U.S., there are 195,375.
-
-## An unstoppable force
-
-Modern Hebrew has changed significantly but still shares clear ties with Biblical Hebrew.
-
-“King David and I could probably understand each other,” says Mirit Bessire, Hebrew language program director at Johns Hopkins University, who points out that it’s not all that different from modern English speakers attempting to understand someone using Shakespearean English.
-
-The growing pains Hebrew experienced as it modernized during Ben-Yehuda’s time are echoed in controversies today. Inclusive language such as non-binary adaptations have proven difficult to adopt as Hebrew is significantly gendered, Reuveny says. Modern words and concepts like “gaslighting” also stir debate about how much outside cultures are affecting the language.
-
-“Language does naturally evolve and grow. It’s inevitable. It’s not in our hands what our language does,” Bessire says.
-
-Language fills the needs of its users, she adds—and today we have more needs than ever as social media and email connect communities of Hebrew speakers far beyond Israel. For example, Bessire says, there are Hebrew communities in China that are not Jewish but have become fluent in the language for business purposes.
-
-“Hebrew is a language of proficiency,” Bessire says. “It's a language that you use for your everyday life, from technology to medicine.”
+Hebrew is a Northwest Semitic language within the Afroasiatic language family. A regional dialect of the Canaanite languages, it was natively spoken by the Israelites and remained in regular use as a first language until after 200 CE and as the liturgical language of Judaism (since the Second Temple period) and Samaritanism. The language was revived as a spoken language in the 19th century, and is the only successful large-scale example of linguistic revival. It is the only Canaanite language still spoken today. It is also one of the only two Northwest Semitic languages with contemporary speakers, the other being Aramaic.  
+The earliest examples of written Paleo-Hebrew date to the 10th century BCE. Nearly all of the Hebrew Bible is written in Biblical Hebrew, with much of its present form in the dialect that scholars believe flourished around the 6th century BCE, during the time of the Babylonian captivity. For this reason, Hebrew has been referred to by Jews as Lashon Hakodesh (לְשׁוֹן הַקֹּדֶש, lit. 'the holy tongue'  or 'the tongue [of] holiness') since ancient times. The language was not referred to by the name Hebrew in the Bible, but as Yehudit (transl. 'Judean') or Səpaṯ Kəna'an (transl. "the language of Canaan"). Mishnah Gittin 9:8 refers to the language as Ivrit, meaning Hebrew; however, Mishnah Megillah refers to the language as Ashurit, meaning Assyrian, which is derived from the name of the alphabet used, in contrast to Ivrit, meaning the Paleo-Hebrew alphabet.
+Hebrew ceased to be a regular spoken language sometime between 200 and 400 CE, as it declined in the aftermath of the unsuccessful Bar Kokhba revolt, which was carried out against the Roman Empire by the Jews of Judaea. Aramaic and, to a lesser extent, Greek were already in use as international languages, especially among societal elites and immigrants. Hebrew survived into the medieval period as the language of Jewish liturgy, rabbinic literature, intra-Jewish commerce, and Jewish poetic literature. The first dated book printed in Hebrew was published by Abraham Garton in Reggio (Calabria, Italy) in 1475. With the rise of Zionism in the 19th century, the Hebrew language experienced a full-scale revival as a spoken and literary language. The creation of a modern version of the ancient language was led by Eliezer Ben-Yehuda. Modern Hebrew (Ivrit) became the main language of the Yishuv in Palestine, and subsequently the official language of the State of Israel.
+Estimates of worldwide usage include five million speakers in 1998, and over nine million people in 2013. After Israel, the United States has the largest Hebrew-speaking population, with approximately 220,000 fluent speakers (see Israeli Americans and Jewish Americans). Pre-revival forms of Hebrew are used for prayer or study in Jewish and Samaritan communities around the world today; the latter group utilizes the Samaritan dialect as their liturgical tongue. As a non-first language, it is studied mostly by non-Israeli Jews and students in Israel, by archaeologists and linguists specializing in the Middle East and its civilizations, and by theologians in Christian seminaries.
 
 ---
 
-## 2. Britannica — Hebrew Language
-URL: https://www.britannica.com/topic/Hebrew-language
+## [Revival of the Hebrew language](https://en.wikipedia.org/wiki/Revival_of_the_Hebrew_language)
 
-# Hebrew language
+The revival of the Hebrew language took place in Europe and the Southern Levant toward the end of the 19th century and into the 20th century, through which the language's usage changed from the purely sacred language of Judaism to a spoken and written language used for daily life among the Jews in Palestine, and later Israel. Eliezer Ben-Yehuda is often regarded as the "reviver of the Hebrew language" having been the first to raise the concept of reviving Hebrew and initiating a project known as the Ben-Yehuda Dictionary. The revitalization of Hebrew was then ultimately brought about by its usage in Jewish settlement in Ottoman Palestine that arrived in the waves of migration known as the First Aliyah and the Second Aliyah. In Mandatory Palestine, Modern Hebrew became one of three official languages and after the Israeli Declaration of Independence in 1948, one of two official languages of Israel, along with Modern Arabic. In July 2018, a new law made Hebrew the sole national language of the State of Israel, while giving Arabic a "special status".
+More than purely a linguistic process, the revival of Hebrew was utilized by Jewish modernization and political movements, leading many people to change their names and becoming a tenet of the ideology associated with aliyah, renaming of the land, Zionism and Israeli policy.
+The process of Hebrew's return to regular usage is unique; there are no other examples of a natural language without any native speakers subsequently acquiring several million native speakers, and no other examples of a sacred language becoming a national language with millions of native speakers.
+The language's revival eventually brought linguistic additions with it. While the initial leaders of the process insisted they were only continuing "from the place where Hebrew's vitality was ended", what was created represented a broader basis of language acceptance; it includes characteristics derived from all periods of Hebrew language, as well as from the non-Hebrew languages used by the long-established European, North African, and Middle Eastern Jewish communities, with Yiddish being predominant.
 
--
-What is the Hebrew language?
--
-Where is Hebrew spoken today?
--
-What alphabet does Hebrew use?
--
-How old is the Hebrew language?
--
-Why was Hebrew considered a 'dead' language for a time?
--
-How did Hebrew become a modern spoken language again?
+---
 
-**Hebrew language**, Semitic language of the Northern Central (also called Northwestern) group; it is closely related to Phoenician and Moabite, with which it is often placed by scholars in a Canaanite subgroup. Spoken in ancient times in Palestine, Hebrew was supplanted by the western dialect of Aramaic beginning about the 3rd century bce; the language continued to be used as a liturgical and literary language, however. It was revived as a spoken language in the 19th and 20th centuries and is the official language of Israel.
+## [Eliezer Ben-Yehuda](https://en.wikipedia.org/wiki/Eliezer_Ben-Yehuda)
 
-The history of the Hebrew language is usually divided into four major periods: Biblical, or Classical, Hebrew, until about the 3rd century bce, in which most of the Hebrew Bible (Old Testament) is written; Mishnaic, or Rabbinic, Hebrew, the language of the Mishna (a collection of Jewish traditions), written about 200 ce (this form of Hebrew was never used among the people as a spoken language); Medieval Hebrew, from about the 6th to the 13th century ce, when many words were borrowed from Greek, Spanish, Arabic, and other languages; and Modern Hebrew, the language of Israel in modern times. Scholars generally agree that the oldest form of Hebrew is that of some of the poems in the Bible, especially the “Song of Deborah” in chapter 5 of Judges. The sources of borrowed words that first appeared during this period include the other Canaanite languages as well as Akkadian. Hebrew also contains a small number of Sumerian words borrowed from an Akkadian source. The Hebrew of the Bible exhibits little dialectal variety, but literary traces within the text indicate some degree of variation according to geography. In addition to the Bible, a small number of inscriptions in Hebrew of the biblical period are extant; the earliest of these is a short inscription in Phoenician characters dating from the 9th century bce.
+Eliezer Ben‑Yehuda (born Eliezer Yitzhak Perlman; 7 January 1858 – 16 December 1922) was a Russian–Jewish linguist, lexicographer, and journalist who immigrated to Jerusalem in 1881, when the Ottoman Empire ruled it. He is renowned as the lexicographer of the first Hebrew dictionary and also as the editor of Jerusalem-based HaZvi, one of the first Hebrew newspapers published in Mandatory Palestine. Ben-Yehuda was the primary driving force behind the revival of the Hebrew language.
 
-During the early Mishnaic period, some of the guttural consonants of Biblical Hebrew were combined or confused with one another, and many nouns were borrowed from Aramaic. Hebrew also borrowed a number of Greek, Latin, and Persian words.
+---
 
-Use of the spoken language declined from the 9th century until the 18th century. Nevertheless, the medieval language underwent development, however spasmodic, in various directions. The cult of the liturgical poem called a *piyyûṭ* (itself a Greek word) in the 6th–9th century enriched the written vocabulary by giving fresh meanings to old words and coining new ones, especially in the so-called Kalirian style, and the Spanish-Hebrew poets of the period 900–1250 followed suit. This period also saw the addition of about 2,000 or 3,000 scientific, philological, and philosophical terms; some of these were formed by making new use of old roots, as in the case of *geder* ‘fence,’ which served also for ‘definition.’ Some were based on existing Hebrew words such as *kammût* ‘quantity,’ from *kammāh* ‘How much?’; and others, such as *ʾaqlîm* ‘climate’ and *ṭibʿî* ‘natural,’ were adapted from foreign languages, chiefly Greek and Arabic.
+## [Biblical Hebrew](https://en.wikipedia.org/wiki/Biblical_Hebrew)
 
-Modern Hebrew, based on the biblical language, contains many innovations designed to meet modern needs; it is the only colloquial speech based on a written language. Everyday words are derived from existing Hebrew phrasing(e.g., *šaʿôn* ‘clock’ from *šaʿah* ‘hour’) or borrowed from contemporary languages (e.g., *mishmesh* ‘apricot’ from Arabic *mishmish*). A handful of words are repurposed from biblical expressions (e.g., *ẖašmal* ‘electricity’ from ‘amber’). The pronunciation is a modification of that used by the Sephardic (Hispano-Portuguese) Jews rather than that of the Ashkenazic (eastern European) Jews. The old guttural consonants are not clearly distinguished (except by Palestinian speakers) or are lost. The syntax is based on that of the Mishna. Characteristic of Hebrew of all stages is the use of word roots consisting usually of three consonants, to which vowels and other consonants are added to derive words of different parts of speech and meaning.
+Biblical Hebrew (Hebrew: עִבְרִית מִקְרָאִית, romanized: ʿiḇrîṯ miqrāʾîṯ  or לְשׁוֹן הַמִּקְרָא, ləšôn ha-miqrāʾ ), also called Classical Hebrew, is an archaic form of the Hebrew language, a language in the Canaanitic branch of the Semitic languages spoken by the Israelites in the area known as the Land of Israel, roughly west of the Jordan River and east of the Mediterranean Sea. The term ʿiḇrîṯ 'Hebrew' was not used as the language in the Hebrew Bible, which was referred to as שְֹפַת כְּנַעַן śəp̄aṯ kənaʿan  'language of Canaan' or יְהוּדִית Yəhûḏîṯ 'Judean', but was used in Koine Greek and Mishnaic Hebrew texts. 
+Paleo-Hebrew is attested in inscriptions from about the 10th century BCE, when it was almost identical to Phoenician and other Canaanite languages, and spoken Hebrew persisted as a first language through and beyond the Second Temple period, which ended in 70 CE with the siege of Jerusalem. It eventually developed into Mishnaic Hebrew, which was employed as a second language until the 5th century.
+The language of the Hebrew Bible reflects various stages of the Hebrew language in its consonantal skeleton, as well as the Tiberian vocalization system added in the Middle Ages by the Masoretes. There is evidence of regional dialectal variation, including differences between the northern Kingdom of Israel and the southern Kingdom of Judah. The consonantal text, called the Masoretic Text ("𝕸"), was transmitted in manuscript form and underwent redaction and modernization in the Second Temple period, but its earliest portions (parts of Amos, Isaiah, Hosea and Micah) can be dated to the late 8th to early 7th centuries BCE.
+Biblical Hebrew has several different writing systems. From around the 12th century BCE until the 6th century BCE, writers employed the Paleo-Hebrew alphabet. This system was retained by the Samaritans, who use a descendant, the Samaritan script, to this day. However, the Imperial Aramaic alphabet gradually displaced the Paleo-Hebrew alphabet after the Babylonian captivity, and became the source for the current Hebrew alphabet. These scripts lack letters to represent all of the sounds of Biblical Hebrew, although these sounds are reflected in Greek and Latin transcriptions/translations of the time. They initially indicated only consonants, but certain letters, known by the Latin term matres lectionis, became increasingly used to mark vowels. In the Middle Ages, various systems of diacritics were developed to mark the vowels in Hebrew manuscripts; of these, only the Tiberian vocalization is still widely used.
+Biblical Hebrew possessed a series of emphatic consonants whose precise articulation (pronunciation) is disputed, likely ejective or possibly pharyngealized. Earlier Biblical Hebrew had three consonants that were not distinguished in the writing system and later merged with other consonants. The stop consonants developed fricative allophones under the influence of Aramaic, and these sounds (the "begadkefat consonants") eventually became marginally phonemic. The pharyngeal and glottal consonants underwent weakening in some regional dialects, as reflected, for example, in the modern Samaritan Hebrew reading tradition. The vowel system of Hebrew underwent changes over time and is reflected differently in Koine Greek and Latin transcriptions, medieval vocalization systems, and modern reading traditions. 
+Premodern Hebrew had a typically Semitic nonconcatenative morphology, arranging roots into patterns to form words. Biblical Hebrew distinguished two grammatical genders (masculine and feminine), and three numbers (singular, plural, and the uncommon dual). Verbs were marked for voice and mood, and had two conjugations that may have indicated aspect or tense. The tense or aspect of verbs was also influenced by the conjunction ו, the "waw-consecutive" construction. The default word order for Biblical Hebrew was verb–subject–object (unlike Modern Hebrew), and verbs were inflected for the number, gender, and per
 
-The language is written from right to left in a North Semitic script of 22 letters (*see* Hebrew alphabet). Only consonants were written in the language’s earliest period, and some of those consonants were later employed to represent long vowels as well. In the 7th century ce the Masoretes in Tiberias introduced into the writing system diacritical marks, which represented short vowels and other phonological information.
+---
+
+## [Hebrew alphabet](https://en.wikipedia.org/wiki/Hebrew_alphabet)
+
+The Hebrew alphabet (Hebrew: אָלֶף־בֵּית עִבְרִי,[a] Alefbet ivri), known variously by scholars as the Ktav Ashuri, Jewish script, square script and block script, is a unicameral abjad script used in the writing of the Hebrew language. Alphabets based on the Hebrew script are used to write other Jewish languages, most notably Yiddish, Ladino, Judeo-Arabic, and Judeo-Persian. In modern Hebrew, vowels are increasingly introduced. The Hebrew script is used informally in Israel to write Levantine Arabic, especially among Druze. The script is an offshoot of the Imperial Aramaic alphabet, which flourished during the Achaemenid Empire, and which itself derives from the Phoenician alphabet.
+Historically, a different abjad script was used to write Hebrew: the original, old Hebrew script, now known as the Paleo-Hebrew alphabet, has been largely preserved in a variant form as the Samaritan alphabet, and is still used by the Samaritans. The present Jewish script or square script, on the contrary, is a stylized form of the Aramaic alphabet and was technically known by Jewish sages as Ashurit (lit. 'Assyrian script'), since its origins were known to be from Assyria (Mesopotamia).
+Various styles (in current terms, fonts) of representation of the Jewish script letters described in this article also exist, including a variety of cursive Hebrew styles. In the remainder of this article, the term Hebrew alphabet refers to the square script unless otherwise indicated.
+The Hebrew alphabet has 22 letters. It does not have case. Five letters have different forms when used at the end of a word. Hebrew is written from right to left. Originally, the alphabet was an abjad consisting only of consonants, but is now considered an impure abjad. As with other abjads, such as the Arabic alphabet, during its centuries-long use scribes devised means of indicating vowel sounds by separate vowel points, known in Hebrew as niqqud. In both biblical and rabbinic Hebrew, the letters י ו ה א can also function as matres lectionis, which is when certain consonants are used to indicate vowels. There is a trend in Modern Hebrew towards the use of matres lectionis to indicate vowels that have traditionally gone unwritten, a practice known as full spelling.
+The  Yiddish alphabet, a modified version of the Hebrew alphabet used to write Yiddish, is a true alphabet, with all vowels rendered in the spelling, except in the case of inherited Hebrew words, which typically retain their Hebrew consonant-only spellings.
+The Arabic and Hebrew alphabets have similarities in acrophony because it is said that they are both derived from the Aramaic alphabet, which in turn derives from the Phoenician alphabet, both being slight regional variations of the Proto-Canaanite alphabet used in ancient times to write the various Canaanite languages (including Hebrew, Moabite, Phoenician, Punic, et cetera).
+
+---
+
+## [Paleo-Hebrew alphabet](https://en.wikipedia.org/wiki/Paleo-Hebrew_alphabet)
+
+The Paleo-Hebrew script (Hebrew: הכתב העברי הקדום), (𐤐𐤋𐤀𐤉 𐤏𐤁𐤓𐤉), also Palaeo-Hebrew, Proto-Hebrew or Old Hebrew, is the writing system found in Canaanite and Aramaic inscriptions, including pre-Biblical and Biblical Hebrew, from southern Canaan, also known as the biblical kingdoms of Israel (Samaria) and Judah. It is considered to be the script used to record the original texts of the Bible. Due to its similarity to the Samaritan script, the Talmud states that the Samaritans still used this script. The Talmud described it as the "Livonaʾa script" (Jewish Babylonian Aramaic: לִיבּוֹנָאָה, romanized: Lībōnāʾā), translated by some as "Lebanon script". It has also been suggested that the name is a corrupted form (with the letters nun and lamed accidentally swapped) of "Neapolitan", i.e. of Nablus. Use of the term "Paleo-Hebrew alphabet" for the script follows the suggestion by Solomon Birnbaum, who in 1954 argued that "[t]o apply the term Phoenician [from Northern Canaan, today's Lebanon] to the script of the Hebrews [from Southern Canaan, today's Israel-Palestine] is hardly suitable". The Paleo-Hebrew and Phoenician alphabets are two slight regional variants of the same script. 
+The first Paleo-Hebrew inscription identified in modern times was the Royal Steward inscription (KAI 191), found in 1870,  and described at the time as "two large ancient Hebrew inscriptions in Phoenician letters". Fewer than 2,000 inscriptions are known today, of which the vast majority comprise just a single letter or word. The earliest known examples of Paleo-Hebrew writing date to the 10th century BCE.
+Like the Phoenician alphabet, it is a slight regional variant and an immediate continuation of the Proto-Canaanite alphabet, a regional form of the Proto-Sinaitic script which was used throughout Canaan in the Late Bronze Age. Phoenician, Hebrew, and all of their sister Canaanite languages were largely indistinguishable dialects before that time. The Paleo-Hebrew script is an abjad of 22 consonantal letters, exactly as the other Canaanite scripts from the period.
+By the 5th century BCE, among Judeans the alphabet had been mostly replaced by the Aramaic alphabet as used officially by the Achaemenid Empire. The "square" variant now known simply as the Hebrew alphabet evolved directly out of this by about the 3rd century BCE, although some letter shapes did not become standard until the 1st century CE . By contrast, the Samaritan script is an immediate continuation of the Proto-Hebrew script without intermediate non-Israelite evolutionary stages . There is also some continued use of the Paleo-Hebrew script in Jewish religious contexts down to the 1st century BCE, notably in the Paleo-Hebrew Leviticus Scroll found in the Dead Sea Scrolls.
+
+
+
+---
+
+## [Modern Hebrew](https://en.wikipedia.org/wiki/Modern_Hebrew)
+
+Modern Hebrew (endonym: עִבְרִית חֲדָשָׁה, romanized: 'Ivrit ḥadasha, IPA: [ivˈʁit χadaˈʃa] or [ʕivˈrit ħadaˈʃa]), also known as Israeli Hebrew or simply Hebrew, is the standard form of the Hebrew language spoken today. It is the only extant Canaanite language of the Semitic language family, as well as one of the oldest attested languages to be spoken as a first language in the modern day, on account of Hebrew being attested since the 2nd millennium BC. It uses the Hebrew Alphabet, an abjad script written from right-to-left. The current standard was codified as part of the revival of Hebrew in the late 19th and early 20th centuries, and now serves as the official and national language of the State of Israel, where it is predominantly spoken by its over 10 million people. Thus, Modern Hebrew is nearly universally regarded as the most successful instance of language revitalization in history.
+A Northwest Semitic language within the Afroasiatic language family, Hebrew was spoken since antiquity as the vernacular of the Israelites until around the 3rd century BCE, when it was supplanted by a western dialect of the Aramaic language, the local or dominant languages of the regions Jews migrated to, and later Judeo-Arabic, Judaeo-Spanish, Yiddish, and other Jewish languages. Although Hebrew continued to be used for Jewish liturgy, poetry and literature, and written correspondence, it became extinct as a spoken language.
+By the late 19th century, Russian-Jewish linguist Eliezer Ben-Yehuda (formerly Eliezer Yitzhak Perelman) had begun a popular movement to revive Hebrew as an everyday language, motivated by his desire to preserve Hebrew literature and establish a distinct Jewish nationality and nationalism in the context of Zionism. Soon after, a large number of Yiddish and Judaeo-Spanish speakers were murdered in the Holocaust or fled to Israel, and many speakers of Judeo-Arabic emigrated to Israel in the Jewish exodus from the Muslim world, where many would adapt to Modern Hebrew.
+Currently, Hebrew is spoken by over 10 million people, counting native, fluent, and non-fluent speakers. Over 6.5 million of these speak it as their native language, the overwhelming majority of whom are Jews who were born in Israel. The rest is split: 2 million are immigrants to Israel; 1.5 million are Israeli Arabs, whose first language is usually Arabic; and half a million are expatriate Israelis or diaspora Jews.
+Under Israeli law, the organization that officially directs the development of Modern Hebrew is the Academy of the Hebrew Language, headquartered at the Hebrew University of Jerusalem.
+
+---
+
+## [Modern Hebrew verbs](https://en.wikipedia.org/wiki/Modern_Hebrew_verbs)
+
+In Hebrew, verbs, which take the form of derived stems, are conjugated to reflect their tense and mood, as well as to agree with their subjects in gender, number, and person. Each verb has an inherent voice, though a verb in one voice typically has counterparts in other voices. This article deals mostly with Modern Hebrew, but to some extent, the information shown here applies to Biblical Hebrew as well.
+
+---
+
+## [Dead Sea Scrolls](https://en.wikipedia.org/wiki/Dead_Sea_Scrolls)
+
+The Dead Sea Scrolls (DSS), in the narrow sense identical with the Qumran Caves Scrolls, are a set of ancient Jewish manuscripts from the Second Temple period. They were discovered over a period of ten years, between 1946 and 1956, at the Qumran Caves near Ein Feshkha in the West Bank, on the northern shore of the Dead Sea. Dating from the 3rd century BCE to the 1st century CE, the Dead Sea Scrolls include the oldest surviving manuscripts of entire books later included in the various Jewish and Christian biblical canons, including  deuterocanonical manuscripts from late Second Temple Judaism, as well as extrabiblical books. As such, they cast new light on the emergence of Rabbinic Judaism and of Christianity, and their relationship with Jewish religious traditions. In the wider sense, the Dead Sea Scrolls also include similar findings from elsewhere in the Judaean Desert, and are sometimes called Judaean Desert scrolls. Some of the scrolls found outside Qumran are from later centuries. Almost all of the 15,000 scrolls and scroll fragments are held in the Shrine of the Book at the Israel Museum in Jerusalem.
+The Israeli government's custody of the Dead Sea Scrolls is disputed by Jordan and the Palestinian Authority on territorial, legal, and humanitarian grounds—they were mostly discovered following the Jordanian annexation of the West Bank and were acquired by Israel after Jordan lost the 1967 Arab–Israeli War—whilst Israel's claims are primarily based on historical and religious grounds, given their significance in Jewish history and in the heritage of Judaism.
+Many thousands of written fragments have been discovered in the Dead Sea area – most have been published, together with the details of their discovery, in the 40-volume Discoveries in the Judaean Desert. They represent the remnants of larger manuscripts damaged by natural causes or through human interference, with the vast majority holding only small scraps of text. However, a small number of well-preserved and nearly intact manuscripts have survived—fewer than a dozen among those from the Qumran Caves. Researchers have assembled a collection of 981 different manuscripts (discovered in 1946/1947 and in 1956) from 11 caves, which lie in the immediate vicinity of the Hellenistic Jewish settlement at the site of Khirbet Qumran in the eastern Judaean Desert in the West Bank. The caves are located about 1.5 kilometres (1 mi) west of the northwestern shore of the Dead Sea, whence the scrolls derive their name. Archaeologists have long associated the scrolls with the ancient Jewish sect known as the Essenes, although some recent interpretations have challenged this connection and argue that priests in Jerusalem or other unknown Jewish groups wrote the scrolls.
+Most of the manuscripts are written in Hebrew, with some written in Aramaic (for example the Son of God Text, in different regional dialects, including Nabataean) and a few in Greek. Other discoveries from the Judaean Desert add Latin (from Masada), and some later Arabic manuscripts from the 7th-8th centuries CE (from Khirbet al-Mird). Most of the texts are written on parchment, some on papyrus, and one on copper. Though scholarly consensus dates the Dead Sea Scrolls to between the 3rd century BCE and the 1st century CE, there are Arabic manuscripts from associated Judaean Desert sites that are dated between the 8th and 10th century CE. Bronze coins found at the same sites form a series beginning with John Hyrcanus, a ruler of Hasmonean Judea (in office 135–104 BCE), and continuing until the period of the First Jewish–Roman War (66–73 CE), supporting the paleography and radiocarbon dating of the scrolls.
+Owing to the poor condition of some of the scrolls, scholars have not identified all of their texts. The identified texts fall into three general groups:
+
+About 40% are copies of texts from the canonical Hebrew scriptures.
+Approximately 30% are texts from the Second Temple period that ultimately were not canonized in th
+
+---
+
+## [Hebrew literature](https://en.wikipedia.org/wiki/Hebrew_literature)
+
+Hebrew literature consists of ancient, medieval, and modern writings in the Hebrew language.  It is one of the primary forms of Jewish literature, though there have been cases of literature written in Hebrew by non-Jews, mostly among the Arab citizens of Israel. Hebrew literature was produced in many different parts of the world throughout the medieval and modern eras, while contemporary Hebrew literature is largely Israeli literature.
+In 1966, Agnon won the Nobel Prize for Literature for novels and short stories that employ a unique blend of biblical, Talmudic and modern Hebrew, making him the first Hebrew writer to receive this award.
+There have been many bibliographies recording Hebrew books and authors, one of the most comprehensive being The Bibliography of the Hebrew Book 1473-1960, a bibliography of all printed Hebrew books published before 1960 which lists some 12,000 authors and 9000 titles.
+
+---
+
+## [Hebrew numerals](https://en.wikipedia.org/wiki/Hebrew_numerals)
+
+The system of Hebrew numerals is a quasi-decimal alphabetic numeral system using the letters of the Hebrew alphabet.
+The system was adapted from that of the Greek numerals sometime between 200 and 78 BCE, the latter being the date of the earliest archeological evidence.
+The current numeral system is also known as the Hebrew alphabetic numerals to contrast with earlier systems of writing numerals used in classical antiquity. These systems were inherited from usage in the Aramaic and Phoenician scripts, attested from c. 800 BCE in the Samaria Ostraca.
+The Greek system was adopted in Hellenistic Judaism and had been in use in Greece since about the 5th century BCE.
+In this system, there is no notation for zero, and the numeric values for individual letters are added together.  Each unit (1–9) is assigned a separate letter, each tens (10–90) a separate letter, and the first four hundreds (100, 200, 300, 400) a separate letter. The later hundreds (500, 600, 700, 800 and 900) are represented by the sum of two or three letters representing the first four hundreds. To represent numbers from 1,000 to 999,999, the same letters are reused to serve as thousands, tens of thousands, and hundreds of thousands. Gematria, a type of Jewish numerology, uses these transformations extensively.
+In Israel today, the decimal system of Hindu–Arabic numeral system, such as 0, 1, 2, 3, etc., is used in almost all cases, such as money, age, date on the civil calendar.  The Hebrew numerals are used only in special cases, such as when using the Hebrew calendar, or numbering a list, similar to a, b, c, d, etc., much as Roman numerals are used in the West.
+
+---
+
+## [Abjad numerals](https://en.wikipedia.org/wiki/Abjad_numerals)
+
+The Abjad numerals, also called Hisab al-Jummal (Arabic: حِسَاب ٱلْجُمَّل, ḥisāb al-jummal), are a decimal alphabetic numeral system/alphanumeric code, in which the 28 letters of the Arabic alphabet are assigned numerical values. They have been used in the Arabic-speaking world since before the eighth century when positional Arabic numerals were adopted. In modern Arabic, the word ʾabjadīyah (أَبْجَدِيَّة) means 'alphabet' in general.
+In the Abjad system, the first letter of the Arabic alphabet, ʾalif, is used to represent 1; the second letter, bāʾ, 2, up to 9. Letters then represent the first nine intervals of 10s and those of the 100s: yāʾ for 10, kāf for 20, qāf for 100, ending with 1000.
+The word ʾabjad (أبجد) itself derives from the first four letters (A-B-G-D) of the Semitic alphabet, including the Aramaic alphabet, Hebrew alphabet, Phoenician alphabet, and other scripts for Semitic languages. These alphabets contained only 22 letters, stopping at taw, numerically equivalent to 400. The Arabic Abjad system continues at this point with letters not found in other alphabets: thāʾ = 500, khāʾ = 600, dhāl = 700, etc. Abjad numerals in Arabic are similar to the alphanumeric codes of Hebrew gematria and Greek isopsephy.
+
+---
+
+## [Canaanite languages](https://en.wikipedia.org/wiki/Canaanite_languages)
+
+The Canaanite languages, sometimes referred to as Canaanite dialects, are one of four subgroups of the Northwest Semitic languages of Western Asia. The others are the still spoken Aramaic and the now-extinct Ugaritic and Amorite languages. These closely related languages originated in the Levant and Upper Mesopotamia. Ancient Semitic-speaking peoples spoke them in an area encompassing what is today Israel, Palestine, Jordan, the Sinai Peninsula, Lebanon, Syria, as well as some areas of southwestern Turkey, Iraq, and the northwestern corner of Saudi Arabia. From the 9th century BCE, they also spread to the Iberian Peninsula, Malta, Sicily and North Africa in the form of Phoenician.
+The historical Canaanites are broadly defined to include the Hebrews (Israelites, Samaritans and Judeans), Ammonites, Edomites, Ekronites, Hyksos, Phoenicians (including the Punics/Carthaginians), Moabites,  and sometimes the ethno-linguistically closely related Ugarites and Amorites.
+The Canaanite languages continued to be spoken languages until at least the 5th century CE but were gradually supplanted by Aramaic, a language which gained influence as the lingua franca of the Neo-Assyrian Empire and succeeding Neo-Babylonian and Achaemenid Empires, as well as a number of other states such as the Palmyrene Empire.
+Modern Hebrew is the only living Canaanite language today and was revived in the 19th century by political and cultural activists as an everyday spoken language in the late 19th and early 20th centuries. This was achieved mainly through the revitalization and cultivation efforts of Zionists throughout Europe and in Palestine. By the mid-20th century, Modern Hebrew had become the primary language of Palestinian Jews and was later made the official language of the State of Israel.
+Many Jews used Mishnaic Hebrew well into the Middle Ages and up to the present day as both a liturgical and literary language, and they also employed it as a lingua franca for commerce between disparate diasporic communities. Samaritan Hebrew remained a liturgical language among Samaritans.
+
+---
+
+## [Northwest Semitic languages](https://en.wikipedia.org/wiki/Northwest_Semitic_languages)
+
+Northwest Semitic is a division of the Semitic languages comprising indigenous languages of the Levant. It emerged from Proto-Semitic in the Early Bronze Age. It is first attested in proper names identified as Amorite in the Middle Bronze Age. The oldest coherent texts are in Ugaritic, dating to the Late Bronze Age, which by the time of the Bronze Age collapse are joined by Old Aramaic, and by the Iron Age by Sutean and the Canaanite languages (Hebrew, Phoenician–Punic, Edomite and Moabite).
+The term was coined by Carl Brockelmann in 1908, who separated Fritz Hommel's 1883 classification of Semitic languages into Northwest (Canaanite and Aramaic), East Semitic (Akkadian, its Assyrian and Babylonian dialects, Eblaite) and Southwest (Arabic, Old South Arabian languages and Abyssinian).
+Brockelmann's Canaanite sub-group includes Ugaritic, Phoenician and Hebrew. Some scholars now regard Ugaritic either as belonging to a separate branch of Northwest Semitic (alongside Canaanite) or a dialect of Amorite.
+Central Semitic is a proposed intermediate group comprising Northwest Semitic and Arabic.
+Central Semitic is either a subgroup of West Semitic or a top-level division of Semitic alongside East Semitic and South Semitic. SIL Ethnologue in its system of classification (of living languages only) eliminates Northwest Semitic entirely by joining Canaanite and Arabic in a "South-Central" group which together with Aramaic forms Central Semitic. South Gileadite and Samalian have been identified as language varieties falling outside Aramaic proper but with some similarities to it, possibly in an "Aramoid" or "Syrian" subgroup.
+It is clear that the Taymanitic script expressed a distinct linguistic variety that is not Arabic and not closely related to Hismaic or Safaitic, while it can tentatively be suggested that it was more closely related to Northwest Semitic.
+
+---
+
+## [Phoenician alphabet](https://en.wikipedia.org/wiki/Phoenician_alphabet)
+
+The Phoenician alphabet is an abjad (consonantal alphabet)  that was used across the Mediterranean civilization of Phoenicia for most of the 1st millennium BC. It was one of the first alphabets, attested in Canaanite and Aramaic inscriptions found across the Mediterranean basin. In the history of writing systems, the Phoenician script also marked the first to have a fixed writing direction—while previous systems were multi-directional, Phoenician was written horizontally, from right to left. It developed directly from the Proto-Sinaitic script used during the Late Bronze Age, which was derived in turn from Egyptian hieroglyphs.
+The Phoenician alphabet was used to write Canaanite languages spoken during the Early Iron Age, sub-categorized by historians as Phoenician, Hebrew, Moabite, Ammonite and Edomite. It was widely disseminated outside of the Canaanite sphere by Phoenician merchants across the Mediterranean, where it was adopted and adapted by other cultures. The Phoenician alphabet proper was used in Ancient Carthage until the 2nd century BC, where it was used to write the Punic language. Its direct descendant scripts include the Aramaic and Samaritan alphabets, several Alphabets of Asia Minor, and the Archaic Greek alphabets.
+The Phoenician alphabet proper uses 22 consonant letters—as an abjad used to write a Semitic language, it leaves vowel sounds implicit—though late varieties sometimes used matres lectionis to denote some vowels. As its letters were originally incised using a stylus, their forms are mostly angular and straight, though cursive forms increased in use over time, culminating in the Neo-Punic alphabet used in Roman North Africa.
+
+---
+
+## [Phoenician language](https://en.wikipedia.org/wiki/Phoenician_language)
+
+Phoenician ( fə-NEE-shən; Phoenician: śpt knʿn 𐤔𐤐𐤕𐤟𐤊𐤍𐤏𐤍 lit. 'language of Canaan') is an extinct Canaanite language of the Semitic language family originally spoken in the region surrounding the cities of Tyre and Sidon. Extensive Tyro-Sidonian trade and commercial dominance led to Phoenician becoming a lingua franca of the maritime Mediterranean during the Iron Age. The Phoenician alphabet spread to Greece during this period, where it became the source of all modern European scripts.
+Phoenician belongs to the Canaanite languages and as such is quite similar to Biblical Hebrew and other languages of the group, at least in its early stages, and is therefore mutually intelligible with them.
+The area in which Phoenician was spoken, which the Phoenicians called Pūt, includes the northern Levant, specifically the areas now including Lebanon, the Western Galilee, parts of Cyprus, some parts of Syria, some adjacent areas of Anatolia, and, at least as a prestige language, the rest of Anatolia. Phoenician was also spoken in the Phoenician colonies along the coasts of the southwestern Mediterranean Sea, including those of modern Tunisia, Morocco, Libya and Algeria as well as Malta, the west of Sicily, southwest Sardinia, the Balearic Islands and southernmost Spain. It developed into the Punic language in North Africa.
+In modern times, the language was first decoded by Jean-Jacques Barthélemy in 1758, who noted that the name "Phoenician" was first given to the language by Samuel Bochart in his Geographia Sacra seu Phaleg et Canaan.
+
+---
+

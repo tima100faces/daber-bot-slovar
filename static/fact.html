@@ -72,6 +72,34 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.fact-detail__source:hover { text-decoration: none; opacity: 0.8; }
+
+.icon--back {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  filter: invert(0.6);
+}
+html[data-theme="dark"] .icon--back,
+html:not([data-theme="light"]) .icon--back { filter: invert(1); }
+
+.icon--mask {
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.2em;
+  background-color: currentColor;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+.icon--bulb { mask-image: url('/static/icons/bulb.svg'); -webkit-mask-image: url('/static/icons/bulb.svg'); }
+.icon--book { mask-image: url('/static/icons/book.svg'); -webkit-mask-image: url('/static/icons/book.svg'); }
+.icon--search { mask-image: url('/static/icons/search.svg'); -webkit-mask-image: url('/static/icons/search.svg'); }
+.icon--scale { mask-image: url('/static/icons/scale.svg'); -webkit-mask-image: url('/static/icons/scale.svg'); }
 
 @media (max-width: 768px) {
   .fact-detail { padding: 2rem 0 var(--space-xl); }
@@ -108,7 +136,12 @@ const TYPE_LABELS = {
   etymology: 'Этимология',
   comparison: 'Сравнение',
 };
-const TYPE_ICONS = { did_you_know: '💡', story: '📖', etymology: '🔍', comparison: '⚖️' };
+const TYPE_ICONS = {
+  did_you_know: '<span class="icon--mask icon--bulb"></span>',
+  story: '<span class="icon--mask icon--book"></span>',
+  etymology: '<span class="icon--mask icon--search"></span>',
+  comparison: '<span class="icon--mask icon--scale"></span>',
+};
 
 async function loadFact() {
   const factId = window.location.pathname.split('/').filter(Boolean).pop();
@@ -132,14 +165,14 @@ async function loadFact() {
 function renderFact(fact) {
   const date = fact.published_at ? new Date(fact.published_at).toLocaleDateString('ru', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
   document.getElementById('content').innerHTML = `
-    <a href="/facts" class="fact-detail__back">← Все факты</a>
+    <a href="/facts" class="fact-detail__back"><img src="/static/icons/chevron-left.svg" class="icon--back" alt=""> Все факты</a>
     <div class="fact-detail__type fact-type-${fact.fact_type}">${TYPE_ICONS[fact.fact_type] || ''} ${TYPE_LABELS[fact.fact_type] || fact.fact_type}</div>
     <h1 class="fact-detail__title">${esc(fact.title)}</h1>
     <div class="fact-detail__body">${esc(fact.fact_body).replace(/\n\n/g, '</p><p class="fact-detail__body">')}</div>
     <div class="fact-detail__meta">
       ${date ? `<span>${date}</span>` : ''}
       ${fact.source_url ? `<a href="${escAttr(fact.source_url)}" class="fact-detail__source" target="_blank" rel="noopener">Источник</a>` : ''}
-      <a href="/facts" style="color:var(--color-muted);text-decoration:none">← все факты</a>
+      <a href="/facts" style="color:var(--color-muted);text-decoration:none"><img src="/static/icons/chevron-left.svg" class="icon--back" alt=""> все факты</a>
     </div>`;
 }
 

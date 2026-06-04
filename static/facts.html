@@ -106,13 +106,23 @@
 }
 .fact-card__source:hover { color: var(--color-accent); }
 
-.icon--inline {
-  width: 1em;
-  height: 1em;
-  vertical-align: -0.15em;
-  display: inline;
-  color: inherit;
+.icon--mask {
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.2em;
+  background-color: currentColor;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
 }
+.icon--bulb { mask-image: url('/static/icons/bulb.svg'); -webkit-mask-image: url('/static/icons/bulb.svg'); }
+.icon--book { mask-image: url('/static/icons/book.svg'); -webkit-mask-image: url('/static/icons/book.svg'); }
+.icon--search { mask-image: url('/static/icons/search.svg'); -webkit-mask-image: url('/static/icons/search.svg'); }
+.icon--scale { mask-image: url('/static/icons/scale.svg'); -webkit-mask-image: url('/static/icons/scale.svg'); }
 
 .pagination {
   display: flex;
@@ -197,10 +207,10 @@ const TYPE_LABELS = {
   comparison: 'Сравнение',
 };
 const TYPE_ICONS = {
-  did_you_know: '<img src="/static/icons/bulb.svg" class="icon--inline" alt="">',
-  story: '<img src="/static/icons/book.svg" class="icon--inline" alt="">',
-  etymology: '<img src="/static/icons/search.svg" class="icon--inline" alt="">',
-  comparison: '<img src="/static/icons/scale.svg" class="icon--inline" alt="">',
+  did_you_know: '<span class="icon--mask icon--bulb"></span>',
+  story: '<span class="icon--mask icon--book"></span>',
+  etymology: '<span class="icon--mask icon--search"></span>',
+  comparison: '<span class="icon--mask icon--scale"></span>',
 };
 
 let currentPage = 0;

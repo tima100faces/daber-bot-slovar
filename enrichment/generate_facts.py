@@ -1,7 +1,7 @@
 """Generate Hebrew language facts from source material using Claude Sonnet.
 
-Reads enrichment/sources_raw.md, sends to Anthropic API, inserts facts into
-language_facts table (unpublished — admin reviews before publishing).
+Reads enrichment/sources_raw.md, checks existing facts in DB to avoid duplicates,
+sends to Anthropic API, inserts facts into language_facts table.
 """
 
 import json
@@ -26,46 +26,65 @@ PG = dict(
 
 ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
-PROMPT = """Ты — редактор образовательного блога об иврите. На основе предоставленных источников создай 8-12 интересных фактов на русском языке.
 
-Для каждого факта укажи:
-- fact_type: один из "did_you_know", "story", "etymology", "comparison"
-- title: заголовок на русском (до 80 символов)
-- fact_body: текст факта (2-5 предложений, живой язык, как для блога)
-- source_url: URL источника (если есть в предоставленном тексте)
+def get_existing_titles() -> list[str]:
+    """Return list of existing fact titles to avoid duplicates."""
+    try:
+        conn = psycopg2.connect(**PG)
+        cur = conn.cursor()
+        cur.execute("SELECT title FROM language_facts WHERE is_published = true")
+        titles = [r[0] for r in cur.fetchall()]
+        conn.close()
+        return titles
+    except Exception:
+        return []
+
+
+def build_prompt(source_text: str, existing_titles: list[str]) -> str:
+    blocked = ""
+    if existing_titles:
+        blocked = "\n".join(f"- {t}" for t in existing_titles[:30])
+        blocked = f"\n\nЗАПРЕЩЕНО повторять эти темы (они уже есть в блоге):\n{blocked}\n"
+
+    return f"""Ты — редактор образовательного блога об иврите. На основе источников создай 6-8 НОВЫХ фактов.
 
 ТРЕБОВАНИЯ:
-- НЕ придумывай факты, которых нет в источниках
-- Переписывай своими словами, но сохраняй фактические данные
-- Пиши увлекательно, как для широкой аудитории
-- Разнообразь форматы: мини-истории, "а вы знали", этимологии, сравнения
-- Для каждого факта укажи source_url из того источника, откуда взят материал
-- Если в источнике нет URL, оставь source_url пустым
+- НЕ повторяй темы, перечисленные в списке запрещённых
+- Каждый факт должен быть на УНИКАЛЬНУЮ тему
+- Извлекай конкретные, малоизвестные детали из источников
+- НЕ придумывай факты — только то, что есть в источниках
+- Пиши живым языком, как для блога
+- Разнообразь форматы: did_you_know, story, etymology, comparison
+- source_url — URL из источника (если указан в тексте){blocked}
 
 Верни ТОЛЬКО JSON-массив:
 [
-  {
+  {{
     "fact_type": "did_you_know",
     "title": "...",
     "fact_body": "...",
     "source_url": "..."
-  },
+  }},
   ...
 ]
 
-Никакого текста до или после JSON."""
+ИСТОЧНИКИ:
+
+{source_text[:12000]}"""
 
 
-def call_sonnet(source_text: str) -> list[dict]:
+def call_sonnet(source_text: str, existing_titles: list[str]) -> list[dict]:
     """Send source text to Claude Sonnet, get back facts."""
     import urllib.request
+
+    prompt = build_prompt(source_text, existing_titles)
 
     payload = json.dumps({
         "model": "claude-sonnet-4-20250514",
         "max_tokens": 4096,
-        "temperature": 0.7,
+        "temperature": 0.8,
         "messages": [
-            {"role": "user", "content": f"{PROMPT}\n\nИСТОЧНИКИ:\n\n{source_text[:12000]}"}
+            {"role": "user", "content": prompt}
         ]
     }).encode()
 
@@ -135,8 +154,11 @@ def main():
         print("ERROR: ANTHROPIC_API_KEY not set")
         sys.exit(1)
 
+    existing = get_existing_titles()
+    print(f"Existing published topics: {len(existing)}")
+
     print("Calling Claude Sonnet...")
-    facts = call_sonnet(source_text)
+    facts = call_sonnet(source_text, existing)
     print(f"Got {len(facts)} facts from Sonnet")
 
     if not facts:
@@ -146,8 +168,7 @@ def main():
     count = insert_facts(facts)
     print(f"Inserted {count} facts into DB (unpublished — review in admin)")
 
-    # Print preview
-    for i, f in enumerate(facts[:3]):
+    for i, f in enumerate(facts[:5]):
         print(f"\n--- Fact {i+1} ---")
         print(f"Type: {f.get('fact_type', '?')}")
         print(f"Title: {f.get('title', '?')}")
