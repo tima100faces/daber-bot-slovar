@@ -135,7 +135,9 @@ function applyFilter() {
       ${isFix ? `<div class="verify-fix">→ ${fixes.join(' · ') || 'исправить'}</div>` : ''}
       ${v.sonnet_explanation ? `<div class="verify-explanation">${v.sonnet_explanation}</div>` : ''}
       ${isFix && !isApplied ? `<div class="verify-actions">
-        <button class="btn-apply" onclick="applyFix(${v.word_id}, ${v.id})">Применить исправления</button>
+        ${(v.sonnet_pos || v.sonnet_gender || v.sonnet_number || v.sonnet_translit || v.sonnet_translation) 
+          ? `<button class="btn-apply" onclick="applyFix(${v.word_id}, ${v.id})">Применить исправления</button>` 
+          : `<span style="font-size:0.75rem;color:var(--color-muted)">Нет конкретных полей для применения</span>`}
         <button onclick="skipFix(${v.id})">Пропустить</button>
       </div>` : ''}
     </div>`;

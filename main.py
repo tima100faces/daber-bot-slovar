@@ -1753,7 +1753,7 @@ def admin_verify_apply(verify_id: int, request: Request):
         params.append(v["word_id"])
         cur.execute(f"UPDATE words SET {', '.join(updates)} WHERE id = %s", params)
     
-    # Mark as applied
+    # Mark as applied (even if no field updates — Sonnet confirmed fix but no specific fields)
     cur.execute("UPDATE word_verification SET applied = true WHERE id = %s", (verify_id,))
     
     conn.commit()
