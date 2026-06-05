@@ -1201,6 +1201,39 @@ def admin_delete_word(word_id: int, request: Request, type: str = Query("word"))
     return {"ok": True, "deleted": type, "id": word_id}
 
 
+# ── Admin: Duplicates ──
+
+@app.get("/admin/api/duplicates")
+def admin_duplicates(request: Request):
+    """List all duplicate headwords with their word entries side by side."""
+    admin_required(request)
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("""
+        SELECT headword, array_agg(jsonb_build_object(
+            'id', id, 'pos_slug', pos_slug, 'pos_label', 
+            CASE pos_slug WHEN 'noun' THEN 'сущ' WHEN 'adj' THEN 'прил' 
+                 WHEN 'verb' THEN 'глаг' WHEN 'adv' THEN 'нар' 
+                 WHEN 'prep' THEN 'предл' WHEN 'pron' THEN 'мест'
+                 WHEN 'conj' THEN 'союз' WHEN 'num' THEN 'числ'
+                 WHEN 'intj' THEN 'межд' WHEN 'phrase' THEN 'фраза'
+                 ELSE pos_slug END,
+            'gender', gender, 'number', number, 'translit', translit,
+            'translation', translation_enriched, 'notes', notes,
+            'example_count', example_count, 'synonym_count', synonym_count
+        ) ORDER BY id) as words
+        FROM words
+        WHERE headword IN (
+            SELECT headword FROM words GROUP BY headword HAVING COUNT(*) > 1
+        )
+        GROUP BY headword
+        ORDER BY headword
+    """)
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return rows
+
+
 # ── Admin: Word editor ──
 
 @app.get("/admin/api/words/search")
@@ -2444,6 +2477,10 @@ def admin_contact_page():
 @app.get("/admin/verify")
 def admin_verify_page():
     return FileResponse(str(ADMIN_STATIC / "verify.html"))
+
+@app.get("/admin/duplicates")
+def admin_duplicates_page():
+    return FileResponse(str(ADMIN_STATIC / "duplicates.html"))
 
 @app.get("/admin/words")
 def admin_words_page():

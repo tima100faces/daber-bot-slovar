@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daber Dict · Дубликаты</title>
+<link rel="stylesheet" href="/static/fonts.css?v=1">
+<link rel="stylesheet" href="/static/design-system.css">
+<link rel="stylesheet" href="/admin/static/_admin.css?v=4">
+<style>
+.dup-group { background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:var(--space-md) }
+.dup-head { font-size:1.2rem; font-weight:700; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem }
+.dup-count { font-size:0.75rem; color:var(--color-muted); background:var(--color-surface-2); padding:0.2rem 0.5rem; border-radius:var(--radius-sm) }
+.dup-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:0.75rem }
+.dup-card { background:var(--color-surface-2); border-radius:var(--radius-sm); padding:0.75rem; position:relative; font-size:0.875rem }
+.dup-card__pos { display:inline-block; font-size:0.75rem; padding:0.15rem 0.5rem; border-radius:var(--radius-xs); background:var(--color-accent); color:#fff; margin-bottom:0.5rem }
+.dup-card__field { margin-bottom:0.3rem }
+.dup-card__field strong { color:var(--color-muted); font-weight:400; margin-right:0.3rem }
+.dup-card__trans { color:var(--color-ink) }
+.dup-card__notes { font-size:0.8125rem; color:var(--color-muted); font-style:italic; margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid var(--color-rule) }
+.dup-card__stats { font-size:0.75rem; color:var(--color-muted); margin-top:0.5rem; display:flex; gap:0.75rem }
+.dup-card__delete { position:absolute; top:8px; right:8px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; border:none; border-radius:var(--radius-sm); background:#e53e3e; color:#fff; cursor:pointer; transition:background 0.2s; font-size:0.75rem }
+.dup-card__delete:hover { background:#c53030 }
+.dup-card--deleted { opacity:0.3; pointer-events:none }
+.empty { text-align:center; color:var(--color-muted); padding:var(--space-2xl) }
+</style>
+</head>
+<body class="admin-body">
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <a href="/" style="display:flex;align-items:center;text-decoration:none"><span class="logo-img"></span><img src="/daber-logo.svg" class="logo-fallback" alt="Daber"></a>
+    <span class="admin-label">Admin</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="/admin/pending" class="nav-item"><img src="/static/icons/list-check.svg" class="nav-icon" alt="">Очередь<span class="nav-badge" id="count-pending">—</span></a>
+    <a href="/admin/approved" class="nav-item"><img src="/static/icons/circle-check.svg" class="nav-icon" alt="">Одобрено<span class="nav-badge" id="count-approved">—</span></a>
+    <a href="/admin/rejected" class="nav-item"><img src="/static/icons/circle-x.svg" class="nav-icon" alt="">Отклонено<span class="nav-badge" id="count-rejected">—</span></a>
+    <a href="/admin/feedback" class="nav-item"><img src="/static/icons/message-report.svg" class="nav-icon" alt="">Жалобы<span class="nav-badge" id="count-feedback">—</span></a>
+    <a href="/admin/contact" class="nav-item"><img src="/static/icons/scale.svg" class="nav-icon" alt="">Сообщения<span class="nav-badge" id="count-contact">—</span></a>
+    <a href="/admin/verify" class="nav-item"><img src="/static/icons/search.svg" class="nav-icon" alt="">Верификация<span class="nav-badge" id="count-verify">—</span></a>
+    <a href="/admin/duplicates" class="nav-item active"><img src="/static/icons/circle-x.svg" class="nav-icon" alt="">Дубликаты<span class="nav-badge" id="count-duplicates">—</span></a>
+    <a href="/admin/words" class="nav-item"><img src="/static/icons/books.svg" class="nav-icon" alt="">Словарь</a>
+    <a href="/admin/costs" class="nav-item"><img src="/static/icons/coins.svg" class="nav-icon" alt="">Затраты</a>
+    <a href="/admin/facts" class="nav-item"><img src="/static/icons/dice-6.svg" class="nav-icon" alt="">Факты</a>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="nav-item logout-item" onclick="logout()"><img src="/static/icons/logout.svg" class="nav-icon" alt="">Выйти</button>
+  </div>
+</aside>
+
+<div class="main-area">
+  <header class="topbar">
+    <button class="burger" onclick="toggleSidebar()"><img src="/static/icons/menu-2.svg" class="nav-icon" alt=""></button>
+    <h1>Дубликаты</h1>
+    <span style="font-size:0.875rem;color:var(--color-muted)" id="totalCount"></span>
+  </header>
+  <main class="content" id="content">
+    <div class="spinner">Загрузка...</div>
+  </main>
+</div>
+
+<script src="/admin/static/_core.js"></script>
+<script>
+let allDups = [];
+
+function posLabel(slug) {
+  const m = {noun:'сущ',adj:'прил',verb:'глаг',adv:'нар',prep:'предл',pron:'мест',conj:'союз',num:'числ',intj:'межд',phrase:'фраза'};
+  return m[slug] || slug || '—';
+}
+
+function gramInfo(w) {
+  const parts = [];
+  if (w.gender === 'm') parts.push('муж.');
+  else if (w.gender === 'f') parts.push('жен.');
+  else if (w.gender === 'm/f') parts.push('м/ж');
+  if (w.number === 's') parts.push('ед.');
+  else if (w.number === 'p') parts.push('мн.');
+  return parts.length ? parts.join(' · ') : '';
+}
+
+function transList(w) {
+  if (!w.translation) return '—';
+  if (Array.isArray(w.translation)) return w.translation.slice(0, 5).join(' · ');
+  return w.translation;
+}
+
+async function loadDuplicates() {
+  const res = await fetch('/admin/api/duplicates');
+  if (res.status === 401) { window.location.href = '/admin/login'; return; }
+  allDups = await res.json();
+  document.getElementById('totalCount').textContent = allDups.length + ' групп';
+  document.getElementById('count-duplicates').textContent = allDups.length;
+  render();
+}
+
+function render() {
+  const list = document.getElementById('content');
+  if (!allDups.length) { list.innerHTML = '<div class="empty">Дубликатов нет</div>'; return; }
+
+  list.innerHTML = allDups.map(g => {
+    const cards = g.words.map(w => `
+      <div class="dup-card" id="dup-${w.id}">
+        <button class="dup-card__delete" onclick="deleteDup(${w.id},'${g.headword}')" title="Удалить">
+          <img src="/static/icons/x.svg" width="14" height="14" class="t-icon" alt="">
+        </button>
+        <div class="dup-card__pos">${posLabel(w.pos_slug)}</div>
+        ${w.translit ? `<div class="dup-card__field"><strong>Транслит:</strong> ${w.translit}</div>` : ''}
+        ${gramInfo(w) ? `<div class="dup-card__field"><strong>Грамматика:</strong> ${gramInfo(w)}</div>` : ''}
+        <div class="dup-card__field"><strong>Перевод:</strong> <span class="dup-card__trans">${transList(w)}</span></div>
+        ${w.notes ? `<div class="dup-card__notes">${w.notes.substring(0, 200)}${w.notes.length > 200 ? '...' : ''}</div>` : ''}
+        <div class="dup-card__stats">
+          ${w.example_count ? `<span>📋 ${w.example_count} прим.</span>` : ''}
+          ${w.synonym_count ? `<span>🔗 ${w.synonym_count} син.</span>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    return `<div class="dup-group">
+      <div class="dup-head">${g.headword} <span class="dup-count">${g.words.length} записи</span></div>
+      <div class="dup-cards">${cards}</div>
+    </div>`;
+  }).join('');
+}
+
+async function deleteDup(id, headword) {
+  if (!confirm(`Удалить слово id=${id} (${headword}) навсегда?`)) return;
+  const res = await fetch(`/api/admin/word/${id}?type=word`, { method: 'DELETE' });
+  if (res.ok) {
+    document.getElementById(`dup-${id}`).classList.add('dup-card--deleted');
+    // Reload after 1 second
+    setTimeout(loadDuplicates, 1000);
+  } else {
+    const err = await res.json().catch(() => ({}));
+    alert('Ошибка: ' + (err.detail || 'не удалось удалить'));
+  }
+}
+
+function onPageLoad() { loadDuplicates(); }
+</script>
+</body>
+</html>
