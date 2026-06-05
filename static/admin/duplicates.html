@@ -107,6 +107,7 @@ function render() {
           <img src="/static/icons/x.svg" width="14" height="14" class="t-icon" alt="">
         </button>
         <div class="dup-card__pos">${posLabel(w.pos_slug)}</div>
+        ${w.headword_nikud ? `<div class="dup-card__field"><strong>Никуд:</strong> ${w.headword_nikud}</div>` : ''}
         ${w.translit ? `<div class="dup-card__field"><strong>Транслит:</strong> ${w.translit}</div>` : ''}
         ${gramInfo(w) ? `<div class="dup-card__field"><strong>Грамматика:</strong> ${gramInfo(w)}</div>` : ''}
         <div class="dup-card__field"><strong>Перевод:</strong> <span class="dup-card__trans">${transList(w)}</span></div>
@@ -119,7 +120,7 @@ function render() {
     `).join('');
 
     return `<div class="dup-group">
-      <div class="dup-head">${g.headword} <span class="dup-count">${g.words.length} записи</span></div>
+      <div class="dup-head">${g.headword} ${g.headword_nikud ? `<span style="font-size:0.9rem;color:var(--color-muted);font-weight:400">(${g.headword_nikud})</span>` : ''} <span class="dup-count">${g.words.length} записи</span></div>
       <div class="dup-cards">${cards}</div>
     </div>`;
   }).join('');

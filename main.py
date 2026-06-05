@@ -1210,8 +1210,8 @@ def admin_duplicates(request: Request):
     conn = get_db()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("""
-        SELECT headword, array_agg(jsonb_build_object(
-            'id', id, 'pos_slug', pos_slug, 'pos_label', 
+        SELECT headword, MIN(headword_nikud) as headword_nikud, array_agg(jsonb_build_object(
+            'id', id, 'headword_nikud', headword_nikud, 'pos_slug', pos_slug, 'pos_label', 
             CASE pos_slug WHEN 'noun' THEN 'сущ' WHEN 'adj' THEN 'прил' 
                  WHEN 'verb' THEN 'глаг' WHEN 'adv' THEN 'нар' 
                  WHEN 'prep' THEN 'предл' WHEN 'pron' THEN 'мест'
