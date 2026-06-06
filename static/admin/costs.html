@@ -44,7 +44,7 @@
 
 <script src="/admin/static/_core.js"></script>
 <script>
-var usd = function(n) { return '$' + (n || 0).toFixed(6); };
+var usd = function(n) { return '$' + (n || 0).toFixed(2); };
 var usd2 = function(n) { return '$' + (n || 0).toFixed(4); };
 var ils = function(n) { return '\u20AA' + ((n || 0) * 3.6).toFixed(2); };
 var num = function(n) { return (n || 0).toLocaleString(); };
@@ -107,7 +107,7 @@ function renderCosts(summary, history, status) {
     ' \u0441\u043b\u043e\u0432/\u0434\u0435\u043d\u044c \u00b7 \u0421\u0435\u0433\u043e\u0434\u043d\u044f: ' + today_inserted +
     '</span></div>';
 
-  html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl)">' +
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl)">' +
     '<div class="pw-card" style="text-align:center"><div style="font-size:0.75rem;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.5px">\u0421\u0435\u0433\u043e\u0434\u043d\u044f</div><div style="font-size:2rem;font-weight:700;font-family:var(--font-mono);margin:8px 0">' + usd(today.cost_usd) + '</div><div style="font-size:0.8rem;color:var(--color-muted)">' + ils(today.cost_usd) + ' \u00b7 ' + today.requests + ' \u0437\u0430\u043f\u0440\u043e\u0441\u043e\u0432</div>' + (modelBreakdown ? '<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--color-rule)">' + modelBreakdown + '</div>' : '') + '</div>' +
     '<div class="pw-card" style="text-align:center"><div style="font-size:0.75rem;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.5px">7 \u0434\u043d\u0435\u0439</div><div style="font-size:2rem;font-weight:700;font-family:var(--font-mono);margin:8px 0">' + usd(week.cost_usd) + '</div><div style="font-size:0.8rem;color:var(--color-muted)">' + ils(week.cost_usd) + '</div></div>' +
     '<div class="pw-card" style="text-align:center"><div style="font-size:0.75rem;color:var(--color-muted);text-transform:uppercase;letter-spacing:0.5px">\u041c\u0435\u0441\u044f\u0446</div><div style="font-size:2rem;font-weight:700;font-family:var(--font-mono);margin:8px 0">' + usd(month.cost_usd) + '</div><div style="font-size:0.8rem;color:var(--color-muted)">' + ils(month.cost_usd) + ' \u00b7 ' + month.requests + ' \u0437\u0430\u043f\u0440\u043e\u0441\u043e\u0432</div>' + (monthModelBreakdown ? '<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--color-rule)">' + monthModelBreakdown + '</div>' : '') + '</div>' +
