@@ -9,7 +9,7 @@
 ## Stack
 
 - **Backend:** Python 3.11 + FastAPI (uvicorn)
-- **Database:** PostgreSQL 16 on port `5434`
+- **Database:** PostgreSQL 14 on port `5434` (dedicated instance, separate from the system `14/main` cluster on `5432`)
 - **Frontend:** Static HTML/CSS/JS (served by nginx)
 - **Reverse proxy:** nginx on port 443 (Cloudflare SSL)
 - **Process manager:** systemd (`daber-dict.service`)
@@ -34,13 +34,13 @@
 │   └── design-system.css
 ├── enrichment/          # Facts generation pipeline
 │   ├── run.py           # Cron-triggered enrichment entry point
-│   ├── pipeline.py      # Gemini-based enrichment
+│   ├── pipeline.py      # Sonnet-based enrichment (migrated off Gemini)
 │   ├── publish_one_fact.py
 │   ├── balashon_facts.py
 │   └── verify_words.py
 ├── scripts/
 │   ├── daber-backup.sh  # Daily pg_dump (cron)
-│   └── daber-dict-push.sh  # Auto git push (cron)
+│   └── daber-dict-push.sh  # RETIRED auto-push — replaced by pull-based deploy
 ├── backups/             # PostgreSQL dumps (daily rotation)
 └── enrich_verbs.py      # Sonnet-based verb enrichment (one-shot, ran 2026-06-06)
 ```
@@ -183,17 +183,38 @@ Cron-triggered pipeline:
 | Job | Schedule | Script | Description |
 |-----|----------|--------|-------------|
 | Backup | Daily 3:00 | `scripts/daber-backup.sh` | pg_dump to backups/ |
-| Auto-push | Daily | `scripts/daber-dict-push.sh` | git commit + push |
 | Facts generation | Daily 10:00 | `enrichment/run.py` | Generate + publish fact |
 | Balashon scraping | Mon 9:00 | `enrichment/balashon_facts.py` | Scrape Balashon blog |
 
+> **Retired:** the `daber-dict-push.sh` auto-push job. Deploy is now pull-based — see
+> [Git & Deploy](#git--deploy). Verify with Hermes that no scheduler still triggers it.
+
 ---
 
-## Git
+## Git & Deploy
+
+**Single source of truth = GitHub `main`.** Development happens locally (branch → PR →
+merge to `main`); the server is a deploy target that **pulls**, never a writer that pushes.
 
 - **Remote:** `https://github.com/tima100faces/daber-bot-slovar.git`
 - **Branch:** `main`
-- **Auth:** GitHub token in remote URL (push via cron)
+- **Auth:** GitHub token in remote URL
+
+### Deploy (pull-based)
+
+After a PR is merged to `main`, deploy on the server:
+
+```bash
+cd /root/daber-dict
+git pull --ff-only origin main
+systemctl restart daber-dict   # only needed for backend changes; static is served live by nginx
+```
+
+If `git pull --ff-only` fails (non-fast-forward / local changes), **stop** — never force.
+Commit/stash server-side edits first, or investigate the divergence.
+
+> The old server→GitHub auto-push (`scripts/daber-dict-push.sh`) is **retired**. The server
+> must not commit/push to `main` on its own — that caused two writers racing the same branch.
 
 ---
 
