@@ -1,17 +1,12 @@
 #!/bin/bash
-# Auto-push daber-dict changes to GitHub
-# Runs daily at 4am via cron (profile: default)
+# RETIRED. The server no longer auto-pushes to GitHub.
+#
+# Single source of truth is GitHub `main`. Development happens locally
+# (branch -> PR -> merge), and the server DEPLOYS via pull:
+#   scripts/daber-dict-deploy.sh
+#
+# This stub stays so any lingering scheduler call is a harmless no-op
+# instead of racing the `main` branch with the local writer.
 
-REPO="/root/daber-dict"
-cd "$REPO" || exit 1
-
-# Check if there's anything to commit
-if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
-    echo "Nothing to push — repo is clean"
-    exit 0
-fi
-
-git add -A
-git commit -m "auto: daily push $(date +%Y-%m-%d)"
-git push origin main
-echo "Pushed to origin/main"
+echo "daber-dict-push.sh is retired — server must not push to main. Use daber-dict-deploy.sh." >&2
+exit 0
