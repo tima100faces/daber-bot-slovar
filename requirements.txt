@@ -5,3 +5,4 @@ pyotp
 qrcode[pil]
 itsdangerous
 psycopg2-binary
+pymorphy3
