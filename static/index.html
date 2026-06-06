@@ -1073,7 +1073,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
       const transRu = word.translation_ru || '';
       const enriched = word.translation_enriched || [];
       const enrichedClean = enriched.filter(t => t !== transRu);
-      const translations = enrichedClean.map(t => `<li>${t}</li>`).join('');
+      const translations = enrichedClean.map(t => `<li>${t}</li>`).join('') || (transRu ? `<li>${transRu}</li>` : '');
 
       // Same-root verbs
       const rootVerbs = (word.same_root_verbs || []).map(v => `

@@ -19,10 +19,25 @@
 .dup-card__trans { color:var(--color-ink) }
 .dup-card__notes { font-size:0.8125rem; color:var(--color-muted); font-style:italic; margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid var(--color-rule) }
 .dup-card__stats { font-size:0.75rem; color:var(--color-muted); margin-top:0.5rem; display:flex; gap:0.75rem }
-.dup-card__delete { position:absolute; top:8px; right:8px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; border:none; border-radius:var(--radius-sm); background:#e53e3e; color:#fff; cursor:pointer; transition:background 0.2s; font-size:0.75rem }
+.dup-card__actions { position:absolute; top:8px; right:8px; display:flex; gap:4px }
+.dup-card__delete, .dup-card__edit { width:26px; height:26px; display:flex; align-items:center; justify-content:center; border:none; border-radius:var(--radius-sm); cursor:pointer; transition:background 0.2s }
+.dup-card__delete { background:#e53e3e; color:#fff }
 .dup-card__delete:hover { background:#c53030 }
+.dup-card__edit { background:var(--color-surface); color:var(--color-ink); border:1px solid var(--color-rule) }
+.dup-card__edit:hover { background:var(--color-accent); color:#fff; border-color:var(--color-accent) }
+.dup-card__edit img { filter:invert(1) }
+.dup-card__edit:hover img { filter:none }
 .dup-card--deleted { opacity:0.3; pointer-events:none }
 .empty { text-align:center; color:var(--color-muted); padding:var(--space-2xl) }
+
+/* Edit modal overlay */
+.preview-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1000 }
+.edit-card { background:var(--color-surface); border-radius:var(--radius-md); padding:var(--space-lg); max-width:520px; width:90%; max-height:90vh; overflow-y:auto }
+.edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md); margin-bottom:var(--space-md) }
+.edit-grid label { display:flex; flex-direction:column; gap:2px; font-size:0.8125rem; color:var(--color-muted) }
+.edit-grid input, .edit-grid select, .edit-grid textarea { padding:6px 8px; border:1px solid var(--color-rule); border-radius:var(--radius-sm); background:var(--color-surface-2); color:var(--color-ink); font-size:0.875rem; font-family:inherit }
+.edit-grid textarea { resize:vertical; min-height:60px }
+.edit-btns { display:flex; gap:var(--space-sm); justify-content:flex-end }
 </style>
 </head>
 <body class="admin-body">
@@ -103,9 +118,14 @@ function render() {
   list.innerHTML = allDups.map(g => {
     const cards = g.words.map(w => `
       <div class="dup-card" id="dup-${w.id}">
-        <button class="dup-card__delete" onclick="deleteDup(${w.id},'${g.headword}')" title="Удалить">
-          <img src="/static/icons/x.svg" width="14" height="14" class="t-icon" alt="">
-        </button>
+        <div class="dup-card__actions">
+          <button class="dup-card__edit" onclick="editDup(${w.id})" title="Редактировать">
+            <img src="/static/icons/pencil.svg" width="14" height="14" alt="">
+          </button>
+          <button class="dup-card__delete" onclick="deleteDup(${w.id},'${g.headword}')" title="Удалить">
+            <img src="/static/icons/x.svg" width="14" height="14" alt="">
+          </button>
+        </div>
         <div class="dup-card__pos">${posLabel(w.pos_slug)}</div>
         ${w.headword_nikud ? `<div class="dup-card__field"><strong>Никуд:</strong> ${w.headword_nikud}</div>` : ''}
         ${w.translit ? `<div class="dup-card__field"><strong>Транслит:</strong> ${w.translit}</div>` : ''}
@@ -131,12 +151,66 @@ async function deleteDup(id, headword) {
   const res = await fetch(`/api/admin/word/${id}?type=word`, { method: 'DELETE' });
   if (res.ok) {
     document.getElementById(`dup-${id}`).classList.add('dup-card--deleted');
-    // Reload after 1 second
     setTimeout(loadDuplicates, 1000);
   } else {
     const err = await res.json().catch(() => ({}));
     alert('Ошибка: ' + (err.detail || 'не удалось удалить'));
   }
+}
+
+async function editDup(id) {
+  // Fetch full word data
+  const res = await fetch(`/api/word/_?id=${id}`);
+  if (!res.ok) { alert('Ошибка загрузки слова'); return; }
+  const w = await res.json();
+
+  // Extract translation from translation_enriched (jsonb array)
+  let trans = '';
+  if (w.translation_enriched) {
+    if (Array.isArray(w.translation_enriched)) trans = w.translation_enriched[0] || '';
+    else if (typeof w.translation_enriched === 'string') trans = w.translation_enriched;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'preview-overlay';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `<div class="edit-card" onclick="event.stopPropagation()">
+    <h3 style="margin:0 0 var(--space-lg);font-family:var(--font-display)"><img src="/static/icons/pencil.svg" style="width:18px;height:18px;vertical-align:-4px;filter:invert(1)" alt=""> Редактировать #${w.id}</h3>
+    <div class="edit-grid">
+      <label>Слово (headword)<input id="ed-headword" value="${esc(w.headword)}"></label>
+      <label>Никуд<input id="ed-nikud" value="${esc(w.headword_nikud)}"></label>
+      <label>Транслит<input id="ed-translit" value="${esc(w.translit)}"></label>
+      <label>Часть речи<select id="ed-pos">${[{v:'',l:'—'}, ...Object.entries(POS_RU).map(([v,l]) => ({v,l}))].map(o => `<option value="${o.v}" ${(w.pos_slug||'')===o.v?'selected':''}>${o.l}</option>`).join('')}</select></label>
+      <label>Род<select id="ed-gender">${Object.entries(GENDER_RU).map(([v,l]) => `<option value="${v}" ${(w.gender||'')===v?'selected':''}>${l}</option>`).join('')}</select></label>
+      <label>Число<select id="ed-number">${Object.entries(NUMBER_RU).map(([v,l]) => `<option value="${v}" ${(w.number||'')===v?'selected':''}>${l}</option>`).join('')}</select></label>
+      <label style="grid-column:span 2">Перевод<input id="ed-translation" value="${esc(trans)}"></label>
+      <label style="grid-column:span 2">Заметки<textarea id="ed-notes" rows="3">${esc(w.notes)}</textarea></label>
+    </div>
+    <div class="edit-btns">
+      <button class="mode-btn" onclick="saveDup(${id})" style="background:var(--color-accent);color:#fff">Сохранить</button>
+      <button class="mode-btn" onclick="this.closest('.preview-overlay').remove()">Отмена</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function saveDup(id) {
+  const body = {
+    headword: document.getElementById('ed-headword').value.trim(),
+    headword_nikud: document.getElementById('ed-nikud').value.trim(),
+    translit: document.getElementById('ed-translit').value.trim(),
+    pos_slug: document.getElementById('ed-pos').value,
+    gender: document.getElementById('ed-gender').value,
+    number: document.getElementById('ed-number').value,
+    translation_ru: document.getElementById('ed-translation').value.trim(),
+    notes: document.getElementById('ed-notes').value.trim(),
+  };
+  try {
+    const res = await fetch(`/admin/api/word/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.detail || 'Ошибка сохранения'); }
+    document.querySelector('.preview-overlay').remove();
+    loadDuplicates();
+  } catch(e) { alert('Ошибка: ' + e.message); }
 }
 
 function onPageLoad() { loadDuplicates(); }
