@@ -779,17 +779,28 @@
   list-style: none;
   display: flex;
   align-items: center;
+  gap: var(--space-sm);
   user-select: none;
 }
 .modal__collapse-summary::-webkit-details-marker { display: none; }
-.modal__collapse-summary::after {
+/* Accent circle with a white chevron, right next to the label — a clear
+   "tap to expand" affordance so the conjugation isn't missed. */
+.modal__collapse-summary::before {
   content: "▾";
-  margin-left: auto;
-  font-size: 0.8rem;
-  color: var(--color-neutral);
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  line-height: 1;
   transition: transform 0.2s var(--ease-out);
 }
-.modal__collapse[open] > .modal__collapse-summary::after { transform: rotate(180deg); }
+.modal__collapse[open] > .modal__collapse-summary::before { transform: rotate(180deg); }
 .modal__collapse-body { margin-top: var(--space-sm); }
 .modal__example-row {
   padding: var(--space-sm) 0;
