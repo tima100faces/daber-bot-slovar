@@ -24,6 +24,17 @@ fi
 echo "Pulling origin/main (fast-forward only)..."
 git pull --ff-only origin main
 
+# Dedicated virtualenv for daber-dict — independent of any other project on the
+# host (e.g. the Hermes agent). Created on first deploy, then kept in sync with
+# requirements.txt so new dependencies install automatically.
+if [ ! -d .venv ]; then
+    echo "Creating dedicated virtualenv (.venv)..."
+    python3 -m venv .venv
+fi
+echo "Syncing dependencies into .venv..."
+.venv/bin/pip install -q --upgrade pip
+.venv/bin/pip install -q -r requirements.txt
+
 echo "Restarting backend..."
 systemctl restart daber-dict
 

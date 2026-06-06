@@ -34,6 +34,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
+# Russian morphology for query lemmatization (люблю -> любить). Optional: if the
+# package isn't installed the app still runs, search just won't lemmatize.
+try:
+    import pymorphy3
+    _morph = pymorphy3.MorphAnalyzer()
+except Exception:
+    _morph = None
+
 load_dotenv()
 
 PG = dict(
@@ -489,6 +497,28 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
                 d = verb_to_dict(r, cur); d["example_count"] = r["example_count"]; d["synonym_count"] = r["synonym_count"]
                 results_all.append((3, d))
 
+        # 3b. Lemmatized Russian query — "люблю" -> "любить" matches the verb's
+        # dictionary translation. pymorphy gives candidate lemmas; the dedup pass
+        # below collapses any overlap with the exact-form matches above.
+        lemmas = sorted(_ru_lemmas(q))
+        if lemmas:
+            pats = [f"%{lm}%" for lm in lemmas]
+            lemma_res = [re.compile(rf'(?<![а-яёa-z0-9]){re.escape(lm)}(?![а-яёa-z0-9])', re.UNICODE)
+                         for lm in lemmas]
+            cur.execute(r"""SELECT v.*,
+                           (SELECT transliteration FROM verb_forms WHERE verb_id = v.id AND tense = 'infinitive' LIMIT 1) AS infinitive_translit
+                           FROM verbs v
+                           WHERE LOWER(COALESCE(v.translation_ru, '')) LIKE ANY(%s)
+                              OR LOWER(COALESCE(v.translation_enriched::text, '')) LIKE ANY(%s)""",
+                        (pats, pats))
+            for r in cur.fetchall():
+                tr = (r.get("translation_ru") or "").lower()
+                te = r.get("translation_enriched") or ""
+                te = " ".join(te).lower() if isinstance(te, list) else str(te).lower()
+                if any(rx.search(tr) or rx.search(te) for rx in lemma_res):
+                    d = verb_to_dict(r, cur); d["example_count"] = r["example_count"]; d["synonym_count"] = r["synonym_count"]
+                    results_all.append((3, d))
+
         # ── VERB FORM TRANSLIT ──
         # Substring match on form transliteration (e.g. "roce" → רוֹצֶה)
         cur.execute(
@@ -601,6 +631,25 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
 # ─── Enrichment helpers ─────────────────────────────────────────────────────
 
 _NIKUD_RE = re.compile(r'[֑-ׇ]')  # Hebrew vowel points + cantillation marks
+_CYRILLIC_RE = re.compile(r'[а-яёА-ЯЁ]')
+
+
+def _ru_lemmas(q):
+    """Lemmatize a Russian query to candidate dictionary forms (люблю -> любить).
+
+    Returns the set of lemmas (excluding the query word itself). Empty if pymorphy
+    is unavailable or the query is not Cyrillic. pymorphy returns several ranked
+    parses for ambiguous forms, so we keep the top few candidates.
+    """
+    if not _morph or not _CYRILLIC_RE.search(q):
+        return set()
+    out = set()
+    for tok in re.findall(r'[а-яёА-ЯЁ-]+', q.lower()):
+        for p in _morph.parse(tok)[:3]:
+            nf = (p.normal_form or '').lower()
+            if nf and nf != tok:
+                out.add(nf)
+    return out
 
 
 def _link_synonyms(cur, rows):
