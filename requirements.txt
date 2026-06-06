@@ -6,3 +6,4 @@ qrcode[pil]
 itsdangerous
 psycopg2-binary
 pymorphy3
+feedparser
