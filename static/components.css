@@ -918,6 +918,10 @@ html:not([data-theme="light"]) .t-icon:not(.btn .t-icon) { filter: invert(1) bri
 .modal__close .t-icon { filter: none; }
 [data-theme="dark"] .modal__close .t-icon { filter: invert(1) brightness(2); }
 html:not([data-theme="light"]) .modal__close .t-icon { filter: invert(1) brightness(2); }
+/* "Сообщить об ошибке" is a plain (non-accent) button — its icon must still
+   invert on dark, like modal__close. Override the blanket button rule above. */
+[data-theme="dark"] .feedback-flag-inline .t-icon { filter: invert(1) brightness(2) !important; }
+html:not([data-theme="light"]) .feedback-flag-inline .t-icon { filter: invert(1) brightness(2) !important; }
 /* Accent buttons — icon should be white (bg is blue, black icon invisible) */
 .btn--accent .t-icon { filter: brightness(0) invert(1) !important; }
 
