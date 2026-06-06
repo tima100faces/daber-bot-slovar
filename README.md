@@ -153,8 +153,8 @@ psql -h 127.0.0.1 -p 5434 -U postgres -d daber_dict < backups/daber_YYYYMMDD.dum
 | `PGDB` | Database name (`daber_dict`) |
 | `PGUSER` | Database user (`postgres`) |
 | `ADMIN_TOTP_SECRET` | TOTP secret for admin login |
-| `GOOGLE_API_KEY` | Gemini API key (enrichment) |
-| `ANTHROPIC_API_KEY` | Anthropic API key (verb enrichment) |
+| `GOOGLE_API_KEY` | Gemini API key (legacy, used only by pipeline.py) |
+| `ANTHROPIC_API_KEY` | Anthropic API key (primary — verb enrichment, verification, facts) |
 
 ---
 
@@ -165,12 +165,16 @@ psql -h 127.0.0.1 -p 5434 -U postgres -d daber_dict < backups/daber_YYYYMMDD.dum
 One-shot script for new verbs: `enrich_verbs.py`
 Populates: `verbs.translation_enriched`, `verb_examples`, `verb_synonyms`, `verbs.notes`
 
-### Facts enrichment (Gemini)
+### Facts enrichment (Sonnet)
 
-Cron-triggered pipeline in `enrichment/`:
-- `run.py` → daily fact generation (cron 10:00)
-- `balashon_facts.py` → weekly Balashon scraping (cron Mon 9:00)
-- `publish_one_fact.py` → publish single fact to language_facts table and frontend
+- `generate_facts.py` — generate facts from source material via Sonnet
+- `balashon_facts.py` — weekly Balashon blog scraping → facts via Sonnet (cron Mon 9:00)
+
+### Words enrichment (Gemini — legacy)
+
+Cron-triggered pipeline:
+- `pipeline.py` / `run.py` → daily word enrichment via Gemini 2.5 Flash (cron 10:00)
+- ⚠️ This is the only pipeline still on Gemini. Planned migration to Sonnet.
 
 ---
 
