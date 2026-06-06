@@ -39,8 +39,9 @@
 │   ├── balashon_facts.py
 │   └── verify_words.py
 ├── scripts/
-│   ├── daber-backup.sh  # Daily pg_dump (cron)
-│   └── daber-dict-push.sh  # RETIRED auto-push — replaced by pull-based deploy
+│   ├── daber-backup.sh       # Daily pg_dump (cron)
+│   ├── daber-dict-deploy.sh  # Pull-based deploy (run on server after merge to main)
+│   └── daber-dict-push.sh     # RETIRED auto-push — now a harmless no-op stub
 ├── backups/             # PostgreSQL dumps (daily rotation)
 └── enrich_verbs.py      # Sonnet-based verb enrichment (one-shot, ran 2026-06-06)
 ```
@@ -87,7 +88,7 @@ SSL via Let's Encrypt (certbot), auto-renewal.
 | `word_phrases` | — | Word phrases |
 | `word_forms` | — | Word inflected forms |
 | `word_frequencies` | — | Frequency data |
-| `language_facts` | 122 | Published language facts (blog) |
+| `language_facts` | 88 | Language facts (snapshot 06.06.2026: 36 published + 52 drafts) |
 | `word_verification` | — | Pending word verification queue |
 | `pending_words` | — | User-submitted words |
 | `user_feedback` | — | User error reports |
@@ -209,6 +210,9 @@ cd /root/daber-dict
 git pull --ff-only origin main
 systemctl restart daber-dict   # only needed for backend changes; static is served live by nginx
 ```
+
+Or use the wrapper `scripts/daber-dict-deploy.sh`, which refuses to deploy over
+uncommitted tracked changes (a sign of direct prod edits) before pulling and restarting.
 
 If `git pull --ff-only` fails (non-fast-forward / local changes), **stop** — never force.
 Commit/stash server-side edits first, or investigate the divergence.

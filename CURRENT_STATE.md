@@ -100,10 +100,11 @@
 ---
 
 ## Модульная архитектура админки
-- ✅ **6 отдельных страниц**: `pending.html`, `approved.html`, `rejected.html`, `feedback.html`, `words.html`, `costs.html`
+- ✅ **9 отдельных страниц**: `pending.html`, `approved.html`, `rejected.html`, `feedback.html`, `words.html`, `costs.html`, `contact.html` (сообщения с формы), `verify.html` (очередь верификации), `duplicates.html` (дубли headword), `facts.html` (блог-факты)
 - ✅ **Общие файлы**: `_admin.css` (~450 строк стилей), `_core.js` (~75 строк — auth, счётчики, хелперы)
-- ✅ **Роуты FastAPI**: `/admin/pending`, `/admin/approved`, `/admin/rejected`, `/admin/feedback`, `/admin/words`, `/admin/costs`
+- ✅ **Роуты FastAPI**: `/admin/pending`, `/admin/approved`, `/admin/rejected`, `/admin/feedback`, `/admin/words`, `/admin/costs`, `/admin/contact`, `/admin/verify`, `/admin/duplicates`, `/admin/facts`
 - ✅ **Редирект**: `/admin` → `/admin/pending`
+- ✅ **Авторизация**: все `/admin/api/*` ручки проверяют `admin_required` (включая факты — закрыто 06.06.2026)
 - ✅ Каждая страница — полноценный букмаркабельный URL
 
 ### Иконки и логотип

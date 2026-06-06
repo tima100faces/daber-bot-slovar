@@ -1116,6 +1116,9 @@ if not ADMIN_SECRET:
 totp = pyotp.TOTP(ADMIN_SECRET)
 session_signer = URLSafeTimedSerializer(ADMIN_SECRET, salt="daber-admin-session")
 SESSION_MAX_AGE = 8 * 3600  # 8 hours
+# Secure attribute on the session cookie. Defaults to True (prod is behind
+# nginx/Cloudflare TLS). Set COOKIE_SECURE=false for plain-HTTP local testing.
+COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "true").lower() != "false"
 
 
 def admin_required(request: Request) -> None:
@@ -1150,7 +1153,7 @@ def admin_login(data: LoginIn):
         max_age=SESSION_MAX_AGE,
         httponly=True,
         samesite="strict",
-        secure=False,  # False for dev/localhost; nginx adds HTTPS in prod
+        secure=COOKIE_SECURE,  # True in prod (HTTPS); override with COOKIE_SECURE=false for local HTTP
     )
     return resp
 
@@ -2324,7 +2327,8 @@ def get_fact(fact_id: int):
 
 # Admin: list all facts (including unpublished) with filter and sort
 @app.get("/admin/api/facts")
-def admin_list_facts(filter: str = "all", sort: str = "newest"):
+def admin_list_facts(request: Request, filter: str = "all", sort: str = "newest"):
+    admin_required(request)
     conn = psycopg2.connect(**PG)
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     
@@ -2350,6 +2354,7 @@ def admin_list_facts(filter: str = "all", sort: str = "newest"):
 
 @app.post("/admin/api/facts")
 async def admin_create_fact(request: Request):
+    admin_required(request)
     body = await request.json()
     conn = psycopg2.connect(**PG)
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -2374,6 +2379,7 @@ async def admin_create_fact(request: Request):
 
 @app.put("/admin/api/facts/{fact_id}")
 async def admin_update_fact(fact_id: int, request: Request):
+    admin_required(request)
     body = await request.json()
     conn = psycopg2.connect(**PG)
     cur = conn.cursor()
@@ -2403,7 +2409,8 @@ async def admin_update_fact(fact_id: int, request: Request):
 
 
 @app.delete("/admin/api/facts/{fact_id}")
-def admin_delete_fact(fact_id: int):
+def admin_delete_fact(fact_id: int, request: Request):
+    admin_required(request)
     conn = psycopg2.connect(**PG)
     cur = conn.cursor()
     cur.execute("DELETE FROM language_facts WHERE id = %s", (fact_id,))
@@ -2413,8 +2420,9 @@ def admin_delete_fact(fact_id: int):
 
 
 @app.post("/admin/api/enrichment/generate-facts")
-def admin_generate_facts():
+def admin_generate_facts(request: Request):
     """Trigger fact generation via enrichment script (Claude Sonnet)."""
+    admin_required(request)
     import subprocess
     try:
         result = subprocess.run(

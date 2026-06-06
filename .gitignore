@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .DS_Store
 .env
+*.db
 backups/
 .last_feedback_check
 LAST_FEEDBACK_CHECK
