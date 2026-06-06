@@ -958,6 +958,10 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
 
     const modal = document.getElementById('modal');
     const content = document.getElementById('modalContent');
+    // Navigating within the open modal (e.g. clicking a synonym) swaps content
+    // but keeps the old scroll position — reset to top so the new card is visible.
+    const modalBox = modal.querySelector('.modal');
+    if (modalBox) modalBox.scrollTop = 0;
 
     // ─── VARIANTS (multiple pos for same headword) ───
     if (word.variants && word.variants.length > 0) {
