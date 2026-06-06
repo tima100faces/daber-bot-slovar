@@ -40,6 +40,22 @@ PLURAL_MASC = re.compile(r".{2,}ים$")
 PLURAL_FEM = re.compile(r".{2,}ות$")
 
 
+def _ktiv_variants(hw: str) -> set:
+    """All spellings that differ from `hw` by one optional mater (ו or י):
+    each single deletion of a ו/י, and each insertion of a ו/י at any position.
+    Used to catch ktiv male/haser duplicates (e.g. דיבור ↔ דבור)."""
+    hw = hw.strip()
+    out = set()
+    for i, ch in enumerate(hw):
+        if ch in ("ו", "י"):
+            out.add(hw[:i] + hw[i + 1:])          # drop a mater
+    for i in range(len(hw) + 1):
+        for m in ("ו", "י"):
+            out.add(hw[:i] + m + hw[i:])           # add a mater
+    out.discard(hw)
+    return out
+
+
 def verify_morphology(word: dict) -> list[str]:
     """Check Hebrew morphological rules. Returns list of warning strings."""
     warnings = []
@@ -143,6 +159,55 @@ def verify_against_db(word: dict) -> list[str]:
             if same_root:
                 existing_headwords = [r[0] for r in same_root]
                 warnings.append(f"Однокоренные слова в словаре: {', '.join(existing_headwords[:5])}")
+
+        # 3. Spelling-variant duplicate (ktiv male/haser): the candidate differs
+        #    from an existing headword by exactly one optional mater (ו or י).
+        #    We generate those one-mater variants and look them up exactly — tight
+        #    enough to avoid the noise of skeleton-stripping. Show the existing
+        #    word's gloss so a reviewer can instantly tell a true duplicate
+        #    (same meaning) from a coincidental minimal pair (שבועה/שבעה).
+        variants = list(_ktiv_variants(headword))
+        if variants:
+            hits = []
+            cur.execute(
+                "SELECT headword, translation_enriched FROM words WHERE headword = ANY(%s) LIMIT 5",
+                (variants,),
+            )
+            for hw, te in cur.fetchall():
+                gloss = ""
+                try:
+                    arr = te if isinstance(te, list) else (json.loads(te) if te else [])
+                    if arr:
+                        gloss = f" ({arr[0]})"
+                except Exception:
+                    pass
+                hits.append(f"{hw}{gloss}")
+            cur.execute(
+                "SELECT infinitive_he, translation_ru FROM verbs WHERE infinitive_he = ANY(%s) LIMIT 5",
+                (variants,),
+            )
+            for inf, tr in cur.fetchall():
+                hits.append(f"{inf} ({tr})" if tr else inf)
+            if hits:
+                warnings.append(
+                    f"Возможно дубликат (другое написание): уже есть {', '.join(hits)}"
+                )
+
+        # 4. Matches a conjugated form of an existing verb — likely a word-form,
+        #    not a new headword. Warn (don't block): verbal nouns legitimately
+        #    share spelling with verb forms.
+        cur.execute(
+            """SELECT DISTINCT v.infinitive_he FROM verb_forms vf
+                   JOIN verbs v ON v.id = vf.verb_id
+                   WHERE vf.form_he = %s AND vf.tense <> 'infinitive'
+                   LIMIT 3""",
+            (headword,),
+        )
+        verb_forms = [r[0] for r in cur.fetchall()]
+        if verb_forms:
+            warnings.append(
+                f"Совпадает с формой глагола ({', '.join(verb_forms)}) — проверьте, не словоформа ли это"
+            )
 
         conn.close()
     except Exception as e:
