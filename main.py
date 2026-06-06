@@ -347,6 +347,30 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
 
     results_all = []  # list of (priority, row_dict)
 
+    # Shared SQL fragments for verb-form cards. Used in both the Hebrew and the
+    # Latin/Cyrillic branches, so defined once here to stay in scope for both.
+    _vf_cols = """
+        vf.id AS form_id, vf.form_he, vf.form_he_nikud,
+        vf.transliteration AS form_translit,
+        vf.tense, vf.person, vf.gender, vf.number,
+        v.id AS verb_id, v.infinitive_he,
+        v.infinitive_he_nikud AS infinitive_nikud,
+        v.translation_ru, v.translation_enriched,
+        v.root, v.binyan, v.notes, v.conjugation_ru,
+        v.example_count, v.synonym_count,
+        (SELECT vf2.transliteration FROM verb_forms vf2
+         WHERE vf2.verb_id = v.id AND vf2.tense = 'infinitive' LIMIT 1
+        ) AS infinitive_translit
+    """
+    _vf_from = "FROM verb_forms vf JOIN verbs v ON vf.verb_id = v.id"
+    _vf_order = """
+        ORDER BY vf.verb_id,
+        CASE vf.tense WHEN 'present' THEN 0 WHEN 'past' THEN 1
+                      WHEN 'future' THEN 2 ELSE 3 END,
+        CASE vf.gender WHEN 'm' THEN 0 ELSE 1 END,
+        CASE vf.number WHEN 'singular' THEN 0 ELSE 1 END
+    """
+
     if is_hebrew:
         # ── VERBS ──
         # 0. exact infinitive match
@@ -370,27 +394,6 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
         # ── VERB FORMS ──
         # Search non-infinitive forms by form_he. DISTINCT ON verb_id: one card per
         # parent verb, best-matching form chosen by ORDER BY.
-        _vf_cols = """
-            vf.id AS form_id, vf.form_he, vf.form_he_nikud,
-            vf.transliteration AS form_translit,
-            vf.tense, vf.person, vf.gender, vf.number,
-            v.id AS verb_id, v.infinitive_he,
-            v.infinitive_he_nikud AS infinitive_nikud,
-            v.translation_ru, v.translation_enriched,
-            v.root, v.binyan, v.notes, v.conjugation_ru,
-            v.example_count, v.synonym_count,
-            (SELECT vf2.transliteration FROM verb_forms vf2
-             WHERE vf2.verb_id = v.id AND vf2.tense = 'infinitive' LIMIT 1
-            ) AS infinitive_translit
-        """
-        _vf_from = "FROM verb_forms vf JOIN verbs v ON vf.verb_id = v.id"
-        _vf_order = """
-            ORDER BY vf.verb_id,
-            CASE vf.tense WHEN 'present' THEN 0 WHEN 'past' THEN 1
-                          WHEN 'future' THEN 2 ELSE 3 END,
-            CASE vf.gender WHEN 'm' THEN 0 ELSE 1 END,
-            CASE vf.number WHEN 'singular' THEN 0 ELSE 1 END
-        """
         cur.execute(
             f"SELECT DISTINCT ON (vf.verb_id) {_vf_cols} {_vf_from}"
             f" WHERE vf.form_he = %s AND vf.tense != 'infinitive' {_vf_order}",
