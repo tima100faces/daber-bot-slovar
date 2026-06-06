@@ -1132,23 +1132,59 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
         if (!formsByTense[t]) formsByTense[t] = [];
         formsByTense[t].push(f);
       });
+      // Канонический порядок и подписи местоимениями: сначала ед.ч. (я, ты, он, она),
+      // потом мн.ч. (мы, вы, они). Архаичные формы ж.р. мн.ч. будущего и повелительного
+      // (תדברנה) скрыты — в современном иврите для обоих родов используется форма м.р. мн.ч.
+      const conjPronoun = (tense, person, gender, number) => {
+        const p = person ? String(person) : '';
+        const sg = number === 'singular';
+        if (tense === 'present') {
+          const g = gender === 'f' ? 'ж.р.' : gender === 'mf' ? 'м./ж.р.' : 'м.р.';
+          return { order: (gender === 'f' ? 1 : 0) + (sg ? 0 : 2), label: `${g} ${sg ? 'ед.ч.' : 'мн.ч.'}` };
+        }
+        if (tense === 'imperative') {
+          if (sg) return { order: gender === 'f' ? 1 : 0, label: gender === 'f' ? 'ты (ж.р.)' : 'ты (м.р.)' };
+          if (gender === 'f') return null;            // архаичная форма на ־נה
+          return { order: 2, label: 'вы' };
+        }
+        // прошедшее и будущее
+        const fut = tense === 'future';
+        if (sg) {
+          if (p === '1') return { order: 0, label: 'я' };
+          if (p === '2') return { order: gender === 'f' ? 2 : 1, label: gender === 'f' ? 'ты (ж.р.)' : 'ты (м.р.)' };
+          if (p === '3') return { order: gender === 'f' ? 4 : 3, label: gender === 'f' ? 'она' : 'он' };
+        } else {
+          if (p === '1') return { order: 5, label: 'мы' };
+          if (p === '2') {
+            if (gender === 'f') return fut ? null : { order: 7, label: 'вы (ж.р.)' };
+            return { order: 6, label: fut ? 'вы' : 'вы (м.р.)' };
+          }
+          if (p === '3') {
+            if (gender === 'f' && fut) return null;    // архаичная форма на ־נה
+            return { order: 8, label: 'они' };
+          }
+        }
+        return { order: 99, label: '' };
+      };
+
       const tenseOrder = ['present', 'past', 'future', 'imperative'];
+      let shownFormsCount = 0;
       const formsHtml = tenseOrder.map(tense => {
         const forms = formsByTense[tense];
         if (!forms || !forms.length) return '';
-        const rows = forms.map(f => {
-          const personLabel = f.person ? {1:'1-е',2:'2-е',3:'3-е'}[f.person]||'' : '';
-          const genderLabel = f.gender ? {m:'м',f:'ж',mf:'м/ж'}[f.gender]||'' : '';
-          const numberLabel = f.number ? {singular:'ед',plural:'мн'}[f.number]||'' : '';
-          const pgn = [personLabel, genderLabel, numberLabel].filter(Boolean).join(' ');
-          return `
+        const ordered = forms
+          .map(f => ({ f, meta: conjPronoun(tense, f.person, f.gender, f.number) }))
+          .filter(x => x.meta)
+          .sort((a, b) => a.meta.order - b.meta.order);
+        if (!ordered.length) return '';
+        shownFormsCount += ordered.length;
+        const rows = ordered.map(({ f, meta }) => `
           <tr>
-            <td style="color:var(--color-muted);font-size:0.75rem;width:60px">${pgn}</td>
+            <td style="color:var(--color-muted);font-size:0.8rem;white-space:nowrap;padding-right:0.75rem">${meta.label}</td>
             <td style="font-weight:600">${f.nikud || f.hebrew || ''}</td>
             <td>${f.hebrew || ''}</td>
             <td style="font-style:italic;color:var(--color-muted)">${f.translit || ''}</td>
-          </tr>`;
-        }).join('');
+          </tr>`).join('');
         const tenseRu = {present:'настоящее',past:'прошедшее',future:'будущее',imperative:'повелительное'}[tense]||tense;
         return `<div class="modal__tense-group">
           <div class="modal__tense-title">${tenseRu}</div>
@@ -1184,7 +1220,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
 
         ${formsHtml ? `
         <details class="modal__section modal__collapse">
-          <summary class="modal__section-title modal__collapse-summary">спряжения (${verbForms.length} форм)</summary>
+          <summary class="modal__section-title modal__collapse-summary">спряжения (${shownFormsCount} форм)</summary>
           <div class="modal__collapse-body">${formsHtml}</div>
         </details>` : ''}
 
