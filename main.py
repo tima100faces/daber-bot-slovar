@@ -600,6 +600,30 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
 
 # ─── Enrichment helpers ─────────────────────────────────────────────────────
 
+def _link_synonyms(cur, rows):
+    """Build synonym dicts, marking which ones point to an existing dictionary card.
+
+    A synonym string looks like "להתקיים (существовать)" — a Hebrew lemma plus a
+    Russian gloss in parentheses. We extract the lemma (text before " ("); if it
+    matches a verb infinitive or a word headword, we attach `link` = that lemma so
+    the UI can render a clickable cross-link. Synonyms without a card get
+    link=None and stay plain text — no dead links.
+    """
+    syns = [{"hebrew": r["hebrew"], "translation": r["translation"] or ""} for r in rows]
+    lemmas = list({s["hebrew"].split(" (")[0].strip() for s in syns if s.get("hebrew")})
+    existing = set()
+    if lemmas:
+        cur.execute(
+            "SELECT infinitive_he AS h FROM verbs WHERE infinitive_he = ANY(%s)"
+            " UNION SELECT headword AS h FROM words WHERE headword = ANY(%s)",
+            (lemmas, lemmas))
+        existing = {r["h"] for r in cur.fetchall()}
+    for s in syns:
+        lemma = s["hebrew"].split(" (")[0].strip() if s.get("hebrew") else ""
+        s["link"] = lemma if lemma in existing else None
+    return syns
+
+
 def _enrich_verb_detail(result: dict, verb_id: int, cur):
     """Add forms, examples, synonyms to a verb dict in-place."""
     cur.execute("""SELECT tense, person, gender, number, form_he, form_he_nikud, transliteration
@@ -618,9 +642,7 @@ def _enrich_verb_detail(result: dict, verb_id: int, cur):
     ]
     cur.execute("""SELECT DISTINCT ON (hebrew, translation) hebrew, translation FROM verb_synonyms
                    WHERE verb_id = %s ORDER BY hebrew, translation, id LIMIT 10""", (verb_id,))
-    result["synonyms"] = [
-        {"hebrew": r["hebrew"], "translation": r["translation"] or ""} for r in cur.fetchall()
-    ]
+    result["synonyms"] = _link_synonyms(cur, cur.fetchall())
 
 
 def _enrich_word_detail(d: dict, word_id: int, cur):
@@ -632,7 +654,7 @@ def _enrich_word_detail(d: dict, word_id: int, cur):
     d["examples"] = [{"hebrew": r["hebrew"], "translation": r["translation"]} for r in cur.fetchall()]
     cur.execute("""SELECT DISTINCT ON (hebrew, translation) hebrew, translation FROM word_synonyms
                    WHERE word_id = %s ORDER BY hebrew, translation, id LIMIT 10""", (word_id,))
-    d["synonyms"] = [{"hebrew": r["hebrew"], "translation": r["translation"] or ""} for r in cur.fetchall()]
+    d["synonyms"] = _link_synonyms(cur, cur.fetchall())
     cur.execute("""SELECT hebrew, nikud, translit, translation FROM word_phrases
                    WHERE word_id = %s ORDER BY id LIMIT 15""", (word_id,))
     phrases_raw = [{"hebrew": r["hebrew"], "nikud": r["nikud"], "translit": _clean_translit(r["translit"] or ""),
@@ -738,9 +760,7 @@ def get_word(word: str, id: Optional[int] = Query(None), type: Optional[str] = Q
         # Synonyms
         cur.execute("""SELECT hebrew, translation FROM verb_synonyms
                        WHERE verb_id = %s ORDER BY id LIMIT 10""", (verb_row["id"],))
-        result["synonyms"] = [
-            {"hebrew": r["hebrew"], "translation": r["translation"] or ""} for r in cur.fetchall()
-        ]
+        result["synonyms"] = _link_synonyms(cur, cur.fetchall())
         # Same-root words
         if verb_row["root"]:
             cur.execute("""SELECT infinitive_he, infinitive_he_nikud, binyan, translation_ru, pealim_slug
@@ -885,9 +905,7 @@ def get_word(word: str, id: Optional[int] = Query(None), type: Optional[str] = Q
         # Synonyms from the parent verb
         cur.execute("""SELECT hebrew, translation FROM verb_synonyms
                        WHERE verb_id = %s ORDER BY id LIMIT 5""", (verb_by_form["id"],))
-        result["synonyms"] = [
-            {"hebrew": r["hebrew"], "translation": r["translation"] or ""} for r in cur.fetchall()
-        ]
+        result["synonyms"] = _link_synonyms(cur, cur.fetchall())
         # Also check if this spelling exists as a regular word (homograph)
         cur.execute("""SELECT headword, pos_slug, translation_enriched
                        FROM words WHERE headword = %s AND translation_enriched IS NOT NULL
@@ -924,9 +942,7 @@ def get_word(word: str, id: Optional[int] = Query(None), type: Optional[str] = Q
         ]
         cur.execute("""SELECT hebrew, translation FROM word_synonyms
                        WHERE word_id = %s ORDER BY id LIMIT 10""", (wid,))
-        d["synonyms"] = [
-            {"hebrew": r["hebrew"], "translation": r["translation"] or ""} for r in cur.fetchall()
-        ]
+        d["synonyms"] = _link_synonyms(cur, cur.fetchall())
         cur.execute("""SELECT hebrew, nikud, translit, translation FROM word_phrases
                        WHERE word_id = %s ORDER BY id LIMIT 15""", (wid,))
         d["phrases"] = [
@@ -997,9 +1013,7 @@ def get_word(word: str, id: Optional[int] = Query(None), type: Optional[str] = Q
         ]
         cur.execute("""SELECT hebrew, translation FROM verb_synonyms
                        WHERE verb_id = %s ORDER BY id LIMIT 10""", (verb_by_form["id"],))
-        result["synonyms"] = [
-            {"hebrew": r["hebrew"], "translation": r["translation"] or ""} for r in cur.fetchall()
-        ]
+        result["synonyms"] = _link_synonyms(cur, cur.fetchall())
         if verb_by_form["root"]:
             cur.execute("""SELECT infinitive_he, infinitive_he_nikud, binyan, translation_ru, pealim_slug
                            FROM verbs WHERE root = %s AND id != %s
