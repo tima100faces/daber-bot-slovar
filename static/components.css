@@ -772,6 +772,25 @@
   margin-bottom: var(--space-xs);
   font-weight: 600;
 }
+/* Collapsible section (e.g. verb conjugation) — keeps a dense card readable.
+   Built on <details>/<summary> + the existing modal__section-title look. */
+.modal__collapse-summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+.modal__collapse-summary::-webkit-details-marker { display: none; }
+.modal__collapse-summary::after {
+  content: "▾";
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--color-neutral);
+  transition: transform 0.2s var(--ease-out);
+}
+.modal__collapse[open] > .modal__collapse-summary::after { transform: rotate(180deg); }
+.modal__collapse-body { margin-top: var(--space-sm); }
 .modal__example-row {
   padding: var(--space-sm) 0;
   border-bottom: 1px solid var(--color-rule);
