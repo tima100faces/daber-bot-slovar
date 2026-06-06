@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">Форма глагола — דבר</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GW34SVV5T5"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-GW34SVV5T5', { send_page_view: false });
+</script>
+<meta property="og:title" id="ogTitle" content="Форма глагола">
+<meta property="og:description" id="ogDesc" content="">
+<meta property="og:type" content="article">
+<link rel="stylesheet" href="/static/fonts.css?v=1">
+<link rel="stylesheet" href="/static/design-system.css?v=2">
+<link rel="stylesheet" href="/static/components.css?v=1">
+<style>
+.vf-detail {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 4rem 0 var(--space-2xl);
+}
+.vf-detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: var(--space-xl);
+  transition: color 0.2s;
+}
+.vf-detail__back:hover { color: var(--color-accent); }
+
+.vf-detail__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-accent);
+  margin-bottom: var(--space-md);
+}
+
+.vf-detail__card {
+  background: var(--card-bg);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--card-shadow);
+  padding: var(--space-2xl);
+  margin-bottom: var(--space-xl);
+}
+
+.vf-detail__hebrew {
+  font-family: var(--font-hebrew);
+  font-size: clamp(2.4rem, 7vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1.15;
+  direction: rtl;
+  text-align: right;
+  color: var(--color-ink);
+  margin-bottom: var(--space-sm);
+}
+
+.vf-detail__translit {
+  font-size: 1.1rem;
+  color: var(--color-muted);
+  margin-bottom: var(--space-lg);
+  font-style: italic;
+}
+
+.vf-detail__translation {
+  font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin-bottom: var(--space-sm);
+}
+
+.vf-detail__grammar {
+  font-size: 0.875rem;
+  color: var(--color-neutral);
+  margin-bottom: var(--space-xl);
+}
+
+.vf-detail__divider {
+  border: none;
+  border-top: 1px solid var(--color-rule);
+  margin: var(--space-xl) 0;
+}
+
+.vf-detail__verb-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.vf-detail__verb-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  text-decoration: none;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.2s, background 0.2s;
+}
+.vf-detail__verb-link:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface-hover, var(--color-surface));
+}
+.vf-detail__verb-he {
+  font-family: var(--font-hebrew);
+  font-size: 1.4rem;
+  font-weight: 700;
+  direction: rtl;
+  color: var(--color-ink);
+}
+.vf-detail__verb-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-align: left;
+  flex: 1;
+  padding-left: var(--space-md);
+}
+.vf-detail__verb-translit {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  font-style: italic;
+}
+.vf-detail__verb-trans {
+  font-size: 0.9rem;
+  color: var(--color-ink);
+}
+.vf-detail__arrow {
+  color: var(--color-muted);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.vf-detail__share {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+.vf-detail__share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-neutral);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.vf-detail__share-btn:hover { color: var(--color-accent); border-color: var(--color-accent); }
+.vf-detail__share-btn img { width: 14px; height: 14px; opacity: 0.6; }
+
+@media (max-width: 640px) {
+  .vf-detail { padding: 2rem 0 var(--space-xl); }
+  .vf-detail__card { padding: var(--space-xl); }
+  .vf-detail__hebrew { text-align: center; }
+  .vf-detail__translit { text-align: center; }
+}
+</style>
+</head>
+<body>
+<main class="page-main">
+  <div class="container">
+    <div class="vf-detail" id="content">
+      <div style="text-align:center;padding:4rem 0;color:var(--color-neutral)">Загрузка...</div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__links">
+      <a href="/">словарь</a>
+      <a href="/facts">все факты</a>
+      <a href="/terms.html">условия использования</a>
+      <a href="/privacy.html">конфиденциальность</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+async function loadForm() {
+  const formId = window.location.pathname.split('/').filter(Boolean).pop();
+  if (!formId || isNaN(formId)) {
+    renderError('Форма не найдена');
+    return;
+  }
+
+  let form;
+  try {
+    const res = await fetch(`/api/verb-form/${formId}`);
+    if (!res.ok) { renderError('Форма не найдена'); return; }
+    form = await res.json();
+  } catch {
+    renderError('Ошибка загрузки');
+    return;
+  }
+
+  const hebrew = form.form_he_nikud || form.form_he || '';
+  const translit = form.translit || '';
+  const conjugRu = form.conjugation_ru || '';
+  const grammarLabel = form.grammar_label || '';
+  const infHe = form.infinitive_nikud || form.infinitive_he || '';
+  const infTranslit = form.infinitive_translit || '';
+  const translation = (() => {
+    if (Array.isArray(form.translation_enriched) && form.translation_enriched.length)
+      return form.translation_enriched.slice(0, 3).join(' · ');
+    return form.translation_ru || '';
+  })();
+  const verbId = form.verb_id;
+
+  // Page title + OG
+  const pageLabel = conjugRu ? `${hebrew} — ${conjugRu}` : hebrew;
+  document.getElementById('pageTitle').textContent = `${pageLabel} — דבר`;
+  document.querySelector('[property="og:title"]').content = pageLabel;
+  document.querySelector('[property="og:description"]').content =
+    `${grammarLabel}${translation ? ' · ' + translation : ''}`;
+
+  // GA virtual pageview
+  if (typeof gtag !== 'undefined') {
+    gtag('event', 'page_view', {
+      page_title: pageLabel,
+      page_location: window.location.href,
+    });
+  }
+
+  document.getElementById('content').innerHTML = `
+    <a class="vf-detail__back" href="/">
+      ← словарь
+    </a>
+    <div class="vf-detail__badge">форма глагола</div>
+
+    <div class="vf-detail__card">
+      <div class="vf-detail__hebrew">${hebrew}</div>
+      ${translit ? `<div class="vf-detail__translit">${translit}</div>` : ''}
+      ${conjugRu
+        ? `<div class="vf-detail__translation">${conjugRu}</div>`
+        : `<div class="vf-detail__translation" style="color:var(--color-muted);font-style:italic;font-size:1rem">перевод формы появится позже</div>`
+      }
+      <div class="vf-detail__grammar">${grammarLabel}</div>
+
+      <hr class="vf-detail__divider">
+
+      <div class="vf-detail__verb-label">родительский глагол</div>
+      <a class="vf-detail__verb-link" href="/?q=${encodeURIComponent(form.infinitive_he)}&type=verb&id=${verbId}">
+        <div class="vf-detail__verb-he">${infHe || form.infinitive_he}</div>
+        <div class="vf-detail__verb-info">
+          ${infTranslit ? `<span class="vf-detail__verb-translit">${infTranslit}</span>` : ''}
+          ${translation ? `<span class="vf-detail__verb-trans">${translation}</span>` : ''}
+        </div>
+        <span class="vf-detail__arrow">→</span>
+      </a>
+
+      <div class="vf-detail__share">
+        <button class="vf-detail__share-btn" onclick="copyLink()">
+          <img src="/static/icons/clipboard-list.svg" alt=""> скопировать ссылку
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderError(msg) {
+  document.getElementById('content').innerHTML =
+    `<div style="text-align:center;padding:4rem 0;color:var(--color-muted)">${msg}</div>`;
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.querySelector('.vf-detail__share-btn');
+    const orig = btn.innerHTML;
+    btn.textContent = 'Скопировано!';
+    btn.style.color = 'var(--color-green)';
+    btn.style.borderColor = 'var(--color-green)';
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 2000);
+  });
+}
+
+loadForm();
+</script>
+</body>
+</html>

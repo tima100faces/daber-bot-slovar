@@ -847,7 +847,26 @@ function renderResults(data) {
     const heb = item.headword || '';
     const translit = item.translit || '';
 
-    if (item.type === 'verb') {
+    if (item.type === 'verb_form') {
+      // ─── VERB FORM CARD (conjugated form) ───
+      card.className = 'word-card word-card--verb';
+      const conjRu = item.conjugation_ru || '';
+      const formHe = item.form_he_nikud || item.form_he || '';
+      const formTranslit = item.translit || '';
+      const infHe = item.infinitive_nikud || item.infinitive_he || '';
+      card.innerHTML = `
+        <div class="word-card__top">
+          <div class="word-card__hebrew">${formHe}</div>
+          <div class="word-card__pos word-card__pos--verb">форма глагола</div>
+        </div>
+        ${formTranslit ? `<div class="word-card__translit">${formTranslit}</div>` : ''}
+        <div class="word-card__translations">${conjRu || '<span style="color:var(--color-muted);font-style:italic">перевод формы появится позже</span>'}</div>
+        <div class="word-card__meta">
+          <span class="word-card__gender">${item.grammar_label || ''}</span>
+          ${infHe ? `<span class="word-card__root">← <strong>${infHe}</strong></span>` : ''}
+        </div>
+      `;
+    } else if (item.type === 'verb') {
       // ─── VERB CARD (compact) ───
       card.innerHTML = `
         <div class="word-card__top">
@@ -886,7 +905,13 @@ function renderResults(data) {
       `;
     }
 
-    card.addEventListener('click', () => showWordDetail(item.headword, item.id, item.type));
+    card.addEventListener('click', () => {
+      if (item.type === 'verb_form') {
+        window.location.href = `/verb-form/${item.id}`;
+      } else {
+        showWordDetail(item.headword, item.id, item.type);
+      }
+    });
     list.appendChild(card);
 
     requestAnimationFrame(() => {

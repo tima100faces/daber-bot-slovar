@@ -78,6 +78,17 @@ BINYAN_RU = {
     "hufal": "hуфъаль",
 }
 
+TENSE_RU = {
+    "present":    "наст. вр.",
+    "past":       "пр. вр.",
+    "future":     "буд. вр.",
+    "imperative": "повел. накл.",
+    "infinitive": "инфинитив",
+}
+GENDER_RU  = {"m": "м.р.", "f": "ж.р.", "mf": "м./ж.р."}
+NUMBER_RU  = {"singular": "ед.ч.", "plural": "мн.ч."}
+PERSON_RU  = {"1": "1 л.", "2": "2 л.", "3": "3 л."}
+
 
 def pos_label(slug: str) -> str:
     """Return Russian display label for a pos_slug."""
@@ -86,6 +97,22 @@ def pos_label(slug: str) -> str:
 
 def binyan_label(b: str) -> str:
     return BINYAN_RU.get(b, b or "—")
+
+
+def _conj_key(tense: str, person, gender: str, number: str) -> str:
+    """Build the conjugation_ru JSON lookup key from verb_forms row fields."""
+    t = "imp" if tense == "imperative" else tense
+    n = "sg" if number == "singular" else "pl"
+    return f"{t}_{person}_{gender}_{n}" if person else f"{t}_{gender}_{n}"
+
+
+def _form_grammar_label(tense: str, person, gender: str, number: str) -> str:
+    parts = [TENSE_RU.get(tense, tense)]
+    if person:
+        parts.append(PERSON_RU.get(str(person), str(person)))
+    parts.append(GENDER_RU.get(gender, gender))
+    parts.append(NUMBER_RU.get(number, number))
+    return ", ".join(p for p in parts if p)
 
 
 def get_db():
@@ -198,6 +225,71 @@ def verb_to_dict(row, cur=None):
     }
 
 
+def verb_form_to_dict(row) -> dict:
+    """Row from verb_forms JOIN verbs with aliased columns (see _VERB_FORM_SQL)."""
+    tense  = row["tense"]
+    person = row.get("person")
+    gender = row["gender"]
+    number = row["number"]
+    conj   = row.get("conjugation_ru") or {}
+    key    = _conj_key(tense, person, gender, number)
+    return {
+        "type":               "verb_form",
+        "id":                 row["form_id"],
+        "form_he":            row["form_he"],
+        "form_he_nikud":      row.get("form_he_nikud") or "",
+        "translit":           _render_translit(row.get("form_translit") or ""),
+        "tense":              tense,
+        "tense_label":        TENSE_RU.get(tense, tense),
+        "person":             person,
+        "gender":             gender,
+        "number":             number,
+        "grammar_label":      _form_grammar_label(tense, person, gender, number),
+        "conjugation_ru":     conj.get(key) if conj else None,
+        "verb_id":            row["verb_id"],
+        "infinitive_he":      row["infinitive_he"],
+        "infinitive_nikud":   row.get("infinitive_nikud") or "",
+        "infinitive_translit":row.get("infinitive_translit") or "",
+        "translation_ru":     row.get("translation_ru") or "",
+        "translation_enriched": _normalize_enriched(row.get("translation_enriched")),
+        "root":               row.get("root") or "",
+        "binyan":             row.get("binyan") or "",
+        "binyan_label":       binyan_label(row.get("binyan") or ""),
+        "notes":              row.get("notes") or "",
+        "example_count":      row.get("example_count") or 0,
+        "synonym_count":      row.get("synonym_count") or 0,
+    }
+
+
+# SQL template for verb_forms JOIN verbs (used by search + /api/verb-form/{id})
+_VERB_FORM_SQL = """
+    SELECT
+        vf.id                  AS form_id,
+        vf.form_he, vf.form_he_nikud,
+        vf.transliteration     AS form_translit,
+        vf.tense, vf.person, vf.gender, vf.number,
+        v.id                   AS verb_id,
+        v.infinitive_he,
+        v.infinitive_he_nikud  AS infinitive_nikud,
+        v.translation_ru, v.translation_enriched,
+        v.root, v.binyan, v.notes,
+        v.conjugation_ru,
+        v.example_count, v.synonym_count,
+        (SELECT vf2.transliteration FROM verb_forms vf2
+         WHERE vf2.verb_id = v.id AND vf2.tense = 'infinitive' LIMIT 1) AS infinitive_translit
+    FROM verb_forms vf
+    JOIN verbs v ON vf.verb_id = v.id
+"""
+
+# ORDER BY for DISTINCT ON (vf.verb_id): prefer present > past > future, then m.sg
+_VERB_FORM_ORDER = """
+    ORDER BY vf.verb_id,
+        CASE vf.tense WHEN 'present' THEN 0 WHEN 'past' THEN 1 WHEN 'future' THEN 2 ELSE 3 END,
+        CASE vf.gender WHEN 'm' THEN 0 ELSE 1 END,
+        CASE vf.number WHEN 'singular' THEN 0 ELSE 1 END
+"""
+
+
 def word_to_dict(row):
     """Row from words."""
     grammar = row["grammar_json"] or {}
@@ -274,6 +366,46 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
             results_all.append((1, d))
         # NOTE: No substring search for Hebrew — roots are too short and would match
         # unrelated words (e.g., 'בית' matching 'ריבית', 'שביתה', 'חבית')
+
+        # ── VERB FORMS ──
+        # Search non-infinitive forms by form_he. DISTINCT ON verb_id: one card per
+        # parent verb, best-matching form chosen by ORDER BY.
+        _vf_cols = """
+            vf.id AS form_id, vf.form_he, vf.form_he_nikud,
+            vf.transliteration AS form_translit,
+            vf.tense, vf.person, vf.gender, vf.number,
+            v.id AS verb_id, v.infinitive_he,
+            v.infinitive_he_nikud AS infinitive_nikud,
+            v.translation_ru, v.translation_enriched,
+            v.root, v.binyan, v.notes, v.conjugation_ru,
+            v.example_count, v.synonym_count,
+            (SELECT vf2.transliteration FROM verb_forms vf2
+             WHERE vf2.verb_id = v.id AND vf2.tense = 'infinitive' LIMIT 1
+            ) AS infinitive_translit
+        """
+        _vf_from = "FROM verb_forms vf JOIN verbs v ON vf.verb_id = v.id"
+        _vf_order = """
+            ORDER BY vf.verb_id,
+            CASE vf.tense WHEN 'present' THEN 0 WHEN 'past' THEN 1
+                          WHEN 'future' THEN 2 ELSE 3 END,
+            CASE vf.gender WHEN 'm' THEN 0 ELSE 1 END,
+            CASE vf.number WHEN 'singular' THEN 0 ELSE 1 END
+        """
+        cur.execute(
+            f"SELECT DISTINCT ON (vf.verb_id) {_vf_cols} {_vf_from}"
+            f" WHERE vf.form_he = %s AND vf.tense != 'infinitive' {_vf_order}",
+            (like_exact,)
+        )
+        for r in cur.fetchall():
+            results_all.append((0, verb_form_to_dict(r)))
+        cur.execute(
+            f"SELECT DISTINCT ON (vf.verb_id) {_vf_cols} {_vf_from}"
+            f" WHERE vf.form_he LIKE %s AND vf.form_he != %s"
+            f" AND vf.tense != 'infinitive' {_vf_order}",
+            (like_prefix, like_exact)
+        )
+        for r in cur.fetchall():
+            results_all.append((1, verb_form_to_dict(r)))
 
         # ── WORDS ──
         sql_base = """SELECT w.*,
@@ -352,6 +484,16 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
                 d = verb_to_dict(r, cur); d["example_count"] = r["example_count"]; d["synonym_count"] = r["synonym_count"]
                 results_all.append((3, d))
 
+        # ── VERB FORM TRANSLIT ──
+        # Substring match on form transliteration (e.g. "roce" → רוֹצֶה)
+        cur.execute(
+            f"SELECT DISTINCT ON (vf.verb_id) {_vf_cols} {_vf_from}"
+            f" WHERE lower(vf.transliteration) LIKE %s AND vf.tense != 'infinitive' {_vf_order}",
+            (like_substr,)
+        )
+        for r in cur.fetchall():
+            results_all.append((3, verb_form_to_dict(r)))
+
         # Words: search translit in word_forms / word_phrases
         sql_word = """SELECT DISTINCT w.*,
                       (SELECT translit FROM word_forms WHERE word_id = w.id AND translit IS NOT NULL AND translit != '' ORDER BY CASE WHEN form_he = w.headword THEN 0 ELSE 1 END, id LIMIT 1) AS form_translit
@@ -393,6 +535,14 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
                 if not d.get("translit") and r.get("form_translit"):
                     d["translit"] = _clean_translit(r["form_translit"])
                 results_all.append((5, d))
+
+    # If a full verb card is already in results, drop form cards for the same verb
+    # (the infinitive card has more info — no need to show both)
+    verb_ids_direct = {d["id"] for _, d in results_all if d["type"] == "verb"}
+    results_all = [
+        (p, d) for p, d in results_all
+        if not (d["type"] == "verb_form" and d["verb_id"] in verb_ids_direct)
+    ]
 
     # Deduplicate (same id+type may appear in multiple priorities → keep lowest)
     seen = set()
@@ -2441,6 +2591,45 @@ def admin_generate_facts(request: Request):
         return JSONResponse({"status": "error", "message": "Генерация заняла больше 3 минут (Sonnet не ответил)"}, status_code=500)
     except Exception as e:
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+
+
+# ─── Verb form detail ──────────────────────────────────────────────────────
+
+@app.get("/api/verb-form/{form_id}")
+def get_verb_form(form_id: int):
+    """Return full detail for a single verb form (for the shareable /verb-form/{id} page)."""
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute(f"""
+        SELECT
+            vf.id AS form_id, vf.form_he, vf.form_he_nikud,
+            vf.transliteration AS form_translit,
+            vf.tense, vf.person, vf.gender, vf.number,
+            v.id AS verb_id, v.infinitive_he,
+            v.infinitive_he_nikud AS infinitive_nikud,
+            v.translation_ru, v.translation_enriched,
+            v.root, v.binyan, v.notes, v.conjugation_ru,
+            v.example_count, v.synonym_count,
+            (SELECT vf2.transliteration FROM verb_forms vf2
+             WHERE vf2.verb_id = v.id AND vf2.tense = 'infinitive' LIMIT 1
+            ) AS infinitive_translit
+        FROM verb_forms vf
+        JOIN verbs v ON vf.verb_id = v.id
+        WHERE vf.id = %s
+    """, (form_id,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(404, f"verb form {form_id} not found")
+    d = verb_form_to_dict(dict(row))
+    _enrich_verb_detail(d, row["verb_id"], cur)
+    conn.close()
+    return d
+
+
+@app.get("/verb-form/{form_id}")
+def verb_form_page(form_id: int):
+    return FileResponse(str(STATIC_DIR / "verb-form.html"))
 
 
 # ─── Static files ──────────────────────────────────────────────────────────
