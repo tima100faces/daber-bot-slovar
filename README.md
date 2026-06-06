@@ -13,7 +13,7 @@
 - **Frontend:** Static HTML/CSS/JS (served by nginx)
 - **Reverse proxy:** nginx on port 443 (Cloudflare SSL)
 - **Process manager:** systemd (`daber-dict.service`)
-- **Python venv:** `/usr/local/lib/hermes-agent/venv/`
+- **Python venv:** `/root/daber-dict/.venv/` — **dedicated**, independent of any other project on the host (the Hermes agent and the dictionary no longer share an interpreter). Created/synced automatically by the deploy script from `requirements.txt`.
 
 ---
 
@@ -208,11 +208,15 @@ After a PR is merged to `main`, deploy on the server:
 ```bash
 cd /root/daber-dict
 git pull --ff-only origin main
-systemctl restart daber-dict   # only needed for backend changes; static is served live by nginx
+.venv/bin/pip install -q -r requirements.txt   # sync deps into the dedicated venv
+systemctl restart daber-dict                    # only needed for backend changes; static is served live by nginx
 ```
 
-Or use the wrapper `scripts/daber-dict-deploy.sh`, which refuses to deploy over
-uncommitted tracked changes (a sign of direct prod edits) before pulling and restarting.
+Prefer the wrapper `scripts/daber-dict-deploy.sh`: it refuses to deploy over
+uncommitted tracked changes (a sign of direct prod edits), then pulls, creates the
+dedicated `.venv` if missing, installs `requirements.txt` into it, and restarts.
+New Python dependencies therefore install themselves on deploy — just add them to
+`requirements.txt`, never `pip install` into another project's venv.
 
 If `git pull --ff-only` fails (non-fast-forward / local changes), **stop** — never force.
 Commit/stash server-side edits first, or investigate the divergence.
@@ -255,7 +259,8 @@ curl -I https://slovar.daber.me
 - Frontend JS is vanilla (no framework), inline in `index.html`
 - Admin pages use a shared `_admin.css` + `_core.js` pattern
 - CSS design tokens in `design-system.css`, shared components in `components.css`
-- The backend Python venv uses system interpreter with deps installed globally (`/usr/local/lib/hermes-agent/venv/`)
-- For new dependencies: `pip install <pkg>` (not `uv` or `pipx`)
+- The backend runs in its own dedicated virtualenv `/root/daber-dict/.venv/` (independent of the Hermes agent's venv)
+- For new dependencies: add to `requirements.txt` — the deploy script installs them into `.venv`. Do not `pip install` into another project's venv.
 - All project files must stay inside `/root/daber-dict/` (project isolation rule)
+- **Independence from Hermes:** the dictionary is self-contained (own code, own `.venv`, own PostgreSQL on `5434`, own `.env`) so it can be migrated to another project later. One remaining coupling: the enrichment cron jobs are still scheduled via the Hermes scheduler (see Cron Jobs) — not yet moved to a standalone scheduler.
 - Git remote token is embedded in the URL — be careful with public sharing
