@@ -600,17 +600,25 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
 
 # ─── Enrichment helpers ─────────────────────────────────────────────────────
 
+_NIKUD_RE = re.compile(r'[֑-ׇ]')  # Hebrew vowel points + cantillation marks
+
+
 def _link_synonyms(cur, rows):
     """Build synonym dicts, marking which ones point to an existing dictionary card.
 
     A synonym string looks like "להתקיים (существовать)" — a Hebrew lemma plus a
-    Russian gloss in parentheses. We extract the lemma (text before " ("); if it
-    matches a verb infinitive or a word headword, we attach `link` = that lemma so
-    the UI can render a clickable cross-link. Synonyms without a card get
+    Russian gloss in parentheses. We extract the lemma (text before " ("), strip
+    nikud (vowel points) so it matches the un-pointed headwords in the DB, and if
+    it matches a verb infinitive or a word headword we attach `link` = that bare
+    lemma so the UI can render a clickable cross-link. Synonyms without a card get
     link=None and stay plain text — no dead links.
     """
+    def lemma_of(s):
+        raw = s["hebrew"].split(" (")[0].strip() if s.get("hebrew") else ""
+        return _NIKUD_RE.sub("", raw)  # strip vowel points → matches bare infinitive_he
+
     syns = [{"hebrew": r["hebrew"], "translation": r["translation"] or ""} for r in rows]
-    lemmas = list({s["hebrew"].split(" (")[0].strip() for s in syns if s.get("hebrew")})
+    lemmas = list({lemma_of(s) for s in syns if s.get("hebrew")})
     existing = set()
     if lemmas:
         cur.execute(
@@ -619,7 +627,7 @@ def _link_synonyms(cur, rows):
             (lemmas, lemmas))
         existing = {r["h"] for r in cur.fetchall()}
     for s in syns:
-        lemma = s["hebrew"].split(" (")[0].strip() if s.get("hebrew") else ""
+        lemma = lemma_of(s)
         s["link"] = lemma if lemma in existing else None
     return syns
 
