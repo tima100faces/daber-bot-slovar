@@ -923,6 +923,18 @@ function renderResults(data) {
 // ═══════════════════════════════════════════
 //  WORD DETAIL MODAL
 // ═══════════════════════════════════════════
+// Render a synonym chip. If the backend resolved it to an existing card
+// (s.link = clean Hebrew lemma), make it a clickable cross-link; otherwise
+// render plain text (no dead links).
+function synChip(s) {
+  const label = `${s.hebrew}${s.translation ? ' — ' + s.translation : ''}`;
+  if (s && s.link) {
+    const t = String(s.link).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    return `<span class="modal__chip modal__chip--link" onclick="event.stopPropagation();showWordDetail('${t}')" style="cursor:pointer;color:var(--color-accent)">${label}</span>`;
+  }
+  return `<span class="modal__chip">${label}</span>`;
+}
+
 async function showWordDetail(queryWord, id = null, wordType = null) {
   try {
     const params = new URLSearchParams();
@@ -1020,9 +1032,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
       `).join('');
 
       // Synonyms
-      const synonyms = (word.synonyms || []).slice(0, 6).map(s =>
-        `<span class=\"modal__chip\">${s.hebrew}${s.translation ? ' — ' + s.translation : ''}</span>`
-      ).join('');
+      const synonyms = (word.synonyms || []).slice(0, 6).map(synChip).join('');
 
       content.innerHTML = `
         <div class="modal__header" style="border-radius:var(--radius-lg) var(--radius-lg) 0 0; padding:var(--space-md) var(--space-lg)">
@@ -1091,9 +1101,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
           <div class="modal__example-trans">${ex.translation || ''}</div>
         </div>
       `).join('');
-      const synonyms = (word.synonyms || []).slice(0, 8).map(s =>
-        `<span class="modal__chip">${s.hebrew}${s.translation ? ' — ' + s.translation : ''}</span>`
-      ).join('');
+      const synonyms = (word.synonyms || []).slice(0, 8).map(synChip).join('');
       // Deduplicate: skip translation_ru if it's already the first enriched translation
       const transRu = word.translation_ru || '';
       const enriched = word.translation_enriched || [];
@@ -1213,9 +1221,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
         <div class="modal__example-trans">${ex.translation || ''}</div>
       </div>
     `).join('');
-    const synonyms = (word.synonyms || []).slice(0, 8).map(s =>
-      `<span class="modal__chip">${s.hebrew}${s.translation ? ' — ' + s.translation : ''}</span>`
-    ).join('');
+    const synonyms = (word.synonyms || []).slice(0, 8).map(synChip).join('');
     const phrases = (word.phrases || []).slice(0, 8).map(p => `
       <div class="modal__phrase">
         <div class="modal__phrase-heb">${p.hebrew || ''}</div>
