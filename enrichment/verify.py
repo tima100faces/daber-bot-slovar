@@ -200,10 +200,11 @@ def verify_against_db(word: dict) -> list[str]:
             """SELECT DISTINCT v.infinitive_he FROM verb_forms vf
                    JOIN verbs v ON v.id = vf.verb_id
                    WHERE vf.form_he = %s AND vf.tense <> 'infinitive'
+                     AND COALESCE(v.infinitive_he, '') <> ''
                    LIMIT 3""",
             (headword,),
         )
-        verb_forms = [r[0] for r in cur.fetchall()]
+        verb_forms = [r[0] for r in cur.fetchall() if r[0]]
         if verb_forms:
             warnings.append(
                 f"Совпадает с формой глагола ({', '.join(verb_forms)}) — проверьте, не словоформа ли это"
