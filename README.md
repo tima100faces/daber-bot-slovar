@@ -153,8 +153,8 @@ psql -h 127.0.0.1 -p 5434 -U postgres -d daber_dict < backups/daber_YYYYMMDD.dum
 | `PGDB` | Database name (`daber_dict`) |
 | `PGUSER` | Database user (`postgres`) |
 | `ADMIN_TOTP_SECRET` | TOTP secret for admin login |
-| `GOOGLE_API_KEY` | Gemini API key (legacy, used only by pipeline.py) |
-| `ANTHROPIC_API_KEY` | Anthropic API key (primary — verb enrichment, verification, facts) |
+| `GOOGLE_API_KEY` | Gemini API key (not used in pipeline, kept for future) |
+| `ANTHROPIC_API_KEY` | Anthropic API key (primary — all enrichment, verification, facts) |
 
 ---
 
@@ -170,11 +170,11 @@ Populates: `verbs.translation_enriched`, `verb_examples`, `verb_synonyms`, `verb
 - `generate_facts.py` — generate facts from source material via Sonnet
 - `balashon_facts.py` — weekly Balashon blog scraping → facts via Sonnet (cron Mon 9:00)
 
-### Words enrichment (Gemini — legacy)
+### Words enrichment (Sonnet)
 
 Cron-triggered pipeline:
-- `pipeline.py` / `run.py` → daily word enrichment via Gemini 2.5 Flash (cron 10:00)
-- ⚠️ This is the only pipeline still on Gemini. Planned migration to Sonnet.
+- `run.py` → daily word extraction from RSS/Reddit/Telegram → pending_words (cron 10:00)
+- `pipeline.py` → LLM extraction + verification + insert
 
 ---
 

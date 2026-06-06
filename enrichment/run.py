@@ -5,10 +5,10 @@ Daily enrichment runner — fetch from all sources, extract new words, insert in
 Cron: 0 6 * * * cd /root/daber-dict && python3 enrichment/run.py
 
 Sources: RSS (Ynet, Walla, Israel Hayom) + Reddit (via BrightData)
-LLM: Gemini 2.5 Flash
+LLM: Claude Sonnet 4 (Anthropic)
 Output: pending_words in PostgreSQL
 
-Requires: GOOGLE_API_KEY in /root/daber-dict/.env, BrightData key at ~/.brightdata_key
+Requires: ANTHROPIC_API_KEY in /root/daber-dict/.env, BrightData key at ~/.brightdata_key
 """
 
 import sys
@@ -107,7 +107,7 @@ def main():
         except Exception as e:
             print(f"  ✗ Exception: {e}")
             errors += 1
-        time.sleep(1)  # Rate limit for Gemini free tier
+        time.sleep(1)  # Rate limit between Sonnet calls
 
     # 3. Report
     print("\n" + "=" * 60)

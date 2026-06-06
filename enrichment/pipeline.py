@@ -2,7 +2,7 @@
 Enrichment pipeline — fetch texts → LLM extraction → pending_words.
 
 Sources: Reddit r/Israel, RSS (Ynet/Haaretz/Walla/Mako), YouTube subs, Twitter/X
-LLM: Gemini 2.5 Flash (cheap, fast Hebrew)
+LLM: Claude Sonnet 4 (Anthropic)
 Output: INSERT into pending_words (reviewed manually via admin panel)
 
 Usage:
@@ -14,6 +14,8 @@ import os
 import sys
 import re
 import time
+import urllib.request
+import urllib.error
 from pathlib import Path
 
 import psycopg2
@@ -109,86 +111,85 @@ USER_PROMPT_TEMPLATE = """Найди 5–10 слов среднего уровн
 Ответь ТОЛЬКО JSON-массивом. Без текста до и после."""
 
 
-# ── LLM Client ───────────────────────────────────────────────────────────
+# ── LLM Client (Anthropic Sonnet) ────────────────────────────────────────
 
-def get_gemini_client():
-    """Lazy-init Gemini client. Returns API key."""
-    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or ""
+ANTHROPIC_MODEL = "claude-sonnet-4-20250514"
+ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
+
+# Sonnet pricing (USD per 1M tokens)
+SONNET_PRICE_INPUT = 3.0 / 1_000_000    # $3.00 per 1M input
+SONNET_PRICE_OUTPUT = 15.0 / 1_000_000  # $15.00 per 1M output
+
+
+def _get_anthropic_key() -> str:
+    """Get Anthropic API key from env or key files."""
+    api_key = os.environ.get("ANTHROPIC_API_KEY") or ""
     if not api_key:
-        for path in ["/tmp/.apikey_tmp", "/root/.gemini_key"]:
+        # Fallback: check key files
+        for path in ["/tmp/ak_b64", "/tmp/.apikey_tmp"]:
             try:
                 with open(path) as f:
-                    for line in f:
-                        if "GEMINI" in line.upper() or "GOOGLE_API" in line.upper():
-                            api_key = line.split("=", 1)[1].strip().strip('"').strip("'")
-                            break
-                if api_key:
+                    data = f.read().strip()
+                if len(data) > 20:
+                    try:
+                        import base64
+                        api_key = base64.b64decode(data).decode()
+                    except Exception:
+                        api_key = data
                     break
             except FileNotFoundError:
                 continue
     if not api_key:
-        raise RuntimeError("GEMINI_API_KEY or GOOGLE_API_KEY not found in env or key files")
+        raise RuntimeError("ANTHROPIC_API_KEY not found in env or key files")
     return api_key
 
 
-# Gemini 2.5 Flash pricing (USD per 1M tokens)
-GEMINI_PRICE_INPUT = 0.15 / 1_000_000   # $0.15 per 1M input
-GEMINI_PRICE_OUTPUT = 0.60 / 1_000_000  # $0.60 per 1M output
-# Thoughts tokens: billed same as output (Google policy for Flash Thinking)
-GEMINI_PRICE_THOUGHTS = 0.60 / 1_000_000
-
-
 def _calc_cost(usage: dict) -> float:
-    """Calculate USD cost from Gemini usageMetadata."""
-    prompt = usage.get("promptTokenCount", 0)
-    output = usage.get("candidatesTokenCount", 0)
-    thoughts = usage.get("thoughtsTokenCount", 0)
-    total = usage.get("totalTokenCount", prompt + output + thoughts)
-    # If total doesn't match, use individual components
-    return round(prompt * GEMINI_PRICE_INPUT + output * GEMINI_PRICE_OUTPUT + thoughts * GEMINI_PRICE_THOUGHTS, 8)
+    """Calculate USD cost from Anthropic usage."""
+    input_tokens = usage.get("input_tokens", 0)
+    output_tokens = usage.get("output_tokens", 0)
+    return round(input_tokens * SONNET_PRICE_INPUT + output_tokens * SONNET_PRICE_OUTPUT, 8)
 
 
-def call_gemini(system_prompt: str, user_prompt: str, model: str = "gemini-2.5-flash") -> tuple[list, dict]:
-    """Call Gemini API. Returns (parsed_words, usage_dict).
-    
-    usage_dict keys: prompt_tokens, output_tokens, thoughts_tokens, total_tokens, cost_usd
+def call_sonnet(system_prompt: str, user_prompt: str, max_tokens: int = 16384) -> tuple[list, dict]:
+    """Call Anthropic Sonnet API. Returns (parsed_words, usage_dict).
+
+    usage_dict keys: prompt_tokens, output_tokens, total_tokens, cost_usd
     """
-    import urllib.request
-    import urllib.error
-
-    api_key = get_gemini_client()
-    k = "k" + "ey"
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?{k}={api_key}"
+    api_key = _get_anthropic_key()
 
     payload = {
-        "contents": [{"parts": [{"text": user_prompt}]}],
-        "systemInstruction": {"parts": [{"text": system_prompt}]},
-        "generationConfig": {
-            "temperature": 0.3,
-            "maxOutputTokens": 16384,
-        },
+        "model": ANTHROPIC_MODEL,
+        "max_tokens": max_tokens,
+        "system": system_prompt,
+        "messages": [{"role": "user", "content": user_prompt}],
     }
 
     data = json.dumps(payload, ensure_ascii=False).encode()
-    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(
+        ANTHROPIC_URL, data=data,
+        headers={
+            "Content-Type": "application/json",
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+        }
+    )
 
     try:
         resp = urllib.request.urlopen(req, timeout=90)
-        raw_body = resp.read()
-        result = json.loads(raw_body)
-        
-        # Extract usage metadata
-        umeta = result.get("usageMetadata", {})
+        result = json.loads(resp.read())
+
+        input_tokens = result.get("usage", {}).get("input_tokens", 0)
+        output_tokens = result.get("usage", {}).get("output_tokens", 0)
         usage = {
-            "prompt_tokens": umeta.get("promptTokenCount", 0),
-            "output_tokens": umeta.get("candidatesTokenCount", 0),
-            "thoughts_tokens": umeta.get("thoughtsTokenCount", 0),
-            "total_tokens": umeta.get("totalTokenCount", 0),
-            "cost_usd": _calc_cost(umeta),
+            "prompt_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "total_tokens": input_tokens + output_tokens,
+            "cost_usd": _calc_cost({"input_tokens": input_tokens, "output_tokens": output_tokens}),
         }
-        
-        text = result["candidates"][0]["content"]["parts"][0]["text"]
-        # Strip markdown fences if present (Gemini sometimes wraps JSON in ```)
+
+        text = result["content"][0]["text"]
+        # Strip markdown fences if present
         text = text.strip()
         if text.startswith("```"):
             text = text.split("\n", 1)[1] if "\n" in text else text[3:]
@@ -201,11 +202,13 @@ def call_gemini(system_prompt: str, user_prompt: str, model: str = "gemini-2.5-f
             return parsed["words"], usage
         if isinstance(parsed, list):
             return parsed, usage
-        raise RuntimeError(f"Unexpected Gemini response type: {type(parsed)}")
+        raise RuntimeError(f"Unexpected Sonnet response type: {type(parsed)}")
     except json.JSONDecodeError as e:
-        # Log raw response for debugging
-        raw_sample = text[:300] if 'text' in dir() else raw_body.decode()[:300]
-        raise RuntimeError(f"Gemini JSON parse error: {e}. Raw: {raw_sample}")
+        raw_sample = text[:300] if 'text' in dir() else "(binary)"
+        raise RuntimeError(f"Sonnet JSON parse error: {e}. Raw: {raw_sample}")
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()[:500]
+        raise RuntimeError(f"Anthropic HTTP {e.code}: {body}")
 
 
 # ── Database ─────────────────────────────────────────────────────────────
@@ -342,12 +345,12 @@ def process_text(text: str, source: str) -> dict:
     """Send text to LLM, extract words, filter, insert. Returns stats dict."""
     user_prompt = USER_PROMPT_TEMPLATE.format(source=source, text=text[:3000])
 
-    print(f"  → Calling Gemini ({len(text)} chars)...")
+    print(f"  → Calling Sonnet ({len(text)} chars)...")
     t0 = time.time()
 
     usage = None
     try:
-        words, usage = call_gemini(SYSTEM_PROMPT, user_prompt)
+        words, usage = call_sonnet(SYSTEM_PROMPT, user_prompt)
     except RuntimeError as e:
         print(f"  ✗ LLM error: {e}")
         _save_cost(source, len(text), error=str(e), elapsed=time.time() - t0)
@@ -435,7 +438,7 @@ def _save_cost(source: str, text_chars: int, usage: dict = None,
                  total_tokens, cost_usd, words_extracted, words_new, words_inserted, error, elapsed_sec)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            "gemini-2.5-flash",
+            "claude-sonnet-4-20250514",
             source,
             text_chars,
             usage.get("prompt_tokens", 0) if usage else 0,

@@ -1,11 +1,37 @@
-# DABER — Current State (05.06.2026)
+# DABER — Current State (06.06.2026)
 
 ## Статистика
-- **Слов:** 8 111 + глаголов 4 607 = 12 718
+- **Слов:** 8 048 + глаголов 4 748 = 12 796
+- **Verb forms:** 126 051
 - **Опубликовано фактов:** 36 (+52 драфта)
 - **Частотность:** 50K записей, 6 932 слов сопоставлено (85.5%)
 - **WOTD-пул:** 2 199 слов (freq_rank 200–10000, не служебные, ≥4 букв)
 - **Pending queue:** 0
+
+---
+
+## 06.06.2026 — Миграция на Sonnet + дозагрузка глаголов
+
+### Загружено 140 пропущенных глаголов
+- 4 608 → 4 748 глаголов (все из Pealim YAML)
+- 122 410 → 126 051 verb forms
+- 85 с переводами, 55 пассивных (pual/hufal)
+
+### Enrichment глаголов (Sonnet)
+- `enrich_verbs.py` — обогащение 140 новых глаголов через Sonnet
+- Заполняет: `verbs.translation_enriched`, `verb_examples`, `verb_synonyms`, `verbs.notes`
+
+### Полный переход на Sonnet
+- `pipeline.py` — Gemini → Sonnet (вызов `call_sonnet` вместо `call_gemini`)
+- `run.py` — обновлён, требует `ANTHROPIC_API_KEY`
+- Единственный оставшийся Gemini-референс: `GOOGLE_API_KEY` в .env (не используется пайплайном)
+
+### Фикс бага с переводом глаголов
+- В модалке глагола показывался `—` вместо перевода при пустом `translation_enriched`
+- Исправлено: фолбэк на `translation_ru`
+
+### README.md
+- Полная документация инфраструктуры: IP, порты, nginx, БД, API, крон
 
 ---
 
@@ -115,8 +141,8 @@
 ### Модели
 | Модель | Роль | Цена (input/output за 1M) |
 |--------|------|---------------------------|
-| Gemini 2.5 Flash | Экстракция слов из текстов | $0.15 / $0.60 |
-| Claude Sonnet 4 | Верификация подозрительных слов | $3.00 / $15.00 |
+| Claude Sonnet 4 | Экстракция слов + верификация + факты + обогащение глаголов | $3.00 / $15.00 |
+| Gemini 2.5 Flash | Не используется в пайплайне (ключ сохранён для будущих задач) | — |
 
 ### Источники
 | Тип | Источник | Статус |
@@ -204,7 +230,7 @@
 - `static/icons/` — 19 локальных Tabler SVG (heart.svg удалён)
 - `enrichment/run.py` — оркестратор (сбор → экстракция → верификация)
 - `enrichment/sources.py` — RSS/Telegram/Reddit источники
-- `enrichment/pipeline.py` — Gemini-экстракция + вызов верификации
+- `enrichment/pipeline.py` — Sonnet-экстракция + вызов верификации
 - `enrichment/verify.py` — Layer 1 (правила) + Layer 2 (Sonnet)
 - `enrichment/generate_facts.py` — генерация фактов через Sonnet из источников
 - `enrichment/sources_raw.md` — сырой материал из NatGeo + Britannica
