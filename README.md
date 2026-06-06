@@ -88,7 +88,7 @@ SSL via Let's Encrypt (certbot), auto-renewal.
 | `word_phrases` | — | Word phrases |
 | `word_forms` | — | Word inflected forms |
 | `word_frequencies` | — | Frequency data |
-| `language_facts` | 88 | Language facts (snapshot 06.06.2026: 36 published + 52 drafts) |
+| `language_facts` | 122 | Language facts (snapshot 06.06.2026: 37 published + 85 drafts) |
 | `word_verification` | — | Pending word verification queue |
 | `pending_words` | — | User-submitted words |
 | `user_feedback` | — | User error reports |

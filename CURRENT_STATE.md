@@ -3,7 +3,7 @@
 ## Статистика
 - **Слов:** 8 048 + глаголов 4 748 = 12 796
 - **Verb forms:** 126 051
-- **Опубликовано фактов:** 36 (+52 драфта)
+- **Опубликовано фактов:** 37 (+85 драфтов)
 - **Частотность:** 50K записей, 6 932 слов сопоставлено (85.5%)
 - **WOTD-пул:** 2 199 слов (freq_rank 200–10000, не служебные, ≥4 букв)
 - **Pending queue:** 0
@@ -74,7 +74,7 @@
 ---
 
 ## Блог «Факты об иврите»
-- ✅ **36 фактов опубликовано**, 52 драфта
+- ✅ **37 фактов опубликовано**, 85 драфтов
 - ✅ **API**: `GET /api/facts/random`, `GET /api/facts` (пагинация), `GET /api/facts/{id}`
 - ✅ **Страница `/facts`**: lazy load (IntersectionObserver), 4 типа, без эмодзи
 - ✅ **Страница `/facts/{id}`**: Schema.org Article, Open Graph, без эмодзи
@@ -204,7 +204,7 @@
 - `word_forms`, `word_examples`, `word_synonyms`, `word_phrases` — связи
 - `word_frequencies` — частотность 50K слов (hermitdave/FrequencyWords)
 - `pending_words` — очередь модерации (status: pending/approved/rejected, translation_ru, translation_enriched, reviewer_note, number)
-- `language_facts` — факты об иврите (36 опубликовано, 52 драфта)
+- `language_facts` — факты об иврите (37 опубликовано, 85 драфтов)
 - `enrichment_costs` — затраты по моделям (model, tokens, cost_usd, words_inserted, ...)
 - `enrichment_settings` — daily_limit, paused
 - `user_feedback` — жалобы пользователей
