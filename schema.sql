@@ -435,7 +435,8 @@ CREATE TABLE public.words (
     source text DEFAULT 'iris'::text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    translit text
+    translit text,
+    root text
 );
 
 
