@@ -907,7 +907,7 @@ function renderResults(data) {
 
     card.addEventListener('click', () => {
       if (item.type === 'verb_form') {
-        window.location.href = `/verb-form/${item.id}`;
+        showVerbFormModal(item.id);
       } else {
         showWordDetail(item.headword, item.id, item.type);
       }
@@ -933,6 +933,124 @@ function synChip(s) {
     return `<span class="modal__chip modal__chip--link" onclick="event.stopPropagation();showWordDetail('${t}')" style="cursor:pointer;color:var(--color-accent)">${label}</span>`;
   }
   return `<span class="modal__chip">${label}</span>`;
+}
+
+// Open a verb form (e.g. אהבתי) in a modal — consistent with word cards.
+// Fetches by exact form id so the right form shows even when the spelling
+// also exists as a standalone word. The shareable /verb-form/{id} page is
+// kept for direct/shared links; this is the in-app path.
+async function showVerbFormModal(formId) {
+  let d;
+  try {
+    d = await api(`/api/verb-form/${formId}`);
+  } catch {
+    window.location.href = `/verb-form/${formId}`;   // graceful fallback
+    return;
+  }
+  const modal = document.getElementById('modal');
+  const content = document.getElementById('modalContent');
+  const modalBox = modal.querySelector('.modal');
+  if (modalBox) modalBox.scrollTop = 0;
+
+  const hebrew = d.form_he_nikud || d.form_he || '';
+  const translit = fixStress(d.translit || '');
+  const conjugRu = d.conjugation_ru || '';
+  const grammarLabel = d.grammar_label || '';
+  const infHe = d.infinitive_nikud || d.infinitive_he || '';
+  const infEsc = String(d.infinitive_he || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+  const verbTrans = (Array.isArray(d.translation_enriched) && d.translation_enriched.length)
+    ? d.translation_enriched.flatMap(t => String(t).split(',').map(s => s.trim()).filter(Boolean))
+    : (d.translation_ru ? [d.translation_ru] : []);
+  const verbTransHtml = verbTrans.length ? verbTrans.map(t => `<li>${t}</li>`).join('') : '<li>—</li>';
+
+  // Paradigm: the other forms in the same tense. Archaic ־נה fem-plural
+  // (future/imperative) are hidden, same convention as the verb card.
+  const pron = (tense, person, gender, number) => {
+    const p = person ? String(person) : '';
+    const sg = number === 'singular';
+    if (tense === 'present') {
+      const g = gender === 'f' ? 'ж.р.' : gender === 'mf' ? 'м./ж.р.' : 'м.р.';
+      return { order: (gender === 'f' ? 1 : 0) + (sg ? 0 : 2), label: `${g} ${sg ? 'ед.ч.' : 'мн.ч.'}` };
+    }
+    if (tense === 'imperative') {
+      if (sg) return { order: gender === 'f' ? 1 : 0, label: gender === 'f' ? 'ты (ж.р.)' : 'ты (м.р.)' };
+      if (gender === 'f') return null;
+      return { order: 2, label: 'вы' };
+    }
+    const fut = tense === 'future';
+    if (sg) {
+      if (p === '1') return { order: 0, label: 'я' };
+      if (p === '2') return { order: gender === 'f' ? 2 : 1, label: gender === 'f' ? 'ты (ж.р.)' : 'ты (м.р.)' };
+      if (p === '3') return { order: gender === 'f' ? 4 : 3, label: gender === 'f' ? 'она' : 'он' };
+    } else {
+      if (p === '1') return { order: 5, label: 'мы' };
+      if (p === '2') { if (gender === 'f') return fut ? null : { order: 7, label: 'вы (ж.р.)' }; return { order: 6, label: fut ? 'вы' : 'вы (м.р.)' }; }
+      if (p === '3') { if (gender === 'f' && fut) return null; return { order: 8, label: 'они' }; }
+    }
+    return { order: 99, label: '' };
+  };
+  const paradigm = (d.verb_forms || [])
+    .filter(f => f.tense === d.tense && f.hebrew !== d.form_he)
+    .map(f => ({ f, meta: pron(f.tense, f.person, f.gender, f.number) }))
+    .filter(x => x.meta)
+    .sort((a, b) => a.meta.order - b.meta.order);
+  const tenseRu = { present: 'настоящее', past: 'прошедшее', future: 'будущее', imperative: 'повелительное' }[d.tense] || d.tense || '';
+  const paradigmHtml = paradigm.map(({ f, meta }) => `
+    <tr>
+      <td style="color:var(--color-muted);font-size:0.8rem;white-space:nowrap;padding-right:0.75rem">${meta.label}</td>
+      <td style="font-weight:600">${f.nikud || f.hebrew || ''}</td>
+      <td>${f.hebrew || ''}</td>
+      <td style="font-style:italic;color:var(--color-muted)">${fixStress(f.translit || '')}</td>
+    </tr>`).join('');
+
+  const examples = (d.examples || []).slice(0, 4).map(ex => `
+    <div class="modal__example-row">
+      <div class="modal__example-heb">${ex.hebrew}</div>
+      <div class="modal__example-trans">${ex.translation || ''}</div>
+    </div>`).join('');
+  const synonyms = (d.synonyms || []).slice(0, 6).map(synChip).join('');
+
+  content.innerHTML = `
+    <div class="modal__header" style="border-radius:var(--radius-lg) var(--radius-lg) 0 0; padding:var(--space-md) var(--space-lg)">
+      <div class="modal__hebrew" style="font-size:2rem">${hebrew}</div>
+      ${translit ? `<div class="modal__translit">${translit}</div>` : ''}
+      ${conjugRu ? `<div style="font-size:1.05rem;margin-top:0.25rem">${conjugRu}</div>` : ''}
+    </div>
+
+    <div class="modal__section" style="background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:8px; padding:1rem; margin:1rem 0">
+      <div style="font-size:0.85rem; color:var(--color-muted); margin-bottom:0.5rem">Форма глагола</div>
+      <div style="font-size:1.2rem; font-weight:700; margin-bottom:0.25rem">
+        <a href="javascript:void(0)" onclick="event.stopPropagation();showWordDetail('${infEsc}', ${d.verb_id}, 'verb')" style="color:var(--color-accent);text-decoration:underline;text-underline-offset:4px">${infHe}</a>
+        <span style="color:var(--color-muted);font-size:0.9rem;font-weight:400"> — ${d.binyan_label || d.binyan || ''}</span>
+      </div>
+      ${grammarLabel ? `<div style="font-size:0.85rem;color:var(--color-muted)">${grammarLabel}</div>` : ''}
+    </div>
+
+    <div class="modal__section">
+      <div class="modal__section-title">перевод глагола</div>
+      <ul class="modal__trans">${verbTransHtml}</ul>
+    </div>
+
+    ${paradigmHtml ? `
+    <div class="modal__section">
+      <div class="modal__section-title">другие формы (${tenseRu})</div>
+      <table class="modal__forms-table"><tbody>${paradigmHtml}</tbody></table>
+    </div>` : ''}
+
+    ${examples ? `
+    <div class="modal__section">
+      <div class="modal__section-title">примеры</div>
+      ${examples}
+    </div>` : ''}
+
+    ${synonyms ? `
+    <div class="modal__section">
+      <div class="modal__section-title">синонимы</div>
+      <div class="modal__chips">${synonyms}</div>
+    </div>` : ''}
+  `;
+  modal.classList.add('modal-overlay--open');
 }
 
 async function showWordDetail(queryWord, id = null, wordType = null) {
