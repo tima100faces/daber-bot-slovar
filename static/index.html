@@ -1010,20 +1010,43 @@ async function showVerbFormModal(formId) {
   const synonyms = (d.synonyms || []).slice(0, 6).map(synChip).join('');
 
   content.innerHTML = `
-    <div class="modal__header" style="border-radius:var(--radius-lg) var(--radius-lg) 0 0; padding:var(--space-md) var(--space-lg)">
-      <div class="modal__hebrew" style="font-size:2rem">${d.form_he || ''}</div>
-      ${d.form_he_nikud ? `<div class="modal__nikud">${d.form_he_nikud}</div>` : ''}
-      ${translit ? `<div class="modal__translit">${translit}</div>` : ''}
+    <div class="modal__hebrew">${d.form_he || ''}</div>
+    ${d.form_he_nikud ? `<div class="modal__nikud">${d.form_he_nikud}</div>` : ''}
+    ${translit ? `<div class="modal__translit">${translit}</div>` : ''}
+
+    <div class="modal__info-grid">
+      <div class="modal__info-item">
+        <div class="modal__info-label">часть речи</div>
+        <div class="modal__info-value">форма глагола</div>
+      </div>
+      <div class="modal__info-item">
+        <div class="modal__info-label">время</div>
+        <div class="modal__info-value">${d.tense_label || tenseRu || '—'}</div>
+      </div>
+      ${d.gender ? `
+      <div class="modal__info-item">
+        <div class="modal__info-label">род</div>
+        <div class="modal__info-value">${d.gender === 'f' ? 'женский' : d.gender === 'm' ? 'мужской' : d.gender === 'mf' ? 'м/ж' : d.gender}</div>
+      </div>` : ''}
+      ${d.number ? `
+      <div class="modal__info-item">
+        <div class="modal__info-label">число</div>
+        <div class="modal__info-value">${d.number === 'singular' ? 'ед.' : d.number === 'plural' ? 'мн.' : d.number}</div>
+      </div>` : ''}
     </div>
 
+    ${d.conjugation_ru ? `
+    <div class="modal__section">
+      <div class="modal__section-title">значение формы</div>
+      <ul class="modal__trans"><li>${d.conjugation_ru}</li></ul>
+    </div>` : ''}
+
     <div class="modal__section" style="background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:8px; padding:1rem; margin:1rem 0">
-      <div style="font-size:0.85rem; color:var(--color-muted); margin-bottom:0.5rem">Форма глагола</div>
-      <div style="font-size:1.2rem; font-weight:700; margin-bottom:0.25rem">
+      <div style="font-size:0.85rem; color:var(--color-muted); margin-bottom:0.5rem">исходный глагол</div>
+      <div style="font-size:1.2rem; font-weight:700">
         <a href="javascript:void(0)" onclick="event.stopPropagation();showWordDetail('${infEsc}', ${d.verb_id}, 'verb')" style="color:var(--color-accent);text-decoration:underline;text-underline-offset:4px">${infHe}</a>
         <span style="color:var(--color-muted);font-size:0.9rem;font-weight:400"> — ${d.binyan_label || d.binyan || ''}</span>
       </div>
-      ${grammarLabel ? `<div style="font-size:0.85rem;color:var(--color-muted)">${grammarLabel}</div>` : ''}
-      ${d.conjugation_ru ? `<div style="font-size:1rem;margin-top:0.5rem">${d.conjugation_ru}</div>` : ''}
     </div>
 
     <div class="modal__section">
