@@ -952,9 +952,7 @@ async function showVerbFormModal(formId) {
   const modalBox = modal.querySelector('.modal');
   if (modalBox) modalBox.scrollTop = 0;
 
-  const hebrew = d.form_he_nikud || d.form_he || '';
   const translit = fixStress(d.translit || '');
-  const conjugRu = d.conjugation_ru || '';
   const grammarLabel = d.grammar_label || '';
   const infHe = d.infinitive_nikud || d.infinitive_he || '';
   const infEsc = String(d.infinitive_he || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
@@ -1013,9 +1011,9 @@ async function showVerbFormModal(formId) {
 
   content.innerHTML = `
     <div class="modal__header" style="border-radius:var(--radius-lg) var(--radius-lg) 0 0; padding:var(--space-md) var(--space-lg)">
-      <div class="modal__hebrew" style="font-size:2rem">${hebrew}</div>
+      <div class="modal__hebrew" style="font-size:2rem">${d.form_he || ''}</div>
+      ${d.form_he_nikud ? `<div class="modal__nikud">${d.form_he_nikud}</div>` : ''}
       ${translit ? `<div class="modal__translit">${translit}</div>` : ''}
-      ${conjugRu ? `<div style="font-size:1.05rem;margin-top:0.25rem">${conjugRu}</div>` : ''}
     </div>
 
     <div class="modal__section" style="background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:8px; padding:1rem; margin:1rem 0">
@@ -1049,6 +1047,13 @@ async function showVerbFormModal(formId) {
       <div class="modal__section-title">синонимы</div>
       <div class="modal__chips">${synonyms}</div>
     </div>` : ''}
+
+    <div style="margin-top:1.5rem;text-align:center">
+      <a href="javascript:void(0)" onclick="event.stopPropagation();showWordDetail('${infEsc}', ${d.verb_id}, 'verb')"
+         style="display:inline-block;background:var(--color-surface);color:var(--color-accent);padding:0.75rem 1.5rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.95rem;border:1px solid var(--color-rule)">
+        открыть глагол ${infHe} полностью
+      </a>
+    </div>
   `;
   modal.classList.add('modal-overlay--open');
 }
