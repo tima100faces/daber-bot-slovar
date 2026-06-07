@@ -9,11 +9,17 @@ Returns: list of dicts with {text, source, title, url}
 
 import json
 import re
+import socket
 import time
 import urllib.request
 import urllib.error
 from pathlib import Path
 from typing import Optional
+
+# Belt-and-suspenders: cap every network op (including feedparser's own internal
+# fetch, which otherwise has NO timeout) so a stalled source can never hang the
+# whole enrichment run — this caused a run to block for >1h on a dead RSS host.
+socket.setdefaulttimeout(45)
 
 
 # ── BrightData ───────────────────────────────────────────────────────────
@@ -202,7 +208,12 @@ def fetch_rss(feed_name: str, feed_url: str, limit: int = 5) -> list[dict]:
         return []
 
     try:
-        feed = feedparser.parse(feed_url)
+        # Fetch with an explicit timeout, then parse bytes — feedparser.parse(url)
+        # does its own fetch with NO timeout and can hang indefinitely.
+        req = urllib.request.Request(feed_url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            raw = resp.read()
+        feed = feedparser.parse(raw)
     except Exception as e:
         print(f"  ✗ RSS {feed_name}: {e}")
         return []
