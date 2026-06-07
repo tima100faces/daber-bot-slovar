@@ -207,19 +207,39 @@ def verb_to_dict(row, cur=None):
     3. Empty string (never fall back to English pealim_slug)
     """
     translit = row.get("infinitive_translit") or ""
+    headword = row["infinitive_he"]
+    headword_nikud = row["infinitive_he_nikud"] or ""
     if not translit and cur is not None:
-        # Fall back to any form's transliteration
-        cur.execute("""SELECT transliteration FROM verb_forms
-                       WHERE verb_id = %s AND transliteration IS NOT NULL AND transliteration != ''
+        # Passive binyanim (pual/hufal) have no infinitive. Represent the verb by its
+        # present masculine-singular participle — the citation form (מְדֻבָּר medubar),
+        # NOT an arbitrary form (a prior ORDER BY id grabbed fem-plural מדוברות).
+        cur.execute("""SELECT form_he, form_he_nikud, transliteration FROM verb_forms
+                       WHERE verb_id = %s AND tense = 'present'
+                         AND number = 'singular' AND gender IN ('m', 'mf')
                        ORDER BY id LIMIT 1""", (row["id"],))
-        fb = cur.fetchone()
-        if fb:
-            translit = fb["transliteration"] or ""
+        pf = cur.fetchone()
+        if not pf:
+            cur.execute("""SELECT form_he, form_he_nikud, transliteration FROM verb_forms
+                           WHERE verb_id = %s AND transliteration IS NOT NULL AND transliteration != ''
+                           ORDER BY CASE tense WHEN 'present' THEN 0 WHEN 'infinitive' THEN 1 ELSE 2 END, id
+                           LIMIT 1""", (row["id"],))
+            pf = cur.fetchone()
+        if pf:
+            translit = pf["transliteration"] or translit
+            if not headword:
+                headword = pf["form_he"]
+            if not headword_nikud:
+                headword_nikud = pf["form_he_nikud"] or ""
+            # If the stored "infinitive" is an active form copied onto a passive
+            # (no real infinitive), prefer the participle as the shown headword.
+            if row.get("binyan") in ("pual", "hufal") and pf["form_he"]:
+                headword = pf["form_he"]
+                headword_nikud = pf["form_he_nikud"] or headword_nikud
     return {
         "type": "verb",
         "id": row["id"],
-        "headword": row["infinitive_he"],
-        "headword_nikud": row["infinitive_he_nikud"] or "",
+        "headword": headword,
+        "headword_nikud": headword_nikud,
         "translit": translit,
         "root": row["root"],
         "binyan": row["binyan"],
