@@ -33,7 +33,7 @@
 │   ├── components.css   # Shared CSS
 │   └── design-system.css
 ├── enrichment/          # Facts generation pipeline
-│   ├── run.py           # Cron-triggered enrichment entry point
+│   ├── run.py           # Enrichment entry point — runs daily 06:00 via systemd `daber-enrichment.timer` (independent of Hermes since 2026-06-07)
 │   ├── pipeline.py      # Sonnet-based enrichment (migrated off Gemini)
 │   ├── publish_one_fact.py
 │   ├── balashon_facts.py
