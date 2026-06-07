@@ -1186,11 +1186,9 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
       const synonyms = (word.synonyms || []).slice(0, 6).map(synChip).join('');
 
       content.innerHTML = `
-        <div class="modal__header" style="border-radius:var(--radius-lg) var(--radius-lg) 0 0; padding:var(--space-md) var(--space-lg)">
-          <div class="modal__hebrew" style="font-size:2rem">${word.headword}</div>
-          ${word.headword_nikud ? `<div class="modal__nikud">${word.headword_nikud}</div>` : ''}
-          ${word.translit ? `<div class="modal__translit">${fixStress(word.translit)}</div>` : ''}
-        </div>
+        <div class="modal__hebrew">${word.headword}</div>
+        ${word.headword_nikud ? `<div class="modal__nikud">${word.headword_nikud}</div>` : ''}
+        ${word.translit ? `<div class="modal__translit">${fixStress(word.translit)}</div>` : ''}
 
         <div class="modal__section" style="background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:8px; padding:1rem; margin:1rem 0">
           <div style="font-size:0.85rem; color:var(--color-muted); margin-bottom:0.5rem">Форма глагола</div>
