@@ -845,14 +845,14 @@ function renderResults(data) {
       ? item.translation_enriched.slice(0, 3).join(' · ')
       : (item.translation_ru || '');
     const heb = item.headword || '';
-    const translit = item.translit || '';
+    const translit = fixStress(item.translit || '');
 
     if (item.type === 'verb_form') {
       // ─── VERB FORM CARD (conjugated form) ───
       card.className = 'word-card word-card--verb';
       const conjRu = item.conjugation_ru || '';
       const formHe = item.form_he_nikud || item.form_he || '';
-      const formTranslit = item.translit || '';
+      const formTranslit = fixStress(item.translit || '');
       const infHe = item.infinitive_nikud || item.infinitive_he || '';
       card.innerHTML = `
         <div class="word-card__top">
@@ -976,7 +976,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
             const formsHtml = (v.forms || []).slice(0, 5).map(f => `
               <div style="display:flex;gap:0.5rem;align-items:baseline;padding:0.25rem 0;border-bottom:1px solid var(--color-rule)">
                 <span style="min-width:80px;font-weight:500">${f.hebrew || ''}</span>
-                <span style="color:var(--color-muted);font-style:italic">${f.translit || ''}</span>
+                <span style="color:var(--color-muted);font-style:italic">${fixStress(f.translit || '')}</span>
               </div>
             `).join('');
             return `
@@ -985,7 +985,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
                 <div class="word-card__hebrew">${v.headword}</div>
                 <div class="word-card__pos word-card__pos--${v.pos_slug || 'default'}">${v.pos_label || posLabelText(v.pos_slug) || ''}</div>
               </div>
-              ${v.translit ? `<div class="word-card__translit">${v.translit}</div>` : ''}
+              ${v.translit ? `<div class="word-card__translit">${fixStress(v.translit)}</div>` : ''}
               <div class="word-card__translations">${(v.translation_enriched || []).slice(0, 3).join(' · ') || '—'}</div>
               <div class="word-card__meta">
                 ${v.gender ? `<span class="word-card__gender">${v.gender === 'f' ? 'жен.' : v.gender === 'm' ? 'муж.' : v.gender === 'm/f' ? 'м/ж' : v.gender}</span>` : ''}
@@ -1019,7 +1019,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
         const p = f.person ? {1:'1',2:'2',3:'3'}[f.person]||'' : '';
         const g = f.gender ? {m:'м',f:'ж',mf:'м/ж'}[f.gender]||'' : '';
         const n = f.number ? {singular:'ед',plural:'мн'}[f.number]||'' : '';
-        return `<tr><td>${[p,g,n].filter(Boolean).join(' ')}</td><td>${f.nikud||f.hebrew}</td><td>${f.hebrew}</td><td>${f.translit||''}</td></tr>`;
+        return `<tr><td>${[p,g,n].filter(Boolean).join(' ')}</td><td>${f.nikud||f.hebrew}</td><td>${f.hebrew}</td><td>${fixStress(f.translit||'')}</td></tr>`;
       }).join('');
 
       const verbTrans = word.verb_translation_enriched || [];
@@ -1042,7 +1042,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
         <div class="modal__header" style="border-radius:var(--radius-lg) var(--radius-lg) 0 0; padding:var(--space-md) var(--space-lg)">
           <div class="modal__hebrew" style="font-size:2rem">${word.headword}</div>
           ${word.headword_nikud ? `<div class="modal__nikud">${word.headword_nikud}</div>` : ''}
-          ${word.translit ? `<div class="modal__translit">${word.translit}</div>` : ''}
+          ${word.translit ? `<div class="modal__translit">${fixStress(word.translit)}</div>` : ''}
         </div>
 
         <div class="modal__section" style="background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:8px; padding:1rem; margin:1rem 0">
@@ -1183,7 +1183,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
             <td style="color:var(--color-muted);font-size:0.8rem;white-space:nowrap;padding-right:0.75rem">${meta.label}</td>
             <td style="font-weight:600">${f.nikud || f.hebrew || ''}</td>
             <td>${f.hebrew || ''}</td>
-            <td style="font-style:italic;color:var(--color-muted)">${f.translit || ''}</td>
+            <td style="font-style:italic;color:var(--color-muted)">${fixStress(f.translit || '')}</td>
           </tr>`).join('');
         const tenseRu = {present:'настоящее',past:'прошедшее',future:'будущее',imperative:'повелительное'}[tense]||tense;
         return `<div class="modal__tense-group">
@@ -1197,7 +1197,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
           <div>
             <div class="modal__hebrew modal__hebrew--verb">${word.headword}</div>
             ${word.headword_nikud ? `<div class="modal__nikud">${word.headword_nikud}</div>` : ''}
-            ${word.translit ? `<div class="modal__translit">${word.translit}</div>` : ''}
+            ${word.translit ? `<div class="modal__translit">${fixStress(word.translit)}</div>` : ''}
           </div>
           <div class="modal__binyan-badge">${word.binyan_label || word.binyan || 'verb'}</div>
         </div>
@@ -1266,7 +1266,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
       <div class="modal__phrase">
         <div class="modal__phrase-heb">${p.hebrew || ''}</div>
         ${p.nikud ? `<div class="modal__phrase-nikud">${p.nikud}</div>` : ''}
-        ${p.translit ? `<div class="modal__phrase-translit">${p.translit}</div>` : ''}
+        ${p.translit ? `<div class="modal__phrase-translit">${fixStress(p.translit)}</div>` : ''}
         <div class="modal__phrase-trans">${p.translation || ''}</div>
       </div>
     `).join('');
@@ -1274,7 +1274,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
       <div class="modal__form">
         <span class="modal__form-heb">${f.hebrew || ''}</span>
         ${f.nikud ? `<span class="modal__form-nikud">${f.nikud}</span>` : ''}
-        ${f.translit ? `<span class="modal__form-translit">${f.translit}</span>` : ''}
+        ${f.translit ? `<span class="modal__form-translit">${fixStress(f.translit)}</span>` : ''}
       </div>
     `).join('');
     const rootVerbs = (word.same_root_verbs || []).map(v => `
@@ -1291,7 +1291,7 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
     content.innerHTML = `
       <div class="modal__hebrew">${word.headword}</div>
       ${word.headword_nikud ? `<div class="modal__nikud">${word.headword_nikud}</div>` : ''}
-      ${word.translit ? `<div class="modal__translit">${word.translit}</div>` : ''}
+      ${word.translit ? `<div class="modal__translit">${fixStress(word.translit)}</div>` : ''}
 
       ${word.also_verb_form ? `
       <div style="background:var(--color-surface-2); border:1px solid var(--color-rule); border-radius:8px; padding:0.75rem 1rem; margin:0.75rem 0; font-size:0.85rem">
@@ -1834,7 +1834,7 @@ async function loadQuizModal() {
           <div class="quiz__hearts">${renderHearts(quizLives)}</div>
           <div class="quiz__question">Что означает это слово?</div>
           <div class="quiz__word">${escHtml(q.headword)} ${q.headword_nikud ? `<span style="font-size:0.7em;color:var(--color-muted)">${escHtml(q.headword_nikud)}</span>` : ''}</div>
-          <div class="quiz__hint">${q.translit ? `[${q.translit}]` : ''}</div>
+          <div class="quiz__hint">${q.translit ? `[${fixStress(q.translit)}]` : ''}</div>
           <div class="quiz__options" data-correct="${q.correct_index}">
             ${q.options.map((opt, i) => `<button class="quiz__option" onclick="checkAnswer(${i})" data-index="${i}">${escHtml(truncateText(opt, 80))}</button>`).join('')}
           </div>

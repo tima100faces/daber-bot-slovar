@@ -218,12 +218,16 @@ async function loadForm() {
     return;
   }
 
+  const fixStress = (s) => {
+    const map = {'А':'а́','О':'о́','Е':'е́','У':'у́','И':'и́','Ы':'ы́','Э':'э́','Ю':'ю́','Я':'я́','Ё':'ё́'};
+    return (s || '').split('').map(c => map[c] || c).join('');
+  };
   const hebrew = form.form_he_nikud || form.form_he || '';
-  const translit = form.translit || '';
+  const translit = fixStress(form.translit || '');
   const conjugRu = form.conjugation_ru || '';
   const grammarLabel = form.grammar_label || '';
   const infHe = form.infinitive_nikud || form.infinitive_he || '';
-  const infTranslit = form.infinitive_translit || '';
+  const infTranslit = fixStress(form.infinitive_translit || '');
   const translation = (() => {
     if (Array.isArray(form.translation_enriched) && form.translation_enriched.length)
       return form.translation_enriched.slice(0, 3).join(' · ');
