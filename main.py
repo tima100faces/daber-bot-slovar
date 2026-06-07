@@ -760,6 +760,31 @@ def _enrich_word_detail(d: dict, word_id: int, cur):
         d[col] = cur.fetchone()["c"]
     d["phrase_count"] = len(d["phrases"])  # Updated count after dedup
 
+    # Same-root linking (via words.root) — connect this word to its source verbs
+    # and to other words of the same root (e.g. דיבור ↔ לדבר).
+    cur.execute("SELECT root FROM words WHERE id = %s", (word_id,))
+    rrow = cur.fetchone()
+    root = (rrow["root"] if rrow else None) or ""
+    if root:
+        cur.execute("""SELECT infinitive_he, infinitive_he_nikud, binyan, translation_ru, pealim_slug
+                       FROM verbs WHERE root = %s ORDER BY binyan LIMIT 15""", (root,))
+        d["same_root_verbs"] = [
+            {"headword": r["infinitive_he"], "nikud": r["infinitive_he_nikud"] or "",
+             "binyan": r["binyan"], "binyan_label": binyan_label(r["binyan"]),
+             "translation_ru": r["translation_ru"] or "", "slug": r["pealim_slug"]}
+            for r in cur.fetchall()
+        ]
+        cur.execute("""SELECT headword, headword_nikud, pos_slug, translit, translation_enriched
+                       FROM words WHERE root = %s AND id != %s
+                       ORDER BY frequency_rank LIMIT 10""", (root, word_id))
+        d["same_root_words"] = [
+            {"headword": r["headword"], "nikud": r["headword_nikud"] or "",
+             "pos_slug": r["pos_slug"], "pos_label": pos_label(r["pos_slug"]),
+             "translit": _clean_translit(r["translit"] or ""),
+             "translation": (_normalize_enriched(r["translation_enriched"]) or [""])[0][:80]}
+            for r in cur.fetchall()
+        ]
+
 
 # ─── WORD / VERB detail ────────────────────────────────────────────────────
 
@@ -849,13 +874,12 @@ def get_word(word: str, id: Optional[int] = Query(None), type: Optional[str] = Q
                  "translation_ru": r["translation_ru"] or "", "slug": r["pealim_slug"]}
                 for r in cur.fetchall()
             ]
-            # Also find words sharing same root letters (without dashes)
-            root_letters = verb_row["root"].replace("-", "")
+            # Words sharing the same root (exact match via words.root)
             cur.execute("""SELECT headword, headword_nikud, pos_slug, translit,
                                   translation_enriched
-                           FROM words WHERE headword LIKE %s
+                           FROM words WHERE root = %s
                            ORDER BY frequency_rank LIMIT 10""",
-                       (f"%{root_letters}%",))
+                       (verb_row["root"],))
             result["same_root_words"] = [
                 {"headword": r["headword"], "nikud": r["headword_nikud"] or "",
                  "pos_slug": r["pos_slug"], "pos_label": pos_label(r["pos_slug"]),
@@ -1101,12 +1125,11 @@ def get_word(word: str, id: Optional[int] = Query(None), type: Optional[str] = Q
                  "translation_ru": r["translation_ru"] or "", "slug": r["pealim_slug"]}
                 for r in cur.fetchall()
             ]
-            root_letters = verb_by_form["root"].replace("-", "")
             cur.execute("""SELECT headword, headword_nikud, pos_slug, translit,
                                   translation_enriched
-                           FROM words WHERE headword LIKE %s
+                           FROM words WHERE root = %s
                            ORDER BY frequency_rank LIMIT 10""",
-                       (f"%{root_letters}%",))
+                       (verb_by_form["root"],))
             result["same_root_words"] = [
                 {"headword": r["headword"], "nikud": r["headword_nikud"] or "",
                  "pos_slug": r["pos_slug"], "pos_label": pos_label(r["pos_slug"]),

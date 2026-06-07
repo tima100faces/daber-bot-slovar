@@ -1277,6 +1277,16 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
         ${f.translit ? `<span class="modal__form-translit">${f.translit}</span>` : ''}
       </div>
     `).join('');
+    const rootVerbs = (word.same_root_verbs || []).map(v => `
+      <span class="modal__chip modal__chip--root" onclick="event.stopPropagation();showWordDetail('${v.headword}')" style="cursor:pointer">
+        ${v.nikud || v.headword} <small>(${v.binyan_label})</small> — ${v.translation_ru || ''}
+      </span>
+    `).join('');
+    const rootWords = (word.same_root_words || []).slice(0, 6).map(w => `
+      <span class="modal__chip modal__chip--root" onclick="event.stopPropagation();showWordDetail('${w.headword}')" style="cursor:pointer">
+        ${w.nikud || w.headword} <small>(${w.pos_label})</small> — ${w.translation || ''}
+      </span>
+    `).join('');
 
     content.innerHTML = `
       <div class="modal__hebrew">${word.headword}</div>
@@ -1336,6 +1346,12 @@ async function showWordDetail(queryWord, id = null, wordType = null) {
       <div class="modal__section">
         <div class="modal__section-title">фразы (${(word.phrases || []).length})</div>
         <div class="modal__phrases">${phrases}</div>
+      </div>` : ''}
+
+      ${rootVerbs || rootWords ? `
+      <div class="modal__section">
+        <div class="modal__section-title">однокоренные слова</div>
+        <div class="modal__chips">${rootVerbs}${rootWords}</div>
       </div>` : ''}
 
       ${word.notes ? `<div class="modal__notes">${word.notes}</div>` : ''}
