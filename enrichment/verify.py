@@ -56,6 +56,57 @@ def _ktiv_variants(hw: str) -> set:
     return out
 
 
+# ── Hard guard: reject inflected verb forms / mislabeled verbs ──────────────
+# The pipeline already drops anything the LLM tags pos_slug='verb'. But the LLM
+# sometimes tags a conjugated verb FORM (e.g. נדרסה, ניצלה — past 3f.sg) as a
+# noun/particle, and it slips through. These are not new headwords — they are
+# inflections already covered by the verbs table. This guard catches them.
+
+_MORPH = None
+
+
+def _gloss_is_verb(translation: str) -> bool:
+    """True if the head word of the Russian gloss parses as a verb/infinitive.
+    Uses pymorphy3 (reliable POS) — avoids the naive '-ость nouns end in -ть' trap."""
+    if not translation:
+        return False
+    g = translation.strip().strip('"').lstrip("[").strip()
+    g = re.sub(r"\(.*?\)", "", g)
+    g = re.split(r"[,;]", g)[0].strip()
+    parts = g.split()
+    if not parts:
+        return False
+    head = parts[0].strip("«»\"'.,!?")
+    global _MORPH
+    try:
+        if _MORPH is None:
+            import pymorphy3
+            _MORPH = pymorphy3.MorphAnalyzer()
+        parses = _MORPH.parse(head)
+        return bool(parses) and parses[0].tag.POS in ("VERB", "INFN")
+    except Exception:
+        return False
+
+
+def is_verb_candidate(word: dict) -> str:
+    """Return a non-empty reason if this candidate is a verb mislabeled as a
+    non-verb (so it must NOT be inserted as a new word); else ''.
+
+    Detection is by MEANING — pymorphy3 on the Russian gloss — which is
+    homograph-proof. Spelling is NOT used: many real nouns legitimately share a
+    form with a verb (מחשב 'computer' = piel of 'to computerize'; חושב 'thinker'
+    = pual 'was calculated'), so a spelling match would wrongly drop them. A
+    verb FORM extracted from news text (נדרסה 'was run over', ניצלה 'was saved')
+    instead carries a verb gloss, which this catches.
+    """
+    pos = (word.get("pos_slug") or "").strip()
+    if pos in ("phrase", "verb"):
+        return ""
+    if _gloss_is_verb(word.get("translation_ru") or ""):
+        return "перевод — глагол, а POS указан как не-глагол"
+    return ""
+
+
 def verify_morphology(word: dict) -> list[str]:
     """Check Hebrew morphological rules. Returns list of warning strings."""
     warnings = []

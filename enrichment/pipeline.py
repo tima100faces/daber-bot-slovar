@@ -372,6 +372,25 @@ def process_text(text: str, source: str) -> dict:
 
     print(f"  → {len(new_words)}/{len(words)} are new (not in dictionary)")
 
+    # Hard guard: drop candidates that are actually inflected verb forms or whose
+    # Russian gloss is a verb (LLM mislabeled the POS, e.g. נדרסה/ניצלה tagged as
+    # particle). Verbs are covered by the verbs table — they are not new headwords.
+    if new_words:
+        try:
+            from enrichment.verify import is_verb_candidate
+            kept = []
+            for w in new_words:
+                reason = is_verb_candidate(w)
+                if reason:
+                    print(f"  🚫 Drop '{w.get('headword','')}' ({w.get('pos_slug','')}) — {reason}")
+                else:
+                    kept.append(w)
+            if len(kept) < len(new_words):
+                print(f"  🚫 Guard dropped {len(new_words) - len(kept)} verb-form/mislabeled-verb candidate(s)")
+            new_words = kept
+        except Exception as e:
+            print(f"  ⚠ Verb-guard error (non-fatal): {e}")
+
     # Verify new words (morphology + DB cross-check, then batch LLM)
     verified_count = 0
     llm_verified = 0
