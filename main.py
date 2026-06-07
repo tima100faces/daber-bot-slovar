@@ -420,6 +420,25 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
         for r in cur.fetchall():
             results_all.append((1, verb_form_to_dict(r)))
 
+        # ── VERB FORMS: ktiv-male / ktiv-haser tolerant fallback ──
+        # form_he is stored in ktiv male (e.g. דיברתי). A user may type the older
+        # defective spelling (דברתי) and find nothing. Only when the normal search
+        # matched no verb, retry on the yud/vav-stripped skeleton so both spellings
+        # resolve. Gated this way it adds zero cost to normal queries and can't
+        # duplicate an already-matched verb.
+        already_have_verb = any(
+            d.get("type") in ("verb", "verb_form") for _, d in results_all
+        )
+        if not already_have_verb and len(re.sub(r"[וי]", "", q)) >= 2:
+            cur.execute(
+                f"SELECT DISTINCT ON (vf.verb_id) {_vf_cols} {_vf_from}"
+                f" WHERE translate(vf.form_he, 'וי', '') = translate(%s, 'וי', '')"
+                f" AND vf.tense != 'infinitive' {_vf_order}",
+                (like_exact,)
+            )
+            for r in cur.fetchall():
+                results_all.append((2, verb_form_to_dict(r)))
+
         # ── WORDS ──
         sql_base = """SELECT w.*,
                       (SELECT translit FROM word_forms WHERE word_id = w.id AND translit IS NOT NULL AND translit != '' ORDER BY CASE WHEN form_he = w.headword THEN 0 ELSE 1 END, id LIMIT 1) AS form_translit
