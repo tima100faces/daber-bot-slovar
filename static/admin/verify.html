@@ -22,6 +22,8 @@
 .verify-actions button:hover { border-color:var(--color-accent) }
 .verify-actions .btn-apply { background:var(--color-accent); color:#fff; border-color:var(--color-accent) }
 .verify-actions .btn-apply:hover { background:var(--color-accent-2) }
+.verify-actions .btn-delete { color:#ef4444; border-color:#ef4444 }
+.verify-actions .btn-delete:hover { background:#ef4444; color:#fff }
 .verify-stats { display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap }
 .verify-stat { background:var(--color-surface); border:1px solid var(--color-rule); border-radius:var(--radius-md); padding:0.5rem 1rem; font-size:0.875rem }
 .verify-stat strong { color:var(--color-accent) }
@@ -136,10 +138,11 @@ function applyFilter() {
       ${isFix ? `<div class="verify-fix">→ ${fixes.join(' · ') || 'исправить'}</div>` : ''}
       ${v.sonnet_explanation ? `<div class="verify-explanation">${v.sonnet_explanation}</div>` : ''}
       ${isFix && !isApplied ? `<div class="verify-actions">
-        ${(v.sonnet_pos || v.sonnet_gender || v.sonnet_number || v.sonnet_translit || v.sonnet_translation) 
-          ? `<button class="btn-apply" onclick="applyFix(${v.word_id}, ${v.id})">Применить исправления</button>` 
-          : `<span style="font-size:0.75rem;color:var(--color-muted)">Нет конкретных полей для применения</span>`}
-        <button onclick="skipFix(${v.id})">Пропустить</button>
+        ${(v.sonnet_pos || v.sonnet_gender || v.sonnet_number || v.sonnet_translit || v.sonnet_translation)
+          ? `<button class="btn-apply" onclick="applyFix(${v.word_id}, ${v.id})">Применить исправления</button>`
+          : ''}
+        <button class="btn-delete" onclick="deleteWord(${v.word_id}, '${(v.headword||'').replace(/'/g,"\\'")}')">Удалить слово</button>
+        <button onclick="skipFix(${v.id})">Оставить</button>
       </div>` : ''}
     </div>`;
   }).join('');
@@ -166,6 +169,18 @@ async function skipFix(verifyId) {
     if (item) item.sonnet_verdict = 'ok';
     applyFilter();
     updateStats();
+  }
+}
+
+async function deleteWord(wordId, headword) {
+  if (!confirm('Удалить слово «' + headword + '» из словаря?\n(если это форма глагола или ошибка — удаляем; иначе «Оставить»)')) return;
+  const res = await fetch('/api/admin/word/' + wordId + '?type=word', { method: 'DELETE', credentials: 'same-origin' });
+  if (res.ok) {
+    allItems = allItems.filter(i => i.word_id !== wordId);
+    applyFilter();
+    updateStats();
+  } else {
+    alert('Ошибка удаления');
   }
 }
 
