@@ -1023,6 +1023,7 @@ async function showVerbFormModal(formId) {
         <span style="color:var(--color-muted);font-size:0.9rem;font-weight:400"> — ${d.binyan_label || d.binyan || ''}</span>
       </div>
       ${grammarLabel ? `<div style="font-size:0.85rem;color:var(--color-muted)">${grammarLabel}</div>` : ''}
+      ${d.conjugation_ru ? `<div style="font-size:1rem;margin-top:0.5rem">${d.conjugation_ru}</div>` : ''}
     </div>
 
     <div class="modal__section">

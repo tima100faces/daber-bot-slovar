@@ -114,6 +114,27 @@ def _conj_key(tense: str, person, gender: str, number: str) -> str:
     return f"{t}_{person}_{gender}_{n}" if person else f"{t}_{gender}_{n}"
 
 
+def _parse_conj_slot(slot: str):
+    """Inverse of _conj_key: 'present_m_sg' -> (tense, person, gender, number).
+
+    Returns None for unrecognized keys. Used by search to map a matched
+    Russian gloss slot back to the concrete verb_forms row.
+    """
+    p = slot.split("_")
+    if len(p) not in (3, 4):
+        return None
+    t = p[0]
+    if t not in ("present", "past", "future", "imp"):
+        return None
+    tense = "imperative" if t == "imp" else t
+    number = "singular" if p[-1] == "sg" else "plural"
+    if len(p) == 3:        # tense_gender_n  (present)
+        person, gender = None, p[1]
+    else:                  # tense_person_gender_n
+        person, gender = p[1], p[2]
+    return (tense, person, gender, number)
+
+
 def _form_grammar_label(tense: str, person, gender: str, number: str) -> str:
     parts = [TENSE_RU.get(tense, tense)]
     if person:
@@ -374,6 +395,7 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
         like_substr = f"%{q.lower()}%"
 
     results_all = []  # list of (priority, row_dict)
+    form_verb_ids = set()  # verbs matched by a Russian conjugated-form gloss
 
     # Shared verb-form SQL fragments — used by BOTH the Hebrew branch (match by
     # form_he) and the non-Hebrew branch (match by form transliteration). Defined
@@ -568,6 +590,34 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
         for r in cur.fetchall():
             results_all.append((3, verb_form_to_dict(r)))
 
+        # ── VERB FORM by Russian conjugation gloss ──
+        # "люблю"/"любишь" → the present m/f forms whose RU gloss contains the
+        # word. Hebrew present is person-agnostic, so a Russian person-form maps
+        # to gender variants (e.g. "люблю" → אוֹהֵב m.sg + אוֹהֶבֶת f.sg).
+        cur.execute(r"""
+            SELECT v.id AS verb_id, kv.key AS slot, kv.value AS gloss
+            FROM verbs v, jsonb_each_text(v.conjugation_ru) kv
+            WHERE v.conjugation_ru IS NOT NULL AND LOWER(kv.value) LIKE %s
+        """, (like_substr,))
+        slot_hits = []
+        for r in cur.fetchall():
+            if not q_re.search((r["gloss"] or "").lower()):
+                continue
+            parsed = _parse_conj_slot(r["slot"])
+            if parsed:
+                slot_hits.append((r["verb_id"], parsed))
+        for vid, (tense, person, gender, number) in slot_hits[:40]:
+            cur.execute(
+                f"SELECT {_vf_cols} {_vf_from}"
+                f" WHERE vf.verb_id = %s AND vf.tense = %s AND vf.gender = %s"
+                f" AND vf.number = %s AND vf.person IS NOT DISTINCT FROM %s LIMIT 1",
+                (vid, tense, gender, number, person)
+            )
+            fr = cur.fetchone()
+            if fr:
+                results_all.append((1, verb_form_to_dict(fr)))
+                form_verb_ids.add(vid)
+
         # Words: search translit in word_forms / word_phrases
         sql_word = """SELECT DISTINCT w.*,
                       (SELECT translit FROM word_forms WHERE word_id = w.id AND translit IS NOT NULL AND translit != '' ORDER BY CASE WHEN form_he = w.headword THEN 0 ELSE 1 END, id LIMIT 1) AS form_translit
@@ -609,6 +659,14 @@ def search(q: str = Query(""), limit: int = Query(20, le=100), offset: int = Que
                 if not d.get("translit") and r.get("form_translit"):
                     d["translit"] = _clean_translit(r["form_translit"])
                 results_all.append((5, d))
+
+    # For a Russian conjugated-form query, prefer the matched forms over the
+    # infinitive card of the same verb (the user asked for a specific form).
+    if form_verb_ids:
+        results_all = [
+            (p, d) for p, d in results_all
+            if not (d["type"] == "verb" and d["id"] in form_verb_ids)
+        ]
 
     # If a full verb card is already in results, drop form cards for the same verb
     # (the infinitive card has more info — no need to show both)
